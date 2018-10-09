@@ -1,0 +1,8 @@
+project:
+  workdir: ./
+
+database:
+  mongodb:
+    enable: true
+  redis:
+    enable: true
