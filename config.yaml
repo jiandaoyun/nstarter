@@ -1,4 +1,5 @@
 project:
+  name: ts-app
   workdir: ./
 
 database:
