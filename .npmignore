@@ -1,4 +1,5 @@
-node_modules/
+/.vscode/
+/.idea/
 
-.vscode/
-.idea/
+/node_modules/
+/log/
