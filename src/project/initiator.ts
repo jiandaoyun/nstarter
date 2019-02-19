@@ -4,6 +4,7 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
+import { safeLoad, safeDump } from 'js-yaml';
 
 
 import { ProjectModule } from './module.conf';
@@ -97,22 +98,37 @@ export class ProjectInitiator {
     }
 
     private _readJson(path: string, callback: Function) {
+        this._readConf(path, JSON.parse, callback);
+    }
+
+    private _writeJson(obj: object, path: string, callback: Function) {
+        this._writeConf(obj, path, (obj) => JSON.stringify(obj, null, 2), callback);
+    }
+
+    private _readYaml(path: string, callback: Function) {
+        this._readConf(path, safeLoad, callback);
+    }
+
+    private _writeYaml(obj: object, path: string, callback: Function) {
+        this._writeConf(obj, path, (obj) => safeDump(obj, { indent: 2 }), callback);
+    }
+
+    private _readConf(path: string, parse: (str: string) => any, callback: Function) {
         async.auto<{
             read: string,
-            parse: object
+            parse: any
         }>({
             read: (callback) => {
                 fs.readFile(this._getSourcePath(path), 'utf-8', callback);
             },
-            parse: ['read', (results, callback) => {
-                return callback(null, JSON.parse(results.read));
+            parse: ['read', (results, callback: AsyncResultCallback<any>) => {
+                return callback(null, parse(results.read));
             }]
         }, (err, results) => callback(err, results && results.parse))
     }
 
-    private _writeJson(obj: object, path: string, callback: Function) {
-        const content = JSON.stringify(obj, null, 2);
-        fs.writeFile(this._getTargetPath(path), content, (err) => callback(err));
+    private _writeConf(obj: object, path: string, stringify: (obj: any) => string, callback: Function) {
+        fs.writeFile(this._getTargetPath(path), stringify(obj), (err) => callback(err));
     }
 
     private _isModuleIgnored(module: string): boolean {
@@ -141,7 +157,6 @@ export class ProjectInitiator {
                     dot: true,
                     ignore: _.concat([
                         'package.json',
-                        'config.schema.json',
                         'conf.d/*'
                     ], ...ignorePathList)
                 }, callback);
@@ -161,50 +176,93 @@ export class ProjectInitiator {
             // Create directory structure
             mkdir: ['group', (results, callback) => {
                 async.eachLimit(results.group.dir, this._concurrency, (path, callback) => {
-                    logger.info(`mkdir: ${ path }`);
+                    logger.debug(`mkdir: ${ path }`);
                     this._createDirectory(path, callback);
                 }, (err) => callback(err));
             }],
             // Copy search results to target folder
             copy: ['mkdir', (results, callback) => {
                 async.eachLimit(results.group.file, this._concurrency, (path, callback) => {
-                    logger.info(`copy: ${ path }`);
+                    logger.debug(`copy: ${ path }`);
                     this._copyFile(path, callback);
                 }, (err) => callback(err));
             }],
             // Deploy code files
             deploy: ['mkdir', (results, callback) => {
                 async.eachLimit(results.group.code, this._concurrency, (path, callback) => {
-                    logger.info(`deploy: ${ path }`);
+                    logger.debug(`deploy: ${ path }`);
                     this._copyCode(path, callback);
                 }, (err) => callback(err));
             }]
         }, (err) => callback(err));
     }
 
-    public deployPackageConf (callback: Function) {
-        const o = this._options;
-        const file = 'package.json';
-        logger.info(`config: ${ file }`);
+    private _deploySettings (file: string, process: (obj: any) => any, callback: Function) {
+        let read: (callback: Function) => void,
+            write: (obj: object, callback: Function) => void;
+        if (/\.json$/.test(file)) {
+            read = (callback) => this._readJson(file, callback);
+            write = (obj, callback) => this._writeJson(obj, file, callback);
+        } else if (/\.ya?ml$/.test(file)) {
+            read = (callback) => this._readYaml(file, callback);
+            write = (obj, callback) => this._writeYaml(obj, file, callback);
+        } else {
+            return callback(new Error(`Config file "${ file }" is not supported`));
+        }
+        logger.debug(`config: ${ file }`);
         async.auto<{
             read: any,
             config: object,
             write: void
         }>({
             read: (callback) => {
-                this._readJson(file, callback);
+                read(callback);
             },
             config: ['read', (results, callback: AsyncResultCallback<object>) => {
-                const pkg = results.read;
-                const ignoredPackages = _.concat([], ..._.map(o.ignoredModules, 'packages'));
-                const ignoredScripts = _.concat([], ..._.map(o.ignoredModules, 'scripts'));
-                pkg.dependencies = _.omit(pkg.dependencies, ignoredPackages);
-                pkg.devDependencies = _.omit(pkg.devDependencies, ignoredPackages);
-                pkg.scripts = _.omit(pkg.scripts, ignoredScripts);
-                return callback(null, pkg);
+                return callback(null, process(results.read));
             }],
             write: ['config', (results, callback) => {
-                this._writeJson(results.config, file, callback);
+                write(results.config, callback);
+            }]
+        }, (err) => callback(err));
+    }
+
+    public deployPackageConf (callback: Function) {
+        const o = this._options;
+        this._deploySettings('package.json', (pkg: any) => {
+            const ignoredPackages = _.concat([], ..._.map(o.ignoredModules, 'packages'));
+            const ignoredScripts = _.concat([], ..._.map(o.ignoredModules, 'scripts'));
+            pkg.dependencies = _.omit(pkg.dependencies, ignoredPackages);
+            pkg.devDependencies = _.omit(pkg.devDependencies, ignoredPackages);
+            pkg.scripts = _.omit(pkg.scripts, ignoredScripts);
+            return pkg;
+        }, callback);
+    }
+
+    public deployProjectConf (callback: Function) {
+        const o = this._options;
+        const ignoredConf = _.concat([], ..._.map(o.ignoredModules, 'config'))
+        async.auto<{
+            search: string[],
+            deploy: void
+        }>({
+            search: (callback) => {
+                glob('conf.d/*', {
+                    cwd: o.source,
+                    root: o.source,
+                    mark: true,
+                    ignore: ['conf.d/config.override.*']
+                }, callback);
+            },
+            deploy: ['search', (results, callback) => {
+                async.eachLimit(results.search, this._concurrency, (file, callback) => {
+                    this._deploySettings(file, (conf) => {
+                        _.forEach(ignoredConf, (confPath) => {
+                            _.unset(conf, confPath);
+                        });
+                        return conf;
+                    }, callback);
+                }, (err) => callback(err));
             }]
         }, (err) => callback(err));
     }
@@ -216,6 +274,9 @@ export class ProjectInitiator {
             },
             package: ['files', (results, callback) => {
                 this.deployPackageConf(callback);
+            }],
+            conf: ['files', (results, callback) => {
+                this.deployProjectConf(callback);
             }]
         }, (err) => callback(err));
     }

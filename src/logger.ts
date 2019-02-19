@@ -21,7 +21,7 @@ const levelConf = {
         debug: 90
     },
     colors: {
-        debug: 'blue',
+        debug: 'cyan',
         info: 'green',
         warn: 'yellow',
         error: 'red'
@@ -46,7 +46,7 @@ const levelFormatter = winston.format((info) => {
 
 // console transport
 transports.push(new winston.transports.Console({
-    level: 'info',
+    level: 'debug',
     stderrLevels: [LogLevel.error],
     consoleWarnLevels: [LogLevel.warn, LogLevel.debug],
     format: format.combine(
@@ -67,7 +67,8 @@ const baseFileLogOptions: DailyRotateFileTransportOptions = {
 transports.push(new RotateFileTransport({
     ...baseFileLogOptions,
     level: 'info',
-    filename: 'deploy.log',
+    datePattern: 'YYYY-MM-DD',
+    filename: 'deploy_%DATE%.log',
     format: format.combine(
         format.timestamp(),
         formatter
