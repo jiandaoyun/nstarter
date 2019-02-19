@@ -7,7 +7,8 @@ export interface ModuleConf {
     default: boolean;
     files: string[];
     config: string[];
-    packages: string[]
+    packages: string[];
+    scripts: string[]
 }
 
 export class ProjectModule implements ModuleConf {
@@ -20,6 +21,7 @@ export class ProjectModule implements ModuleConf {
     public readonly files: string[];
     public readonly config: string[];
     public readonly packages: string[];
+    public readonly scripts: string[];
 
     constructor (conf: ModuleConf) {
         if (!conf.name && !conf.type) {
@@ -33,6 +35,7 @@ export class ProjectModule implements ModuleConf {
         this.files = conf.files || [];
         this.config = conf.config || [];
         this.packages = conf.packages || [];
+        this.scripts = conf.scripts || [];
         this.isValid = true;
     }
 }

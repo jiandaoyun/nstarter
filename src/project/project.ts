@@ -6,6 +6,7 @@ import { safeLoad } from 'js-yaml';
 import { ProjectModuleGroup, ModuleGroupType } from './module.group';
 import { logger } from '../logger';
 import { ProjectModule, ModuleConf } from './module.conf';
+import { ProjectInitiator } from './initiator';
 
 interface ProjectConf {
     modules: ModuleConf[];
@@ -15,12 +16,14 @@ interface ProjectConf {
 
 export class DeployProject {
     public readonly isValid: boolean;
+    private _projectSrc: string;
     private _options: ProjectConf;
     private _moduleGroups: ProjectModuleGroup[] = [];
     private _moduleGroupMap: Record<string, ProjectModuleGroup> = {};
     private _moduleMap: Record<string, ProjectModule> = {};
 
     constructor(src: string) {
+        this._projectSrc = src;
         const moduleConf = path.join(src, './module.conf.yml');
         if (!fs.existsSync(moduleConf)) {
             logger.error(`Module config file not found at "${ moduleConf }"`);
@@ -83,5 +86,22 @@ export class DeployProject {
 
     public get moduleGroups() {
         return this._moduleGroups;
+    }
+
+    public deployModules(selected: string[], callback: Function) {
+        const selectedModules = new Set(selected);
+        const ignoredModules: ProjectModule[] = [];
+        _.forEach(this._moduleMap, (module, name) => {
+            if (!selectedModules.has(name)) {
+                ignoredModules.push(module);
+            }
+        });
+        const initiator = new ProjectInitiator({
+            source: this._projectSrc,
+            target: 'D:/temp/',
+            ignoredModules: ignoredModules,
+            ignoredFiles: this._options.ignore_files
+        });
+        initiator.deploy(callback);
     }
 }
