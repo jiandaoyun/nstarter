@@ -12,7 +12,7 @@ export interface DeployConf {
 }
 
 export interface NpmInstallConf {
-    readonly npm: string;
+    readonly npm: boolean;
 }
 
 const moduleChoices: ChoiceType[] = [];

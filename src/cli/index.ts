@@ -26,11 +26,11 @@ class Cli {
     public deploy(callback: Function) {
         this._prompt(getDeployQuestions(this._args))
             .then((answers: DeployConf) => {
-                this._deployConf = answers;
                 answers = _.defaults({
                     name: this._args.name,
                     workdir: this._args.target
                 }, answers);
+                this._deployConf = answers;
                 if (!answers.confirm) {
                     return callback();
                 }
@@ -41,7 +41,7 @@ class Cli {
     public npmInstall(callback: Function) {
         this._prompt(npmInstallQuestions)
             .then((answers: NpmInstallConf) => {
-                if (!answers.npm) {
+                if (answers.npm === false) {
                     logger.info('Skip npm install by user.')
                     return callback();
                 }
