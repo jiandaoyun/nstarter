@@ -1,4 +1,4 @@
-import yargs, { Arguments, Argv } from 'yargs';
+import yargs, { Arguments } from 'yargs';
 
 import { pkg } from '../pkg';
 

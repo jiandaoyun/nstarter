@@ -76,7 +76,7 @@ export class ProjectInitiator {
             });
             const output = fs.createWriteStream(this._getTargetPath(path));
             reader.on('line', (line) => {
-                output.write(_.template(line)(o.params));
+                output.write(_.template(line)(o.params) + `\n`);
             });
             reader.on('close', () => {
                 output.close();
@@ -277,6 +277,9 @@ export class ProjectInitiator {
         this._deploySettings('package.json', (pkg: any) => {
             const ignoredPackages = _.concat([], ..._.map(o.ignoredModules, 'packages'));
             const ignoredScripts = _.concat([], ..._.map(o.ignoredModules, 'scripts'));
+            if (o.params.APP_NAME) {
+                pkg.name = o.params.APP_NAME;
+            }
             pkg.dependencies = _.omit(pkg.dependencies, ignoredPackages);
             pkg.devDependencies = _.omit(pkg.devDependencies, ignoredPackages);
             pkg.scripts = _.omit(pkg.scripts, ignoredScripts);
