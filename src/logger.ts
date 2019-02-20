@@ -45,8 +45,8 @@ const levelFormatter = winston.format((info) => {
 });
 
 // console transport
-transports.push(new winston.transports.Console({
-    level: 'debug',
+const consoleTransport = new winston.transports.Console({
+    level: LogLevel.info,
     stderrLevels: [LogLevel.error],
     consoleWarnLevels: [LogLevel.warn, LogLevel.debug],
     format: format.combine(
@@ -55,7 +55,8 @@ transports.push(new winston.transports.Console({
         format.timestamp(),
         formatter
     )
-}));
+});
+transports.push(consoleTransport);
 
 // file transport
 const baseFileLogOptions: DailyRotateFileTransportOptions = {
@@ -64,16 +65,17 @@ const baseFileLogOptions: DailyRotateFileTransportOptions = {
     maxFiles: 1
 };
 
-transports.push(new RotateFileTransport({
+const fileTransport = new RotateFileTransport({
     ...baseFileLogOptions,
-    level: 'info',
+    level: LogLevel.debug,
     datePattern: 'YYYY-MM-DD',
     filename: 'deploy_%DATE%.log',
     format: format.combine(
         format.timestamp(),
         formatter
     )
-}));
+});
+transports.push(fileTransport);
 
 type LogMessage = string | Error;
 
@@ -96,20 +98,24 @@ class Logger {
         }
     }
 
+    public setLevel(level: LogLevel) {
+        consoleTransport.level = level;
+    }
+
     public debug(msg: LogMessage, meta?: object) {
-        this._log('debug', msg, meta);
+        this._log(LogLevel.debug, msg, meta);
     }
 
     public info(msg: LogMessage, meta?: object) {
-        this._log('info', msg, meta);
+        this._log(LogLevel.info, msg, meta);
     }
 
     public warn(msg: LogMessage, meta?: object) {
-        this._log('warn', msg, meta);
+        this._log(LogLevel.warn, msg, meta);
     }
 
     public error(msg: LogMessage, meta?: object) {
-        this._log('error', msg, meta);
+        this._log(LogLevel.error, msg, meta);
     }
 }
 

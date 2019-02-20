@@ -4,17 +4,16 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
-import { spawn } from 'child_process';
 import { safeLoad, safeDump } from 'js-yaml';
 import simplegit from 'simple-git/promise';
 
 import { ProjectModule } from './module.conf';
 import { logger } from '../logger';
-import { Utils } from '../utils';
 
 interface InitiatorConf {
     source: string,
     target: string,
+    params: Record<string, string | number>,
     ignoredModules: ProjectModule[],
     ignoredFiles: string[]
 }
@@ -26,6 +25,7 @@ export class ProjectInitiator {
 
     constructor(options: InitiatorConf) {
         this._options = _.defaults(options, {
+            params: {},
             ignoredModules: [],
             ignoredFiles: []
         });
@@ -35,11 +35,14 @@ export class ProjectInitiator {
     }
 
     private _checkTargetPath(callback: Function) {
-        fs.ensureDirSync(this._options.target);
-        fs.readdir(this._options.target, (err, files) => {
+        const target = this._options.target;
+        logger.info(`check target path "${ path.resolve(target) }"`);
+        fs.ensureDirSync(target);
+        fs.readdir(target, (err, files) => {
             if (err || !_.isEmpty(files)) {
-                return callback(err || new Error('target is not an empty directory.'))
+                return callback(err || new Error('target is not an empty directory.'));
             }
+            logger.info('target is ready to deploy');
             return callback();
         });
     }
@@ -57,11 +60,29 @@ export class ProjectInitiator {
     }
 
     private _copyFile(path: string, callback: Function) {
-        fs.copyFile(
-            this._getSourcePath(path),
-            this._getTargetPath(path),
-            (err) => callback(err)
-        );
+        const o = this._options;
+        const isCodeFile = path.match(/\.[tj]s$/);
+        if (_.isEmpty(o.params) || isCodeFile) {
+            // no need to replace custom params
+            fs.copyFile(
+                this._getSourcePath(path),
+                this._getTargetPath(path),
+                (err) => callback(err)
+            );
+        } else {
+            // replace params
+            const reader = readline.createInterface({
+                input: fs.createReadStream(this._getSourcePath(path))
+            });
+            const output = fs.createWriteStream(this._getTargetPath(path));
+            reader.on('line', (line) => {
+                output.write(_.template(line)(o.params));
+            });
+            reader.on('close', () => {
+                output.close();
+                return callback();
+            });
+        }
     }
 
     private _copyCode(path: string, callback: Function) {
@@ -94,14 +115,22 @@ export class ProjectInitiator {
             if (altEnd) {
                 isAlt = false;
             }
-            if (isAlt) {
-                line = _.replace(line, /\/{2}#\s+/, '');
-            }
             const isModuleConf = moduleStart || moduleEnd || altStart || altEnd;
-            if ((!isIgnored || isAlt) && !isModuleConf) {
-                // Write to target file
-                output.write(`${line}\n`);
+            if (isModuleConf) {
+                return;
             }
+            if (isAlt) {
+                if (isIgnored) {
+                    line = _.replace(line, /\/{2}#\s+/, '');
+                } else {
+                    return;
+                }
+            } else if (isIgnored) {
+                return;
+            }
+
+            // Write to target file
+            output.write(`${line}\n`);
         });
         reader.on('close', () => {
             output.close();
@@ -140,7 +169,8 @@ export class ProjectInitiator {
     }
 
     private _writeConf(obj: object, path: string, stringify: (obj: any) => string, callback: Function) {
-        fs.writeFile(this._getTargetPath(path), stringify(obj), (err) => callback(err));
+        const lineFeed = '\n';
+        fs.writeFile(this._getTargetPath(path), stringify(obj) + lineFeed, (err) => callback(err));
     }
 
     private _isModuleIgnored(module: string): boolean {
@@ -257,6 +287,10 @@ export class ProjectInitiator {
     public deployProjectConf(callback: Function) {
         const o = this._options;
         const ignoredConf = _.concat([], ..._.map(o.ignoredModules, 'config'))
+        const ignorePathList: string[][] = []
+        _.forEach(o.ignoredModules, (module) => {
+            ignorePathList.push(module.files);
+        });
         async.auto<{
             search: string[],
             deploy: void
@@ -266,7 +300,10 @@ export class ProjectInitiator {
                     cwd: o.source,
                     root: o.source,
                     mark: true,
-                    ignore: ['conf.d/config.override.*']
+                    ignore: _.concat(
+                        ['conf.d/config.override.*'],
+                        ...ignorePathList
+                    )
                 }, callback);
             },
             deploy: ['search', (results, callback) => {
@@ -285,28 +322,24 @@ export class ProjectInitiator {
     public gitInitialize(callback: Function) {
         const target = this._options.target;
         const git = simplegit(target);
-        logger.info(`git init ${target}`);
-        git.init();
-        git.add('./*');
-        git.commit('initial commit');
-        return callback();
-    }
-
-    public npmInitialize(callback: Function) {
-        logger.info('run npm install');
-        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-        const npmProc = spawn(npmCmd, ['install'], {
-            cwd: this._options.target,
-            stdio: 'pipe'
-        });
-        npmProc.stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
-        npmProc.stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
-        npmProc.once('exit', (code) => {
-            if (code !== 0) {
-                return callback(new Error('npm install failed'));
-            }
-            return callback();
-        });
+        logger.info(`git init at "${target}"`);
+        async.auto({
+            init: (callback) => {
+                git.init()
+                    .then(() => callback())
+                    .catch((err) => callback(err));
+            },
+            add: ['init', (results, callback) => {
+                git.add('./*')
+                    .then(() => callback())
+                    .catch((err) => callback(err));
+            }],
+            commit: ['add', (results, callback) => {
+                git.commit('initial commit')
+                    .then(() => callback())
+                    .catch((err) => callback(err));
+            }]
+        }, (err) => callback(err));
     }
 
     public deploy(callback: Function) {
@@ -325,10 +358,14 @@ export class ProjectInitiator {
             }],
             git: ['package', 'conf', (results, callback) => {
                 this.gitInitialize(callback);
-            }],
-            npm: ['git', (results, callback) => {
-                this.npmInitialize(callback);
             }]
-        }, (err) => callback(err));
+        }, (err) => {
+            if (err) {
+                return callback(err);
+            }
+            const target = this._options.target;
+            logger.info(`project successfully deployed at "${ path.resolve(target) }"`);
+            return callback();
+        });
     }
 }

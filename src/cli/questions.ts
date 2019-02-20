@@ -1,15 +1,18 @@
 import _ from 'lodash';
 import fs from 'fs';
-import moment from 'moment-timezone';
 import { Question, Separator, ChoiceType } from 'inquirer';
 import { project } from '../project';
+import { ArgumentConf } from './args';
 
 export interface DeployConf {
-    readonly name?: string;
-    readonly path?: string;
-    readonly timezone?: string;
-    readonly modules?: string[];
-    readonly confirm?: boolean;
+    readonly name: string;
+    readonly workdir: string;
+    readonly modules: string[];
+    readonly confirm: boolean;
+}
+
+export interface NpmInstallConf {
+    readonly npm: string;
 }
 
 const moduleChoices: ChoiceType[] = [];
@@ -28,55 +31,48 @@ _.forEach(project.moduleGroups, (group) => {
     });
 });
 
-export const questions: Question[] = [
-    {
-        type: 'input',
-        name: 'name',
-        message: 'Name of application:',
-        validate: (name) => {
-            if (_.isEmpty(name)) {
-                return 'Name should not be empty';
-            }
-            return true;
-        }
-    },
-    {
-        type: 'input',
-        name: 'workdir',
-        message: 'Project path:',
-        default: (answers: DeployConf) => {
-            let path = './';
-            if (!_.isEmpty(fs.readdirSync(path))) {
-                path += answers.name || '';
-            }
-            return path;
-        },
-        validate: (path: string) => {
-            if (_.isEmpty(path)) {
-                return "Work directory should not be empty.";
-            }
-            if (!fs.existsSync(path)) {
+export function getDeployQuestions(args: ArgumentConf) {
+    const questions: Question[] = [];
+    if (!args.name) {
+        questions.push({
+            type: 'input',
+            name: 'name',
+            message: 'Name of application:',
+            validate: (name) => {
+                if (_.isEmpty(name)) {
+                    return 'Name should not be empty';
+                }
                 return true;
             }
-            if (!_.isEmpty(fs.readdirSync(path))) {
-                return `"${ path }" is not an empty directory.`;
+        });
+    }
+    if (!args.target) {
+        questions.push({
+            type: 'input',
+            name: 'workdir',
+            message: 'Project path:',
+            default: (answers: DeployConf) => {
+                let path = './';
+                if (!_.isEmpty(fs.readdirSync(path))) {
+                    path += answers.name || '';
+                }
+                return path;
+            },
+            validate: (path: string) => {
+                if (_.isEmpty(path)) {
+                    return "param should not be empty.";
+                }
+                if (!fs.existsSync(path)) {
+                    return true;
+                }
+                if (!_.isEmpty(fs.readdirSync(path))) {
+                    return `"${ path }" is not empty.`;
+                }
+                return true;
             }
-            return true;
-        }
-    },
-    {
-        type: 'input',
-        name: 'timezone',
-        message: 'Default timezone:',
-        default: moment.tz.guess(),
-        validate: (timezone) => {
-            if (!moment.tz.zone(timezone)) {
-                return `'${ timezone }' is not a valid timezone.`
-            }
-            return true;
-        }
-    },
-    {
+        });
+    }
+    questions.push({
         type: 'checkbox',
         name: 'modules',
         message: 'Select modules:',
@@ -88,5 +84,13 @@ export const questions: Question[] = [
         name: 'confirm',
         message: 'Confirm initialized now?',
         default: false
-    }
-];
+    });
+    return questions;
+}
+
+export const npmInstallQuestions = [{
+    type: 'confirm',
+    name: 'npm',
+    message: 'Install npm packages now?',
+    default: true
+}];

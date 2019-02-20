@@ -1,12 +1,16 @@
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
+import { spawn } from 'child_process';
 import { safeLoad } from 'js-yaml';
+import moment from 'moment-timezone';
 
 import { ProjectModuleGroup, ModuleGroupType } from './module.group';
 import { logger } from '../logger';
 import { ProjectModule, ModuleConf } from './module.conf';
 import { ProjectInitiator } from './initiator';
+import { DeployConf } from '../cli';
+import { Utils } from '../utils';
 
 interface ProjectConf {
     modules: ModuleConf[];
@@ -88,8 +92,8 @@ export class DeployProject {
         return this._moduleGroups;
     }
 
-    public deployModules(selected: string[], callback: Function) {
-        const selectedModules = new Set(selected);
+    public initialize(options: DeployConf, callback: Function) {
+        const selectedModules = new Set(options.modules);
         const ignoredModules: ProjectModule[] = [];
         _.forEach(this._moduleMap, (module, name) => {
             if (!selectedModules.has(name)) {
@@ -98,10 +102,31 @@ export class DeployProject {
         });
         const initiator = new ProjectInitiator({
             source: this._projectSrc,
-            target: 'D:/temp/',
+            target: options.workdir,
+            params: {
+                APP_NAME: options.name,
+                YEAR: moment().year()
+            },
             ignoredModules: ignoredModules,
             ignoredFiles: this._options.ignore_files
         });
-        initiator.npmInitialize(callback);
+        initiator.deploy(callback);
+    }
+
+    public npmInitialize(options: DeployConf, callback: Function) {
+        logger.info('run npm install');
+        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+        const npmProc = spawn(npmCmd, ['install'], {
+            cwd: options.workdir,
+            stdio: 'pipe'
+        });
+        npmProc.stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
+        npmProc.stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+        npmProc.once('exit', (code) => {
+            if (code !== 0) {
+                return callback(new Error('npm install failed'));
+            }
+            return callback();
+        });
     }
 }

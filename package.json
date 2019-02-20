@@ -6,6 +6,9 @@
         "url": ""
     },
     "license": "UNLICENSED",
+    "bin": {
+        "ts-starter": "./dist/index.js"
+    },
     "dependencies": {
         "async": "^2.6.2",
         "fs-extra": "^7.0.1",
@@ -18,7 +21,8 @@
         "simple-git": "^1.107.0",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^3.7.0",
-        "winston-transport": "^4.3.0"
+        "winston-transport": "^4.3.0",
+        "yargs": "^13.2.1"
     },
     "devDependencies": {
         "@types/async": "^2.4.1",
@@ -28,6 +32,7 @@
         "@types/js-yaml": "^3.12.0",
         "@types/lodash": "^4.14.117",
         "@types/moment-timezone": "^0.5.9",
+        "@types/yargs": "^12.0.9",
         "tslint": "^5.11.0",
         "typescript": "^3.3.1"
     }
