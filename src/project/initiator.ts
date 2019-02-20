@@ -4,11 +4,13 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
+import { spawn } from 'child_process';
 import { safeLoad, safeDump } from 'js-yaml';
-
+import simplegit from 'simple-git/promise';
 
 import { ProjectModule } from './module.conf';
 import { logger } from '../logger';
+import { Utils } from '../utils';
 
 interface InitiatorConf {
     source: string,
@@ -22,7 +24,7 @@ export class ProjectInitiator {
     private readonly _concurrency = 10;
     private _ignoredModuleSet: Set<string>;
 
-    constructor (options: InitiatorConf) {
+    constructor(options: InitiatorConf) {
         this._options = _.defaults(options, {
             ignoredModules: [],
             ignoredFiles: []
@@ -30,6 +32,16 @@ export class ProjectInitiator {
         this._ignoredModuleSet = new Set(
             _.map(this._options.ignoredModules, 'name')
         );
+    }
+
+    private _checkTargetPath(callback: Function) {
+        fs.ensureDirSync(this._options.target);
+        fs.readdir(this._options.target, (err, files) => {
+            if (err || !_.isEmpty(files)) {
+                return callback(err || new Error('target is not an empty directory.'))
+            }
+            return callback();
+        });
     }
 
     private _getSourcePath(relPath: string) {
@@ -40,7 +52,7 @@ export class ProjectInitiator {
         return path.join(this._options.target, relPath);
     }
 
-    private _createDirectory (path: string, callback: Function) {
+    private _createDirectory(path: string, callback: Function) {
         return fs.ensureDir(this._getTargetPath(path), (err) => callback(err));
     }
 
@@ -88,7 +100,7 @@ export class ProjectInitiator {
             const isModuleConf = moduleStart || moduleEnd || altStart || altEnd;
             if ((!isIgnored || isAlt) && !isModuleConf) {
                 // Write to target file
-                output.write(`${ line }\n`);
+                output.write(`${line}\n`);
             }
         });
         reader.on('close', () => {
@@ -175,29 +187,32 @@ export class ProjectInitiator {
             }],
             // Create directory structure
             mkdir: ['group', (results, callback) => {
+                logger.info('create target directories');
                 async.eachLimit(results.group.dir, this._concurrency, (path, callback) => {
-                    logger.debug(`mkdir: ${ path }`);
+                    logger.debug(`mkdir: ${path}`);
                     this._createDirectory(path, callback);
                 }, (err) => callback(err));
             }],
             // Copy search results to target folder
             copy: ['mkdir', (results, callback) => {
+                logger.info('copy project files');
                 async.eachLimit(results.group.file, this._concurrency, (path, callback) => {
-                    logger.debug(`copy: ${ path }`);
+                    logger.debug(`copy: ${path}`);
                     this._copyFile(path, callback);
                 }, (err) => callback(err));
             }],
             // Deploy code files
             deploy: ['mkdir', (results, callback) => {
+                logger.info('deploy code files');
                 async.eachLimit(results.group.code, this._concurrency, (path, callback) => {
-                    logger.debug(`deploy: ${ path }`);
+                    logger.debug(`deploy: ${path}`);
                     this._copyCode(path, callback);
                 }, (err) => callback(err));
             }]
         }, (err) => callback(err));
     }
 
-    private _deploySettings (file: string, process: (obj: any) => any, callback: Function) {
+    private _deploySettings(file: string, process: (obj: any) => any, callback: Function) {
         let read: (callback: Function) => void,
             write: (obj: object, callback: Function) => void;
         if (/\.json$/.test(file)) {
@@ -207,9 +222,9 @@ export class ProjectInitiator {
             read = (callback) => this._readYaml(file, callback);
             write = (obj, callback) => this._writeYaml(obj, file, callback);
         } else {
-            return callback(new Error(`Config file "${ file }" is not supported`));
+            return callback(new Error(`Config file "${file}" is not supported`));
         }
-        logger.debug(`config: ${ file }`);
+        logger.debug(`config: ${file}`);
         async.auto<{
             read: any,
             config: object,
@@ -227,7 +242,7 @@ export class ProjectInitiator {
         }, (err) => callback(err));
     }
 
-    public deployPackageConf (callback: Function) {
+    public deployPackageConf(callback: Function) {
         const o = this._options;
         this._deploySettings('package.json', (pkg: any) => {
             const ignoredPackages = _.concat([], ..._.map(o.ignoredModules, 'packages'));
@@ -239,7 +254,7 @@ export class ProjectInitiator {
         }, callback);
     }
 
-    public deployProjectConf (callback: Function) {
+    public deployProjectConf(callback: Function) {
         const o = this._options;
         const ignoredConf = _.concat([], ..._.map(o.ignoredModules, 'config'))
         async.auto<{
@@ -267,16 +282,52 @@ export class ProjectInitiator {
         }, (err) => callback(err));
     }
 
+    public gitInitialize(callback: Function) {
+        const target = this._options.target;
+        const git = simplegit(target);
+        logger.info(`git init ${target}`);
+        git.init();
+        git.add('./*');
+        git.commit('initial commit');
+        return callback();
+    }
+
+    public npmInitialize(callback: Function) {
+        logger.info('run npm install');
+        const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+        const npmProc = spawn(npmCmd, ['install'], {
+            cwd: this._options.target,
+            stdio: 'pipe'
+        });
+        npmProc.stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
+        npmProc.stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+        npmProc.once('exit', (code) => {
+            if (code !== 0) {
+                return callback(new Error('npm install failed'));
+            }
+            return callback();
+        });
+    }
+
     public deploy(callback: Function) {
         async.auto({
-            files: (callback) => {
-                this.deployFiles(callback);
+            check: (callback) => {
+                this._checkTargetPath(callback);
             },
+            files: ['check', (results, callback) => {
+                this.deployFiles(callback);
+            }],
             package: ['files', (results, callback) => {
                 this.deployPackageConf(callback);
             }],
             conf: ['files', (results, callback) => {
                 this.deployProjectConf(callback);
+            }],
+            git: ['package', 'conf', (results, callback) => {
+                this.gitInitialize(callback);
+            }],
+            npm: ['git', (results, callback) => {
+                this.npmInitialize(callback);
             }]
         }, (err) => callback(err));
     }

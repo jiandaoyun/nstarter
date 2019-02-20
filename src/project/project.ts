@@ -102,6 +102,6 @@ export class DeployProject {
             ignoredModules: ignoredModules,
             ignoredFiles: this._options.ignore_files
         });
-        initiator.deploy(callback);
+        initiator.npmInitialize(callback);
     }
 }
