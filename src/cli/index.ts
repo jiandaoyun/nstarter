@@ -17,8 +17,7 @@ export {
 }
 
 class Cli {
-    private readonly _name = 'tstarter';
-    private _template = '';
+    private readonly _name = 'nstarter';
     private _config: Config;
 
     private readonly _homePath = process.env.USERPROFILE || process.env.HOME;
@@ -39,7 +38,7 @@ class Cli {
     }
 
     public prepareTemplate(callback: Function) {
-        if (!fs.pathExistsSync(this._templatePath) && !_.isEmpty(fs.readdirSync(this._templatePath))) {
+        if (fs.pathExistsSync(this._templatePath) && !_.isEmpty(fs.readdirSync(this._templatePath))) {
             logger.debug('using cached template');
             return callback();
         }
@@ -53,7 +52,7 @@ class Cli {
         async.auto({
             clone: (callback) => {
                 fs.ensureDirSync(this._workDir);
-                git.clone(this._template, this._templatePath)
+                git.clone(this._config.getTemplate(), this._templatePath)
                     .then(() => callback());
             }
         }, (err) => callback(err));

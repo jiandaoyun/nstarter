@@ -10,7 +10,7 @@ interface StarterConf {
 type configKey = string | undefined;
 type configValue = string | undefined;
 
-const DEFAULT_TEMPLATE = 'https://git.huhamhire.com/huhamhire/ts-express-template.git';
+const DEFAULT_TEMPLATE = 'git@git.huhamhire.com:huhamhire/ts-express-template.git';
 
 export class Config {
     private readonly _confName = 'config.json';
@@ -72,14 +72,14 @@ export class Config {
         };
     }
 
-    public getTemplate() {
+    public getTemplate(): string {
         const template = this._conf.template;
         if (template) {
             logger.info(`using template "${ template }"`);
             return template;
         } else {
             logger.warn(`using default template "${ DEFAULT_TEMPLATE }"`);
-            return template;
+            return DEFAULT_TEMPLATE;
         }
     }
 }

@@ -62,6 +62,12 @@ export class DeployOperations {
                 }
                 this.npmInstall(callback);
             }]
-        }, (err) => callback(err));
+        }, (err) => {
+            if (err) {
+                return callback(err);
+            }
+            logger.info('deploy job finished.');
+            return callback();
+        });
     }
 }
