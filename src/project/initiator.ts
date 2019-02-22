@@ -9,6 +9,7 @@ import simplegit from 'simple-git/promise';
 
 import { ProjectModule } from './module.conf';
 import { logger } from '../logger';
+import { Utils } from '../utils';
 
 interface InitiatorConf {
     source: string,
@@ -324,23 +325,25 @@ export class ProjectInitiator {
 
     public gitInitialize(callback: Function) {
         const target = this._options.target;
-        const git = simplegit(target);
+        const git = simplegit(target)
+            .outputHandler((cmd, stdout, stderr) => {
+                logger.debug(cmd);
+                stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
+                stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+            });
         logger.info(`git init at "${target}"`);
         async.auto({
             init: (callback) => {
                 git.init()
-                    .then(() => callback())
-                    .catch((err) => callback(err));
+                    .then(() => callback());
             },
             add: ['init', (results, callback) => {
                 git.add('./*')
-                    .then(() => callback())
-                    .catch((err) => callback(err));
+                    .then(() => callback());
             }],
             commit: ['add', (results, callback) => {
                 git.commit('initial commit')
-                    .then(() => callback())
-                    .catch((err) => callback(err));
+                    .then(() => callback());
             }]
         }, (err) => callback(err));
     }

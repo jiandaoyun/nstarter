@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import fs from 'fs';
+import fs from 'fs-extra';
 import { Question, Separator, ChoiceType } from 'inquirer';
-import { project } from '../project';
-import { ArgumentConf } from './args';
+import { DeployProject } from '../project';
+import { DeployArguments } from './args';
 
 export interface DeployConf {
     readonly name: string;
@@ -15,29 +15,29 @@ export interface NpmInstallConf {
     readonly npm: boolean;
 }
 
-const moduleChoices: ChoiceType[] = [];
-const moduleLabelMap: Record<string, string> = {};
-const moduleDependencyMap: Record<string, string[]> = {};
-_.forEach(project.moduleGroups, (group) => {
-    // Add separator
-    if (!_.isEmpty(group.modules)) {
-        moduleChoices.push(new Separator(`- ${ group.label }`));
-    }
-    _.forEach(group.modules, (module) => {
-        // Add module choice
-        moduleChoices.push({
-            name: module.label,
-            value: module.name,
-            checked: module.default
-        });
-        moduleLabelMap[module.name] = module.label;
-        if (!_.isEmpty(module.dependencies)) {
-            moduleDependencyMap[module.name] = module.dependencies;
+export function getDeployQuestions(args: DeployArguments, project: DeployProject): Question[] {
+    const moduleChoices: ChoiceType[] = [];
+    const moduleLabelMap: Record<string, string> = {};
+    const moduleDependencyMap: Record<string, string[]> = {};
+    _.forEach(project.moduleGroups, (group) => {
+        // Add separator
+        if (!_.isEmpty(group.modules)) {
+            moduleChoices.push(new Separator(`- ${ group.label }`));
         }
+        _.forEach(group.modules, (module) => {
+            // Add module choice
+            moduleChoices.push({
+                name: module.label,
+                value: module.name,
+                checked: module.default
+            });
+            moduleLabelMap[module.name] = module.label;
+            if (!_.isEmpty(module.dependencies)) {
+                moduleDependencyMap[module.name] = module.dependencies;
+            }
+        });
     });
-});
 
-export function getDeployQuestions(args: ArgumentConf): Question[] {
     return [{
         type: 'input',
         name: 'name',
@@ -65,7 +65,7 @@ export function getDeployQuestions(args: ArgumentConf): Question[] {
             if (_.isEmpty(path)) {
                 return "param should not be empty.";
             }
-            if (!fs.existsSync(path)) {
+            if (!fs.pathExistsSync(path)) {
                 return true;
             }
             if (!_.isEmpty(fs.readdirSync(path))) {

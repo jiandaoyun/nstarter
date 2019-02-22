@@ -1,72 +1,125 @@
 import _ from 'lodash';
 import async from 'async';
-import { createPromptModule, PromptModule } from 'inquirer';
+import simplegit from 'simple-git/promise';
+import fs from 'fs-extra';
+import path from 'path';
+import yargs from 'yargs';
 
-import { getDeployQuestions, DeployConf, npmInstallQuestions, NpmInstallConf } from './questions';
-import { ArgumentConf, args } from './args';
 import { logger, LogLevel } from '../logger';
-import { project } from '../project';
+import { Utils } from '../utils';
+import { pkg } from '../pkg';
+import { DeployOperations } from './ops.deploy';
+import { DeployConf } from './questions';
+import { Config } from '../config';
 
 export {
     DeployConf
 }
-class Cli {
-    private _prompt: PromptModule;
-    private _args: ArgumentConf;
-    private _deployConf: DeployConf;
 
-    constructor() {
-        this._prompt = createPromptModule();
-        this._args = args.argv;
-        if (this._args.verbose) {
+class Cli {
+    private readonly _name = 'tstarter';
+    private _template = '';
+    private _config: Config;
+
+    private readonly _homePath = process.env.USERPROFILE || process.env.HOME;
+
+    private get _workDir(): string {
+        if (this._homePath) {
+            return path.join(this._homePath, `.${ this._name }`);
+        }
+        return path.resolve('./');
+    }
+
+    public initConfig (callback: Function) {
+        this._config = new Config(this._workDir, callback);
+    }
+
+    private get _templatePath(): string {
+        return path.join(this._workDir, '_template');
+    }
+
+    public prepareTemplate(callback: Function) {
+        if (!fs.pathExistsSync(this._templatePath) && !_.isEmpty(fs.readdirSync(this._templatePath))) {
+            logger.debug('using cached template');
+            return callback();
+        }
+        logger.info(`clone project template into "${ this._templatePath }"`);
+        const git = simplegit()
+            .outputHandler((cmd, stdout, stderr) => {
+                logger.debug(cmd);
+                stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
+                stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+            });
+        async.auto({
+            clone: (callback) => {
+                fs.ensureDirSync(this._workDir);
+                git.clone(this._template, this._templatePath)
+                    .then(() => callback());
+            }
+        }, (err) => callback(err));
+    }
+
+    public runCommand(callback: Function) {
+        const argv = yargs
+            .command('$0 [target]', 'CLI tools to deploy TypeScript project.', (yargs) => {
+                return yargs
+                    .positional('target', {
+                        describe: 'Target deploy path.',
+                        type: 'string'
+                    })
+                    .options({
+                        name: {
+                            describe: 'Project name.',
+                            type: 'string'
+                        },
+                        verbose: {
+                            alias: 'v',
+                            describe: 'Show debug info.',
+                            type: 'boolean'
+                        }
+                    });
+            }, (argv) => {
+                async.auto({
+                    template: (callback) => this.prepareTemplate(callback),
+                    deploy: ['template', (results, callback) => {
+                        new DeployOperations(argv, this._templatePath)
+                            .deployWithNpm(callback);
+                    }]
+                }, (err) => callback(err));
+            })
+            .command('config set <key> <value>', 'Config template starter options.', (yargs) => {
+                return yargs
+                    .positional('key', {
+                        describe: 'The key to set value at.',
+                        type: 'string'
+                    })
+                    .positional('value', {
+                        describe: 'The value to set.',
+                        type: 'string'
+                    });
+            }, (argv) => {
+                // check command
+                if (!argv.set && _.get(argv, ['_', 0]) === 'config') {
+                    return;
+                }
+                this._config.setConfig(argv.key, argv.value, callback);
+            })
+            .scriptName(this._name)
+            .version(pkg.version)
+            .detectLocale(false)
+            .argv;
+        if (argv.v) {
             logger.setLevel(LogLevel.debug);
         }
     }
 
-    public deploy(callback: Function) {
-        this._prompt(getDeployQuestions(this._args))
-            .then((answers: DeployConf) => {
-                answers = _.defaults({
-                    name: this._args.name,
-                    workdir: this._args.target
-                }, answers);
-                this._deployConf = answers;
-                if (!answers.confirm) {
-                    return callback();
-                }
-                project.initialize(answers, callback);
-            });
-    }
-
-    public npmInstall(callback: Function) {
-        this._prompt(npmInstallQuestions)
-            .then((answers: NpmInstallConf) => {
-                if (answers.npm === false) {
-                    logger.info('Skip npm install by user.')
-                    return callback();
-                }
-                project.npmInitialize(this._deployConf, callback);
-            });
-    }
-
-    public run() {
+    public run (callback: Function) {
         async.auto({
-            deploy: (callback) => {
-                this.deploy(callback);
-            },
-            npm: ['deploy', (results, callback) => {
-                if (!this._deployConf.confirm) {
-                    return callback();
-                }
-                this.npmInstall(callback);
+            config: (callback) => this.initConfig(callback),
+            runCommand: ['config', (results, callback) => {
+                this.runCommand(callback);
             }]
-        }, (err) => {
-            if (err) {
-                logger.error(err);
-                return process.exit(1);
-            }
-            return process.exit(0);
-        });
+        }, (err) => callback(err));
     }
 }
 

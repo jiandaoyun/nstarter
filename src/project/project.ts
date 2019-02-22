@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';
 import { safeLoad } from 'js-yaml';
@@ -29,7 +29,7 @@ export class DeployProject {
     constructor(src: string) {
         this._projectSrc = src;
         const moduleConf = path.join(src, './module.conf.yml');
-        if (!fs.existsSync(moduleConf)) {
+        if (!fs.pathExistsSync(moduleConf)) {
             logger.error(`Module config file not found at "${ moduleConf }"`);
             this.isValid = false;
             return;
