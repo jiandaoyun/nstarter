@@ -2,6 +2,8 @@
 
 `nstarter` is a CLI project starter for Node.js projects. You can pack your `tools`/`packages`/`libs`/`modules`/`code-block` into a single template project, and use `nstarter` to initiate a similiar project everywhere.
 
+> ⚠ This tool is currently for private testing only.
+
 ## Requirements
 
 * node.js >= 8.0

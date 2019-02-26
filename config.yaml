@@ -1,9 +1,0 @@
-project:
-  name: ts-app
-  workdir: ./
-
-database:
-  mongodb:
-    enable: true
-  redis:
-    enable: true

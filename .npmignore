@@ -4,4 +4,10 @@
 /node_modules/
 /log/
 
+/doc/
 /src/
+
+/tsconfig.json
+/tslint.json
+
+/makefile
