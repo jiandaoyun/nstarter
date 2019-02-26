@@ -10,7 +10,7 @@ interface StarterConf {
 type configKey = string | undefined;
 type configValue = string | undefined;
 
-const DEFAULT_TEMPLATE = 'git@git.huhamhire.com:huhamhire/ts-express-template.git';
+const DEFAULT_TEMPLATE = 'https://github.com/jiandaoyun/nstarter-ts-express.git';
 
 export class Config {
     private readonly _confName = 'config.json';
