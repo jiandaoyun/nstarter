@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import async from 'async';
-import simplegit from 'simple-git/promise';
+import simplegit, { outputHandler } from 'simple-git/promise';
 import fs from 'fs-extra';
 import path from 'path';
 import yargs from 'yargs';
@@ -37,18 +37,21 @@ class Cli {
         return path.join(this._workDir, '_template');
     }
 
+    private get _gitHandler(): outputHandler {
+        return (cmd, stdout, stderr) => {
+            logger.debug(cmd);
+            stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
+            stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+        };
+    }
+
     public prepareTemplate(callback: Function) {
         if (fs.pathExistsSync(this._templatePath) && !_.isEmpty(fs.readdirSync(this._templatePath))) {
             logger.debug('using cached template');
             return callback();
         }
         logger.info(`clone project template into "${ this._templatePath }"`);
-        const git = simplegit()
-            .outputHandler((cmd, stdout, stderr) => {
-                logger.debug(cmd);
-                stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
-                stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
-            });
+        const git = simplegit().outputHandler(this._gitHandler);
         async.auto({
             clone: (callback) => {
                 fs.ensureDirSync(this._workDir);
@@ -58,8 +61,24 @@ class Cli {
         }, (err) => callback(err));
     }
 
+    public updateTemplate(callback: Function) {
+        if (!fs.pathExistsSync(this._templatePath) || _.isEmpty(fs.readdirSync(this._templatePath))) {
+            logger.error('could not find local template cache');
+            return callback();
+        }
+        logger.info(`update project template at "${ this._templatePath }"`);
+        const git = simplegit(this._templatePath)
+            .outputHandler(this._gitHandler);
+        async.auto({
+            update: (callback) => {
+                git.pull().then(() => callback());
+            }
+        }, (err) => callback(err));
+    }
+
     public runCommand(callback: Function) {
         const argv = yargs
+            // deploy
             .command('$0 [target]', 'CLI tools to deploy TypeScript project.', (yargs) => {
                 return yargs
                     .positional('target', {
@@ -86,6 +105,7 @@ class Cli {
                     }]
                 }, (err) => callback(err));
             })
+            // config
             .command('config set <key> <value>', 'Config template starter options.', (yargs) => {
                 return yargs
                     .positional('key', {
@@ -102,6 +122,23 @@ class Cli {
                     return;
                 }
                 this._config.setConfig(argv.key, argv.value, callback);
+            })
+            // update
+            .command('update template', 'Update local template cache.', (yargs) => {
+                return yargs;
+            }, (argv) => {
+                this.updateTemplate(callback);
+            })
+            // clean
+            .command('clean', 'Clear local template cache.', (yargs) => {
+                return yargs;
+            }, (argv) => {
+                if (!fs.pathExistsSync(this._templatePath)) {
+                    return callback();
+                }
+                logger.info(`clear local template at "${ this._templatePath }"`);
+                fs.emptyDirSync(this._templatePath);
+                fs.rmdir(this._templatePath, (err) => callback(err));
             })
             .scriptName(this._name)
             .version(pkg.version)

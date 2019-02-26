@@ -25,6 +25,8 @@ Commands:
   nstarter [target]                  CLI tools to deploy TypeScript project.
                                                                        [default]
   nstarter config set <key> <value>  Config template starter options.
+  nstarter update template           Update local template cache.
+  nstarter clean                     Clear local template cache.
 
 Positionals:
   target  Target deploy path.                                           [string]
