@@ -112,7 +112,7 @@ export class ProjectInitiator {
             if (altStart) {
                 isAlt = true;
             }
-            const altEnd = _.get(line.match(/^\s*\/{2}(#endalt)/), 1)
+            const altEnd = _.get(line.match(/^\s*\/{2}(#endalt)/), 1);
             if (altEnd) {
                 isAlt = false;
             }
@@ -166,7 +166,7 @@ export class ProjectInitiator {
             parse: ['read', (results, callback: AsyncResultCallback<any>) => {
                 return callback(null, parse(results.read));
             }]
-        }, (err, results) => callback(err, results && results.parse))
+        }, (err, results) => callback(err, results && results.parse));
     }
 
     private _writeConf(obj: object, path: string, stringify: (obj: any) => string, callback: Function) {
@@ -180,7 +180,7 @@ export class ProjectInitiator {
 
     public deployFiles(callback: Function) {
         const o = this._options;
-        const ignorePathList = [o.ignoredFiles]
+        const ignorePathList = [o.ignoredFiles];
         _.forEach(o.ignoredModules, (module) => {
             ignorePathList.push(module.files);
         });
@@ -290,8 +290,8 @@ export class ProjectInitiator {
 
     public deployProjectConf(callback: Function) {
         const o = this._options;
-        const ignoredConf = _.concat([], ..._.map(o.ignoredModules, 'config'))
-        const ignorePathList: string[][] = []
+        const ignoredConf = _.concat([], ..._.map(o.ignoredModules, 'config'));
+        const ignorePathList: string[][] = [];
         _.forEach(o.ignoredModules, (module) => {
             ignorePathList.push(module.files);
         });

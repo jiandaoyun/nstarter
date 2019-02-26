@@ -44,7 +44,7 @@ export class DeployOperations {
         this._prompt(npmInstallQuestions)
             .then((answers: NpmInstallConf) => {
                 if (answers.npm === false) {
-                    logger.info('Skip npm install by user.')
+                    logger.info('Skip npm install by user.');
                     return callback();
                 }
                 this._project.npmInitialize(this._deployConf, callback);

@@ -69,7 +69,7 @@ export class Config {
                 break;
             default:
                 break;
-        };
+        }
     }
 
     public getTemplate(): string {

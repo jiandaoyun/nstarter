@@ -107,7 +107,7 @@ export class DeployProject {
                 APP_NAME: options.name,
                 YEAR: moment().year()
             },
-            ignoredModules: ignoredModules,
+            ignoredModules,
             ignoredFiles: this._options.ignore_files
         });
         initiator.deploy(callback);

@@ -63,7 +63,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
         when: !args.target,
         validate: (path: string) => {
             if (_.isEmpty(path)) {
-                return "param should not be empty.";
+                return 'param should not be empty.';
             }
             if (!fs.pathExistsSync(path)) {
                 return true;
@@ -97,7 +97,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
                     }
                     return;
                 });
-            })
+            });
             return check;
         }
     },

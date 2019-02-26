@@ -14,7 +14,7 @@ import { Config } from '../config';
 
 export {
     DeployConf
-}
+};
 
 class Cli {
     private readonly _name = 'nstarter';
