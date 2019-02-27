@@ -1,49 +1,52 @@
 {
-    "name": "nstarter",
-    "description": "Starter tool for node projects with template.",
-    "version": "0.1.0-beta",
-    "repository": {
-        "type": "git",
-        "url": ""
-    },
-    "license": "MIT",
-    "bin": {
-        "nstarter": "./dist/index.js"
-    },
-    "scripts": {
-        "prestart": "tsc --build tsconfig.json",
-        "start": "node ./dist/index.js",
-        "tslint": "tslint --project ./"
-    },
-    "dependencies": {
-        "async": "^2.6.2",
-        "fs-extra": "^7.0.1",
-        "glob": "^7.1.3",
-        "inquirer": "^6.2.0",
-        "js-yaml": "^3.12.1",
-        "lodash": "^4.17.11",
-        "moment-timezone": "^0.5.21",
-        "shelljs": "^0.8.2",
-        "simple-git": "^1.107.0",
-        "winston": "^3.2.1",
-        "winston-daily-rotate-file": "^3.7.0",
-        "winston-transport": "^4.3.0",
-        "yargs": "^13.2.1"
-    },
-    "devDependencies": {
-        "@types/async": "^2.4.1",
-        "@types/fs-extra": "^5.0.5",
-        "@types/glob": "^7.1.1",
-        "@types/inquirer": "0.0.43",
-        "@types/js-yaml": "^3.12.0",
-        "@types/lodash": "^4.14.117",
-        "@types/moment-timezone": "^0.5.9",
-        "@types/yargs": "^12.0.9",
-        "tslint": "^5.11.0",
-        "typescript": "^3.3.1"
-    },
-    "engines": {
-        "node": ">=8.0 <11.0",
-        "npm": ">=4.0"
-    }
+  "name": "nstarter",
+  "description": "Starter tool for node projects with template.",
+  "version": "0.1.0-beta2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiandaoyun/nstarter"
+  },
+  "license": "MIT",
+  "bin": {
+    "nstarter": "./dist/index.js"
+  },
+  "scripts": {
+    "prestart": "tsc --build tsconfig.json",
+    "start": "node ./dist/index.js",
+    "tslint": "tslint --project ./"
+  },
+  "keywords": [
+    "project starter", "node.js", "typescript", "nstarter", "starter", "template"
+  ],
+  "dependencies": {
+    "async": "^2.6.2",
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.3",
+    "inquirer": "^6.2.0",
+    "js-yaml": "^3.12.1",
+    "lodash": "^4.17.11",
+    "moment-timezone": "^0.5.21",
+    "shelljs": "^0.8.2",
+    "simple-git": "^1.107.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.7.0",
+    "winston-transport": "^4.3.0",
+    "yargs": "^13.2.1"
+  },
+  "devDependencies": {
+    "@types/async": "^2.4.1",
+    "@types/fs-extra": "^5.0.5",
+    "@types/glob": "^7.1.1",
+    "@types/inquirer": "0.0.43",
+    "@types/js-yaml": "^3.12.0",
+    "@types/lodash": "^4.14.117",
+    "@types/moment-timezone": "^0.5.9",
+    "@types/yargs": "^12.0.9",
+    "tslint": "^5.11.0",
+    "typescript": "^3.3.1"
+  },
+  "engines": {
+    "node": ">=8.0 <11.0",
+    "npm": ">=4.0"
+  }
 }
