@@ -72,6 +72,8 @@ The local config file will be located at `~/.nstarter/config.json`.
 
 ## Templating
 
+You can always create a new custom template project following the templating rule of `nstarter`. A template project could pack whatever *libraries*/*stack*/*code*/*document*/*structure* which you need to start with, and can be build into your personal swiss army knife to generate new projects.
+
 For details to create your own project template, please read more about [templating](./doc/templating.md).
 
 
