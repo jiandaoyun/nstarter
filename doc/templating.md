@@ -8,7 +8,7 @@
 | `module.conf.yml` | ✔ | Module description file of the template project. |
 | `template/` | ✔ | Template project root directory. |
 | `template/package.json` | ✔ | Npm package description for template. |
-| `template/conf.d/*.(yaml|json)` || Project configuration files. (optional) |
+| `template/conf.d/*` || Project configuration files. (optional) |
 | `template/config.schema.json` || Project configuration shema. (optional) |
 | `template/README.md` || Template `README` file. (opitonal) |
 | `template/.editorconfig` || Template editor configuration. (opitonal) |
