@@ -27,7 +27,7 @@ export class DeployProject {
     private _moduleMap: Record<string, ProjectModule> = {};
 
     constructor(src: string) {
-        this._projectSrc = src;
+        this._projectSrc = path.join(src, './template/');
         const moduleConf = path.join(src, './module.conf.yml');
         if (!fs.pathExistsSync(moduleConf)) {
             logger.error(`Module config file not found at "${ moduleConf }"`);
