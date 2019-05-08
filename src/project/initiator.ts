@@ -97,12 +97,12 @@ export class ProjectInitiator {
         const moduleStack: string[] = [];
         reader.on('line', (line) => {
             // check project module
-            const moduleStart = _.get(line.match(/^\s*\/{2}#module\s+(\w+)$/), 1);
+            const moduleStart = _.get(line.match(/^\s*\/{2}#module\s+([\w|]+)$/), 1);
             if (moduleStart && this._isModuleIgnored(moduleStart)) {
                 moduleStack.push(moduleStart);
                 isIgnored = true;
             }
-            const moduleEnd = _.get(line.match(/^\s*\/{2}#endmodule\s+(\w+)$/), 1);
+            const moduleEnd = _.get(line.match(/^\s*\/{2}#endmodule\s+([\w|]+)$/), 1);
             const moduleIdx = _.findLastIndex(moduleStack, (item) => item === moduleEnd);
             if (moduleEnd && moduleIdx !== -1) {
                 _.pullAt(moduleStack, moduleIdx);
@@ -179,9 +179,9 @@ export class ProjectInitiator {
         // support share code block between multiple modules
         const modules = module.split('|');
         let isIgnored = true;
-        _.forEach(modules, () => {
+        _.forEach(modules, (name) => {
             // if one module is not ignored, then the code block is not ignored
-            if (!this._ignoredModuleSet.has(module)) {
+            if (!this._ignoredModuleSet.has(name)) {
                 isIgnored = false;
                 return false;
             }
