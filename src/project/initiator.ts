@@ -15,6 +15,7 @@ interface InitiatorConf {
     source: string,
     target: string,
     params: Record<string, string | number>,
+    selectedModules: ProjectModule[],
     ignoredModules: ProjectModule[],
     ignoredFiles: string[]
 }
@@ -96,12 +97,12 @@ export class ProjectInitiator {
         const moduleStack: string[] = [];
         reader.on('line', (line) => {
             // check project module
-            const moduleStart = _.get(line.match(/^\s*\/{2}#module\s+(\w+)$/), 1);
+            const moduleStart = _.get(line.match(/^\s*\/{2}#module\s+([\w|]+)$/), 1);
             if (moduleStart && this._isModuleIgnored(moduleStart)) {
                 moduleStack.push(moduleStart);
                 isIgnored = true;
             }
-            const moduleEnd = _.get(line.match(/^\s*\/{2}#endmodule\s+(\w+)$/), 1);
+            const moduleEnd = _.get(line.match(/^\s*\/{2}#endmodule\s+([\w|]+)$/), 1);
             const moduleIdx = _.findLastIndex(moduleStack, (item) => item === moduleEnd);
             if (moduleEnd && moduleIdx !== -1) {
                 _.pullAt(moduleStack, moduleIdx);
@@ -175,15 +176,35 @@ export class ProjectInitiator {
     }
 
     private _isModuleIgnored(module: string): boolean {
-        return this._ignoredModuleSet.has(module);
+        // support share code block between multiple modules
+        const modules = module.split('|');
+        let isIgnored = true;
+        _.forEach(modules, (name) => {
+            // if one module is not ignored, then the code block is not ignored
+            if (!this._ignoredModuleSet.has(name)) {
+                isIgnored = false;
+                return false;
+            }
+            return;
+        });
+        return isIgnored;
+    }
+
+    private _getIgnoredPathList() {
+        const o = this._options;
+        // allow files to be shared across multiple modules
+        const ignorePathList = _.flatten([
+            o.ignoredFiles,
+            ..._.map(o.ignoredModules, (module) => module.files)
+        ]);
+        const selectedPathList = _.flatten([
+            ..._.map(o.selectedModules, (module) => module.files)
+        ]);
+        return _.difference(ignorePathList, selectedPathList);
     }
 
     public deployFiles(callback: Function) {
         const o = this._options;
-        const ignorePathList = [o.ignoredFiles];
-        _.forEach(o.ignoredModules, (module) => {
-            ignorePathList.push(module.files);
-        });
         async.auto<{
             search: string[],
             group: Dictionary<string[]>,
@@ -198,10 +219,11 @@ export class ProjectInitiator {
                     root: o.source,
                     mark: true,
                     dot: true,
-                    ignore: _.concat([
+                    ignore: [
                         'package.json',
-                        'conf.d/*'
-                    ], ...ignorePathList)
+                        'conf.d/*',
+                        ...this._getIgnoredPathList()
+                    ]
                 }, callback);
             },
             group: ['search', (results, callback: AsyncResultCallback<Dictionary<string[]>>) => {
@@ -273,11 +295,25 @@ export class ProjectInitiator {
         }, (err) => callback(err));
     }
 
+    private _getIgnoredPackages() {
+        const o = this._options;
+        const ignoredPackages = _.flatten([..._.map(o.ignoredModules, (module) => module.packages)]),
+            selectedPackages = _.flatten([..._.map(o.selectedModules, (module) => module.packages)]);
+        return _.difference(ignoredPackages, selectedPackages);
+    }
+
+    private _getIgnoredScripts() {
+        const o = this._options;
+        const ignoredScripts = _.flatten([..._.map(o.ignoredModules, (module) => module.scripts)]),
+            selectedScripts = _.flatten([..._.map(o.selectedModules, (module) => module.scripts)]);
+        return _.difference(ignoredScripts, selectedScripts);
+    }
+
     public deployPackageConf(callback: Function) {
         const o = this._options;
         this._deploySettings('package.json', (pkg: any) => {
-            const ignoredPackages = _.concat([], ..._.map(o.ignoredModules, 'packages'));
-            const ignoredScripts = _.concat([], ..._.map(o.ignoredModules, 'scripts'));
+            const ignoredPackages = this._getIgnoredPackages(),
+                ignoredScripts = this._getIgnoredScripts();
             if (o.params.APP_NAME) {
                 pkg.name = o.params.APP_NAME;
             }

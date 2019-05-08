@@ -93,11 +93,14 @@ export class DeployProject {
     }
 
     public initialize(options: DeployConf, callback: Function) {
-        const selectedModules = new Set(options.modules);
-        const ignoredModules: ProjectModule[] = [];
+        const selected = new Set(options.modules);
+        const ignoredModules: ProjectModule[] = [],
+            selectedModules: ProjectModule[] = [];
         _.forEach(this._moduleMap, (module, name) => {
-            if (!selectedModules.has(name)) {
+            if (!selected.has(name)) {
                 ignoredModules.push(module);
+            } else {
+                selectedModules.push(module);
             }
         });
         const initiator = new ProjectInitiator({
@@ -107,6 +110,7 @@ export class DeployProject {
                 APP_NAME: options.name,
                 YEAR: moment().year()
             },
+            selectedModules,
             ignoredModules,
             ignoredFiles: this._options.ignore_files
         });
