@@ -176,7 +176,18 @@ export class ProjectInitiator {
     }
 
     private _isModuleIgnored(module: string): boolean {
-        return this._ignoredModuleSet.has(module);
+        // support share code block between multiple modules
+        const modules = module.split('|');
+        let isIgnored = true;
+        _.forEach(modules, () => {
+            // if one module is not ignored, then the code block is not ignored
+            if (!this._ignoredModuleSet.has(module)) {
+                isIgnored = false;
+                return false;
+            }
+            return;
+        });
+        return isIgnored;
     }
 
     private _getIgnoredPathList() {
