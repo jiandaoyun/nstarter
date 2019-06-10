@@ -63,7 +63,7 @@ export class ProjectInitiator {
 
     private _copyFile(path: string, callback: Function) {
         const o = this._options;
-        const isCodeFile = path.match(/\.[tj]s$/);
+        const isCodeFile = path.match(/(\.[tj]s|\.sh|makefile)$/i);
         if (_.isEmpty(o.params) || isCodeFile) {
             // no need to replace custom params
             fs.copyFile(
