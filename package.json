@@ -1,7 +1,7 @@
 {
   "name": "nstarter-circular",
   "description": "Circular dependency check tool for nstarter projects",
-  "version": "0.1.0-beta",
+  "version": "0.1.2-beta",
   "repository": {
     "type": "git",
     "url": "https://github.com/jiandaoyun/nstarter-circular"
