@@ -1,7 +1,7 @@
 retract:
 	npm unpublish --force
 
-upload: build
+upload:
 	npm publish
 
 .PHONY: retract upload

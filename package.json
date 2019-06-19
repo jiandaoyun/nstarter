@@ -8,10 +8,10 @@
   },
   "license": "MIT",
   "bin": {
-    "nstarter-circular": "./dist/cli.js"
+    "nstarter-circular": "./bin/cli.js"
   },
   "scripts": {
-    "start": "node ./dist/index.js"
+    "start": "node ./bin/cli.js"
   },
   "keywords": [
     "nstarter",
