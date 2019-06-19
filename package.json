@@ -1,0 +1,28 @@
+{
+  "name": "nstarter-circular",
+  "description": "Circular dependency check tool for nstarter projects",
+  "version": "0.1.0-beta",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiandaoyun/nstarter-circular"
+  },
+  "license": "MIT",
+  "bin": {
+    "nstarter-circular": "./dist/cli.js"
+  },
+  "scripts": {
+    "start": "node ./dist/index.js"
+  },
+  "keywords": [
+    "nstarter",
+    "circular"
+  ],
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "escape-string-regexp": "^2.0.0",
+    "lodash": "^4.17.11",
+    "madge": "^3.4.4",
+    "ora": "^3.4.0"
+  }
+}
