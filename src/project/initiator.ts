@@ -58,7 +58,8 @@ export class ProjectInitiator {
     }
 
     private _createDirectory(path: string, callback: Function) {
-        return fs.ensureDir(this._getTargetPath(path), undefined, (err?: Error) => callback(err));
+        fs.ensureDirSync(this._getTargetPath(path));
+        return callback();
     }
 
     private _copyFile(path: string, callback: Function) {
