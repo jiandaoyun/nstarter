@@ -10,8 +10,8 @@
         "moduleResolution": "node",
         "sourceMap": true,
         "declaration": false,
-        "outDir": "dist",
-        "baseUrl": "src",
+        "outDir": "../../dist",
+        "baseUrl": "./src",
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
         "forceConsistentCasingInFileNames": true,
@@ -25,14 +25,14 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "typeRoots": [
-            "./typings",
-            "./node_modules/@types"
+            "../../typings",
+            "../../node_modules/@types"
         ]
     },
     "include": [
-        "src/**/*"
+        "../../src/**/*"
     ],
     "exclude": [
-        "node_modules"
+        "../../node_modules"
     ]
 }
