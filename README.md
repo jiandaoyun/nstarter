@@ -10,7 +10,7 @@ In your `tsconfig.json` file.
 
 ```json
 {
-    "extends": "nstarter-config",
+    "extends": "nstarter-tsconfig",
     // Override config here.
     "compilerOptions": {
 
