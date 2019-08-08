@@ -1,7 +1,7 @@
 ## Install
 
 ```bash
-npm install nstarter-tsconfig --develop
+npm install nstarter-tsconfig --save-dev
 ```
 
 ## Usage
