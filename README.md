@@ -8,7 +8,7 @@ npm install nstarter-tsconfig --save-dev
 
 In your `tsconfig.json` file.
 
-```json
+```javascript
 {
     "extends": "nstarter-tsconfig",
     // Override config here.
