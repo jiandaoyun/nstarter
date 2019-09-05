@@ -21,7 +21,7 @@ interface InitiatorConf {
 }
 
 export class ProjectInitiator {
-    private _options: InitiatorConf;
+    private readonly _options: InitiatorConf;
     private readonly _concurrency = 10;
     private _ignoredModuleSet: Set<string>;
 
@@ -58,7 +58,8 @@ export class ProjectInitiator {
     }
 
     private _createDirectory(path: string, callback: Function) {
-        return fs.ensureDir(this._getTargetPath(path), (err) => callback(err));
+        fs.ensureDirSync(this._getTargetPath(path));
+        return callback();
     }
 
     private _copyFile(path: string, callback: Function) {
@@ -77,6 +78,7 @@ export class ProjectInitiator {
                 input: fs.createReadStream(this._getSourcePath(path))
             });
             const output = fs.createWriteStream(this._getTargetPath(path));
+            _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
             reader.on('line', (line) => {
                 output.write(_.template(line)(o.params) + `\n`);
             });
@@ -135,7 +137,7 @@ export class ProjectInitiator {
             output.write(`${line}\n`);
         });
         reader.on('close', () => {
-            output.close();
+            output.end();
             return callback();
         });
     }
