@@ -1,11 +1,15 @@
 {
   "name": "nstarter-core",
   "version": "0.3.0-alpha",
-  "description": "",
+  "description": "The core package for nstarter projects.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/jiandaoyun/nstarter-core"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src"
   },
   "main": "./dist",
   "types": "./dist",
