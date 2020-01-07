@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+lint/
+
+package-lock.json
+
+.vscode/
+.idea/
+
+*.code-workspace
