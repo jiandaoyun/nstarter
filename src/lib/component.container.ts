@@ -26,6 +26,7 @@ export function registerComponent(target: Constructor) {
             componentContainer.bind(id).to(injectable()(target)).inTransientScope();
             break;
         default:
+            // 使用 componentContainer 初始化时候的 scope，默认：Singleton
             componentContainer.bind(id).to(injectable()(target));
             break;
     }
