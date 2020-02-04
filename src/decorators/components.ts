@@ -12,8 +12,8 @@ const { lazyInject } = getDecorators(componentContainer);
  * @param scope
  */
 export function provideComponent<T extends Constructor>(
-    identifier?: string | symbol,
-    scope?: BindingScope
+    scope?: BindingScope,
+    identifier?: string | symbol
 ) {
     return (constructor: T) => {
         let id = identifier,
