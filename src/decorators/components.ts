@@ -1,14 +1,20 @@
+import { interfaces } from 'inversify';
 import _ from 'lodash';
 import getDecorators from 'inversify-inject-decorators';
 import { componentContainer, componentMetaKey } from '../lib';
+import BindingScope = interfaces.BindingScope;
 
 const { lazyInject } = getDecorators(componentContainer);
 
 /**
  * 组件定义装饰器
  * @param identifier
+ * @param scope
  */
-export function provideComponent<T extends Constructor>(identifier?: string | symbol) {
+export function provideComponent<T extends Constructor>(
+    scope?: BindingScope,
+    identifier?: string | symbol
+) {
     return (constructor: T) => {
         let id = identifier,
             name = _.toString(identifier);
@@ -23,6 +29,7 @@ export function provideComponent<T extends Constructor>(identifier?: string | sy
         Reflect.defineMetadata(componentMetaKey, {
             id,
             originName: constructor.name,
+            scope
         }, constructor);
     };
 }

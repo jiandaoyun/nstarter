@@ -1,4 +1,4 @@
-import { Container, injectable } from 'inversify';
+import { BindingScopeEnum, Container, injectable } from 'inversify';
 import 'reflect-metadata';
 
 export const componentContainer = new Container({
@@ -13,8 +13,23 @@ export const componentMetaKey = 'ioc:component';
  * @param target - 被注册服务的构造函数
  */
 export function registerComponent(target: Constructor) {
-    const identifier = Reflect.getMetadata(componentMetaKey, target);
-    componentContainer.bind(identifier.id).to(injectable()(target));
+    const { id, scope } = Reflect.getMetadata(componentMetaKey, target);
+    switch (scope) {
+        case BindingScopeEnum.Request:
+            componentContainer.bind(id).to(injectable()(target)).inRequestScope();
+            break;
+        case BindingScopeEnum.Singleton:
+            // 单例
+            componentContainer.bind(id).to(injectable()(target)).inSingletonScope();
+            break;
+        case BindingScopeEnum.Transient:
+            componentContainer.bind(id).to(injectable()(target)).inTransientScope();
+            break;
+        default:
+            // 使用 componentContainer 初始化时候的 scope，默认：Singleton
+            componentContainer.bind(id).to(injectable()(target));
+            break;
+    }
 }
 
 /**
