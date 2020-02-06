@@ -1,2 +1,2 @@
 export { Logger } from './default.logger';
-export { RequestLogger } from './request.logger';
+export { RequestLogger, IRequestMeta, IRequestMetaFormatter } from './request.logger';
