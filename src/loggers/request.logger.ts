@@ -2,6 +2,7 @@ import _ from 'lodash';
 import winston, { Logger as WinstonLogger } from 'winston';
 import Transport from 'winston-transport';
 import { RequestHandler, Request, Response } from 'express';
+import { LogLevel } from '../constants';
 
 /**
  * 请求日志记录
@@ -26,7 +27,7 @@ export interface IRequestMetaFormatter {
 }
 
 let metaFormatter: IRequestMetaFormatter =
-    (req, reqs, meta) => meta;
+    (req, res, meta) => meta;
 
 export class RequestLogger {
     private static _formatRequest(req: Request, res: Response, duration: string) {
@@ -64,6 +65,10 @@ export class RequestLogger {
 
     public static log(msg: string, meta?: object) {
         requestLogger.log('info', msg, meta);
+    }
+
+    public static logError(level: LogLevel, err: Error, extra?: object) {
+        requestLogger.log(level, err.message, { ...extra, err });
     }
 
     public static get middleware(): RequestHandler {
