@@ -1,5 +1,5 @@
 export enum RunEnv {
-    dev = 'develop',
+    develop = 'develop',
     test = 'test',
     production = 'production'
 }
