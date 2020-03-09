@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import winston, { Logger as WinstonLogger } from 'winston';
 import Transport from 'winston-transport';
 
@@ -32,7 +33,14 @@ export class Logger {
             logger.log(level, msg, meta);
         } else {
             // log error
-            logger.log(level, msg.message, { ...meta, error: msg });
+            logger.log(level, msg.message, {
+                ...meta,
+                error: msg,
+                extra: {
+                    ..._.get(msg, 'meta'),
+                    ...meta
+                }
+            });
         }
     }
 
