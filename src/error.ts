@@ -5,6 +5,7 @@ interface ErrorOptions {
     meta?: any;
     httpCode?: number;
     wrapper?: Function;
+    message?: string;
 }
 export interface ErrorBuilder {
     (code: number, level?: LogLevel, options?: ErrorOptions): Error;
@@ -29,14 +30,16 @@ export class NsError extends Error {
         super();
         this.name = name || this.constructor.name;
         this.code = code || 1;
-        this.message = errorMessages[code] || 'Unknown Error';
         this.level = level || LogLevel.error;
-        let trace = this.constructor;
+        let trace = this.constructor,
+            message;
         if (options) {
             this.meta = options.meta;
             this.httpCode = options.httpCode || httpStatus.BAD_REQUEST;
             trace = options.wrapper || this.constructor;
+            message = options.message;
         }
+        this.message = message || errorMessages[code] || 'Unknown Error';
         Error.captureStackTrace(this, trace);
     }
 }
