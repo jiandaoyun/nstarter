@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import winston, { Logger as WinstonLogger, format } from 'winston';
+import winston, { Logger as WinstonLogger } from 'winston';
 import Transport from 'winston-transport';
 
 const levelConf = {
