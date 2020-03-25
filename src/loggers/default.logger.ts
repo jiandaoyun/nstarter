@@ -30,15 +30,18 @@ export class Logger {
     private static _log(level: string, msg: LogMessage, meta?: object) {
         if (typeof msg === 'string') {
             // log string
-            logger.log(level, msg, meta);
+            logger.log(level, msg, {
+                metadata: meta
+            });
         } else {
             // log error
             logger.log(level, msg.message, {
-                ...meta,
-                error: msg,
-                extra: {
-                    ..._.get(msg, 'meta'),
-                    ...meta
+                metadata: {
+                    ...meta,
+                    error: msg,
+                    extra: {
+                        ..._.get(msg, 'meta')
+                    }
                 }
             });
         }

@@ -64,11 +64,15 @@ export class RequestLogger {
     }
 
     public static log(msg: string, meta?: object) {
-        requestLogger.log('info', msg, meta);
+        requestLogger.log('info', msg, {
+            metadata: meta
+        });
     }
 
     public static logError(level: LogLevel, err: Error, extra?: object) {
-        requestLogger.log(level, err.message, { ...extra, err });
+        requestLogger.log(level, err.message, {
+            metadata: { ...extra, err }
+        });
     }
 
     public static get middleware(): RequestHandler {
