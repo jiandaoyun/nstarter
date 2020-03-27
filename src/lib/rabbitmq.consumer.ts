@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import { CustomProps, DefaultConfig, DelayLevel, RetryMethod } from '../constants';
-import { IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
+import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
+import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 import { promisify } from 'util';
 import async from 'async';

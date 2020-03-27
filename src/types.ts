@@ -4,9 +4,10 @@ import {
     MessagePropertyHeaders,
     Options
 } from 'amqplib';
-import { DelayLevel, Priority } from './constants';
+import { Priority } from './constants';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
+export type DelayLevel = string;
 
 export interface RabbitMQConfig {
     readonly brokers: {

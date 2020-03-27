@@ -11,6 +11,8 @@
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
+  "main": "./dist",
+  "types": "./src",
   "dependencies": {
     "amqp-connection-manager": "^3.2.0",
     "amqplib": "^0.5.5",
