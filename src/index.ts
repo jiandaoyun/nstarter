@@ -4,3 +4,4 @@ export { IQueueProducer, queueProducerFactory } from './lib/rabbitmq.producer';
 export { IQueueConsumer, queueConsumerFactory, queueConsumerRegistry } from './lib/rabbitmq.consumer';
 
 export * from './constants';
+export * from './types';

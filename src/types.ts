@@ -8,6 +8,20 @@ import { DelayLevel, Priority } from './constants';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
+export interface RabbitMQConfig {
+    readonly brokers: {
+        readonly host: string,
+        readonly port: number
+    }[];
+    readonly protocol: string;
+    readonly user: string;
+    readonly password: string;
+    readonly vhost: string;
+    // 链接配置
+    readonly heartbeatInterval?: number;
+    readonly reconnectInterval?: number;
+}
+
 /**
  * 消息体
  */
