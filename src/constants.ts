@@ -31,6 +31,16 @@ export enum RetryMethod {
 }
 
 /**
+ * 消息 ack 策略
+ */
+export enum AckPolicy {
+    // 执行前
+    before = 'before',
+    // 执行后
+    after = 'after'
+}
+
+/**
  * RabbitMQ 内置参数、headers
  */
 export enum RabbitProps {

@@ -1,10 +1,10 @@
 import _ from 'lodash';
+import async from 'async';
+import { promisify } from 'util';
 
-import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
+import { AckPolicy, CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
-import { promisify } from 'util';
-import async from 'async';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
@@ -12,16 +12,15 @@ export interface IConsumerConfig<T> {
     retryTimes?: number;
     retryDelay?: DelayLevel;
     retryMethod?: RetryMethod;
+    ackPolicy?: AckPolicy;
     run(message: IQueueMessage<T>): Promise<void>;
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
-    republish?(content: IQueuePayload<T>,options?: Partial<IProduceOptions>): Promise<void>;
-    error?(err: Error): void;
+    republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
+    error?(err: Error, message: IQueueMessage<T>): void;
 }
 
 export interface IQueueConsumer<T> {
     start(): Promise<void>;
-    run(message: IQueueMessage<T>): Promise<void>;
-    retry(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
     stop(): Promise<void>;
 }
 
@@ -38,6 +37,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             retryTimes: DefaultConfig.RetryTimes,
             retryDelay: DefaultConfig.RetryDelay,
             retryMethod: RetryMethod.retry,
+            ackPolicy: AckPolicy.after,
             ...config
         };
     }
@@ -53,8 +53,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     /**
      * 任务执行方法
      */
-    public async run(message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'run', message);
+    private async _run(message: IQueueMessage<T>): Promise<void> {
+        return _.invoke(this._options, 'run', [message]);
     }
 
     /**
@@ -62,8 +62,28 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param err
      * @param message
      */
-    public async retry(err: Error | null, message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'retry', message);
+    private async _retry(err: Error | null, message: IQueueMessage<T>): Promise<void> {
+        return _.invoke(this._options, 'retry', [err, message]);
+    }
+
+    /**
+     * 重新插入队列
+     * @param content
+     * @param options
+     * @private
+     */
+    private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
+        return _.invoke(this._options, 'republish', [content, options]);
+    }
+
+    /**
+     * 异常处理调用入口
+     * @param err
+     * @param message
+     * @private
+     */
+    private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
+        return _.invoke(this._options, 'error', [err, message]);
     }
 
     /**
@@ -73,7 +93,11 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         await this._queue.subscribe(async (message: IQueueMessage<T>) => {
             try {
-                await this.run(message);
+                if (o.ackPolicy === AckPolicy.before) {
+                    // 执行前 ack
+                    this._queue.ack(message);
+                }
+                await this._run(message);
             } catch (err) {
                 if (o.retryMethod === RetryMethod.republish) {
                     return this._ackOrRepublish(err, message);
@@ -81,8 +105,10 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                     // 默认执行本地 retry
                     return this._ackOrRetry(err, message)
                 }
+            } finally {
+                // 确保消费过程 message 被 ack
+                this._queue.ack(message);
             }
-            return this._queue.ack(message);
         }, { noAck: false })
     }
 
@@ -92,7 +118,6 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     public async stop(): Promise<void> {
         return this._queue.close();
     }
-
 
     /**
      * 本地重试执行
@@ -109,7 +134,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 return callback(err);
             }
             async.retry(o.retryTimes, async () => {
-                await this.retry(err, message);
+                await this._retry(err, message);
             }, callback);
         })();
         return this._queue.ack(message);
@@ -133,11 +158,9 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
         const pushDelay = headers[CustomProps.consumeRetryDelay],
             triedTimes = headers[CustomProps.consumeRetryTimes] || 0;
-        if (!o.retryTimes || triedTimes >= o.retryTimes || !_.isFunction(o.republish)) {
+        if (!o.retryTimes || triedTimes >= o.retryTimes) {
             // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
-            if (_.isFunction(o.error)) {
-                o.error(err);
-            }
+            this._error(err, message);
             return this._queue.ack(message);
         }
         // 配置了 producer，调整重试参数，添加回队列，并删除原消息
@@ -149,19 +172,18 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 },
                 _.pick<IProduceHeaders>(headers, _.values(CustomProps))
             );
-            const args = [message.content, {
+            this._republish(message.content, {
                 mandatory: true,
                 persistent: true,
                 deliveryMode: true,
                 headers: publishHeaders,
                 pushDelay
-            }];
-            _.invoke(o, 'republish', args);
-        } catch (e) {
-            return this._queue.nack(message);
+            });
+        } catch (err) {
+            this._error(err, message);
+        } finally {
+            this._queue.ack(message);
         }
-        // 重试成功
-        return this._queue.ack(message);
     }
 }
 
