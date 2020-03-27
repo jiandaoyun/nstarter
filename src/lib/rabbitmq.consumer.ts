@@ -6,7 +6,7 @@ import { RabbitMqQueue } from './rabbitmq.queue';
 import { promisify } from 'util';
 import async from 'async';
 
-export const queueConsumerRegistry: IQueueConsumer<any>[] = [];
+const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
 export interface IConsumerConfig<T> {
     retryTimes?: number;
@@ -172,3 +172,13 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
  */
 export const queueConsumerFactory = <T>(queue: RabbitMqQueue<T>, options: IConsumerConfig<T>):
     RabbitMqConsumer<T> => new RabbitMqConsumer<T>(queue, options);
+
+/**
+ * 队列消费者启动方法
+ */
+export const startQueueConsumers = async(): Promise<void> => {
+    await Promise.all(_.map(queueConsumerRegistry,
+        (consumer: IQueueConsumer<any>) => consumer.start()
+    ));
+    return;
+};
