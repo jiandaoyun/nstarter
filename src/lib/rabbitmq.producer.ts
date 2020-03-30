@@ -4,8 +4,8 @@ import { Options } from 'amqplib';
 import moment from 'moment';
 import { promisify } from 'util';
 
-import { CustomProps, DefaultConfig, DelayLevel, Priority, RabbitProps } from '../constants';
-import { IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
+import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants';
+import { DelayLevel, IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 export interface IQueueProducer<T> {
@@ -34,7 +34,7 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             retryTimes: DefaultConfig.RetryTimes,
             retryDelay: DefaultConfig.RetryDelay,
             pushRetryTimes: 0,
-            pushDelay: DelayLevel.level0,
+            pushDelay: '0',
             expiration: DefaultConfig.DeliverTTL,
             ...options
         }
@@ -84,7 +84,7 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             // 设置消息过期时间（TTL），到期会自动被队列中删除，不会被消费者消费
             publishOpts.expiration = o.expiration;
         }
-        const pushDelay = options.pushDelay || o.pushDelay || DelayLevel.level0;
+        const pushDelay = options.pushDelay || o.pushDelay || '0';
         const { val, unit } = this._parseDelay(pushDelay),
             messageTtl = moment.duration(val, unit).asMilliseconds();
         if (messageTtl && _.isNumber(messageTtl)) {

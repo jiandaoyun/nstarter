@@ -4,9 +4,24 @@ import {
     MessagePropertyHeaders,
     Options
 } from 'amqplib';
-import { DelayLevel, Priority } from './constants';
+import { Priority } from './constants';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
+export type DelayLevel = string;
+
+export interface RabbitMQConfig {
+    readonly brokers: {
+        readonly host: string,
+        readonly port: number
+    }[];
+    readonly protocol: string;
+    readonly user: string;
+    readonly password: string;
+    readonly vhost: string;
+    // 链接配置
+    readonly heartbeatInterval?: number;
+    readonly reconnectInterval?: number;
+}
 
 /**
  * 消息体
