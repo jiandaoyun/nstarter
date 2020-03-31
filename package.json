@@ -1,0 +1,24 @@
+{
+  "name": "nstarter-metrics",
+  "version": "0.1.0-beta",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+  },
+  "main": "./dist",
+  "types": "./src",
+  "dependencies": {
+    "prom-client": "^11.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.3",
+    "eslint-config-nstarter": "^1.0.5",
+    "nstarter-tsconfig": "^0.1.3"
+  }
+}
