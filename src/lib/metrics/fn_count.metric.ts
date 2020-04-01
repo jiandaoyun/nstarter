@@ -1,5 +1,5 @@
-import { BaseMetric } from '../index';
 import { Counter } from 'prom-client';
+import { BaseMetric } from '../index';
 import { IFnLabels } from '../../types';
 
 class FnCountMetric extends BaseMetric<Counter> {

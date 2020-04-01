@@ -1,4 +1,4 @@
-import { MetricsMonitor } from './lib';
+import { metricsMonitor } from './lib';
 
 /**
  * 性能统计
@@ -16,7 +16,7 @@ export function profiler(minTimeMS = 0) {
                     method: propertyKey,
                     class: target.constructor.name || ''
                 };
-                MetricsMonitor.recordFunction(labels, time);
+                metricsMonitor.recordFunction(labels, time);
             }
             return result;
         };
