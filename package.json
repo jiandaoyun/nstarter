@@ -12,7 +12,7 @@
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
   "main": "./dist",
-  "types": "./src",
+  "types": "./dist",
   "dependencies": {
     "prom-client": "^11.3.0"
   },
