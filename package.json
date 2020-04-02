@@ -1,0 +1,29 @@
+{
+  "name": "nstarter-grpc",
+  "version": "0.1.1-beta",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "./dist",
+  "type": "./dist",
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+  },
+  "dependencies": {
+    "@grpc/proto-loader": "^0.5.3",
+    "grpc": "^1.24.2",
+    "lodash": "^4.17.15",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.149",
+    "eslint": "^6.8.0",
+    "eslint-config-nstarter": "^1.0.5",
+    "nstarter-tsconfig": "^0.1.3",
+    "typescript": "^3.8.3"
+  }
+}
