@@ -1,6 +1,10 @@
 import { ServerWriteableStream } from 'grpc';
 import { UnaryCallback } from './grpc.client';
 
+export interface IServerConfig {
+    port: number;
+}
+
 /**
  * server unary call handler type
  */

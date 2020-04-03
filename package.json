@@ -7,7 +7,7 @@
     "url": ""
   },
   "main": "./dist",
-  "type": "./dist",
+  "types": "./dist",
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",

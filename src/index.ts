@@ -1,10 +1,15 @@
 export * from './types';
 
-export { registerGrpcClientConfig, bindGrpcServer } from './lib';
+export {
+    registerGrpcClientConfig,
+    startGrpcServer,
+    loadProtoPackage
+} from './lib';
+
 export {
     grpcClient,
     grpcUnaryCall,
-    grpcServerStreamingCall,
+    grpcStreamingCall,
 
     grpcService,
     grpcUnaryMethod,
