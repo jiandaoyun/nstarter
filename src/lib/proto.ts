@@ -1,7 +1,8 @@
 import grpc, { Client } from 'grpc';
 import  protoLoader from '@grpc/proto-loader';
-import { IPackageLoadOptions } from '../types';
 import _ from 'lodash';
+import { IPackageLoadOptions } from '../types';
+import { DEFAULT_PKG } from '../constants';
 
 export const protoRegistry: Record<string, typeof Client> = {};
 
@@ -12,7 +13,7 @@ export const protoRegistry: Record<string, typeof Client> = {};
 export const loadProtoPackage = (options: IPackageLoadOptions) => {
     const o = {
         protoPath: '',
-        package: '',
+        package: DEFAULT_PKG,
         ...options,
         loader: {
             keepCase: true,

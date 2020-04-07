@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { StreamingCallback, UnaryCallback } from '../types';
 import { getRpcName, upperFirst } from '../utils';
-import { CLIENT_META } from '../constants';
+import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
 
 /**
@@ -10,13 +10,14 @@ import { getGrpcServiceClient } from '../lib';
  * @param pkg
  * @param service
  */
-export function grpcClient<T extends Function>(pkg: string, service?: string) {
+export function grpcClient<T extends Function>(pkg?: string, service?: string) {
     return (constructor: T) => {
+        const rpcPkg = pkg || DEFAULT_PKG;
         const target = constructor;
         const serviceName = service || getRpcName(constructor.name);
         // gRPC 客户端注册
         Reflect.defineMetadata(CLIENT_META, {
-            client: getGrpcServiceClient(pkg, serviceName)
+            client: getGrpcServiceClient(rpcPkg, serviceName)
         }, target);
     };
 }
@@ -27,16 +28,15 @@ export function grpcClient<T extends Function>(pkg: string, service?: string) {
  * @param key
  * @private
  */
-const _generateCallMethod = <T, C>(target: any, key: string) => {
-    return (conf: T, callback: C) => {
+const _callMethodFactory = <T, C>(target: any, key: string) =>
+    (conf: T, callback: C) => {
         const path = upperFirst(key);
         const { client } = Reflect.getMetadata(CLIENT_META, target);
         if (client.hasOwnProperty(path)) {
             client[path].apply(null, [conf, callback]);
         }
         return;
-    }
-};
+    };
 
 /**
  * 单参数 gRPC 调用方法装饰器
@@ -47,19 +47,19 @@ export function grpcUnaryCall<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = _generateCallMethod<T, UnaryCallback<R>>(target, key);
+        descriptor.value = _callMethodFactory<T, UnaryCallback<R>>(target, key);
     };
 }
 
 /**
- *
+ * 流式 gRPC 调用方法装饰器
  */
-export function grpcServerStreamingCall<T, R>() {
+export function grpcStreamingCall<T, R>() {
     return (
         target: any,
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = _generateCallMethod<T, StreamingCallback<R>>(target, key);
+        descriptor.value = _callMethodFactory<T, StreamingCallback<R>>(target, key);
     };
 }
