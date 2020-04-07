@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.149",
+    "@types/node": "^13.11.0",
     "eslint": "^6.8.0",
     "eslint-config-nstarter": "^1.0.5",
     "nstarter-tsconfig": "^0.1.3",
