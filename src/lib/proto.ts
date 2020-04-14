@@ -1,5 +1,5 @@
 import grpc, { Client } from 'grpc';
-import  protoLoader from '@grpc/proto-loader';
+import protoLoader from '@grpc/proto-loader';
 import _ from 'lodash';
 import { IPackageLoadOptions } from '../types';
 import { DEFAULT_PKG } from '../constants';
