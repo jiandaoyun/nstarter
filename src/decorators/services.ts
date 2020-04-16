@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import getDecorators from 'inversify-inject-decorators';
 import { serviceContainer, serviceMetaKey } from '../lib';
 
@@ -12,7 +11,7 @@ export function provideSvc<T extends Constructor>(identifier?: string | symbol) 
     return (constructor: T) => {
         let id = identifier;
         if (!id) {
-            id = _.camelCase(constructor.name);
+            id = constructor.name.toLowerCase();
         }
         Reflect.defineMetadata(serviceMetaKey, {
             id,
@@ -29,7 +28,7 @@ export function injectSvc(identifier?: string | symbol) {
     return function (target: any, key: string) {
         let id = identifier;
         if (!id) {
-            id = _.camelCase(key);
+            id = key.toLowerCase();
         }
         return lazyInject(id)(target, key);
     };

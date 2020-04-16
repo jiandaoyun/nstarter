@@ -6,7 +6,7 @@ export const componentContainer = new Container({
     autoBindInjectable: false
 });
 
-export const componentMetaKey = 'ioc:component';
+export const componentMetaKey = Symbol.for('ioc#component');
 
 /**
  * 组件对象注册工具方法

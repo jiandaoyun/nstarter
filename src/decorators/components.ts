@@ -1,5 +1,4 @@
 import { interfaces } from 'inversify';
-import _ from 'lodash';
 import getDecorators from 'inversify-inject-decorators';
 import { componentContainer, componentMetaKey } from '../lib';
 import BindingScope = interfaces.BindingScope;
@@ -13,17 +12,14 @@ const { lazyInject } = getDecorators(componentContainer);
  */
 export function provideComponent<T extends Constructor>(
     scope?: BindingScope,
-    identifier?: string | symbol
+    identifier?: string
 ) {
     return (constructor: T) => {
         let id = identifier,
-            name = _.toString(identifier);
+            name = identifier;
         if (!id) {
-            id = _.camelCase(constructor.name);
-            name = _.chain(id)
-                .replace(/component/i, '')
-                .snakeCase()
-                .valueOf();
+            id = constructor.name;
+            name = id;
         }
         constructor.prototype._name = name;
         Reflect.defineMetadata(componentMetaKey, {
@@ -42,7 +38,7 @@ export function injectComponent(identifier?: string | symbol) {
     return function (target: any, key: string) {
         let id = identifier;
         if (!id) {
-            id = _.camelCase(key);
+            id = key;
         }
         return lazyInject(id)(target, key);
     };

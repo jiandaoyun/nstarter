@@ -6,7 +6,7 @@ export const serviceContainer = new Container({
     autoBindInjectable: false
 });
 
-export const serviceMetaKey = 'ioc:service';
+export const serviceMetaKey = Symbol.for('ioc#service');
 
 /**
  * 服务对象注册方法
