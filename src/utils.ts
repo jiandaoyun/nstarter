@@ -1,8 +1,8 @@
-export function once(func: any) {
+export function once(func: Function) {
     let result: any;
     let fc: any = func;
     let n = 2;
-    return function (this: any, ...args: any[]) {
+    return function (this: Function, ...args: any[]) {
         if (--n > 0) {
             result = fc.apply(this, args)
         }
