@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import async from 'async';
 import { promisify } from 'util';
+import moment from 'moment';
 
 import { AckPolicy, CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
@@ -13,6 +14,7 @@ export interface IConsumerConfig<T> {
     retryDelay?: DelayLevel;
     retryMethod?: RetryMethod;
     ackPolicy?: AckPolicy;
+    consumeTimeout?: number;
     run(message: IQueueMessage<T>): Promise<void>;
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
     republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
@@ -34,6 +36,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     constructor(queue: RabbitMqQueue<T>, config: IConsumerConfig<T>) {
         this._queue = queue;
         this._options = {
+            consumeTimeout: 0,
             retryTimes: DefaultConfig.RetryTimes,
             retryDelay: DefaultConfig.RetryDelay,
             retryMethod: RetryMethod.retry,
@@ -157,9 +160,14 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         // 执行重试
         const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
         const pushDelay = headers[CustomProps.consumeRetryDelay],
-            triedTimes = headers[CustomProps.consumeRetryTimes] || 0;
-        if (!o.retryTimes || triedTimes >= o.retryTimes) {
-            // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
+            triedTimes = headers[CustomProps.consumeRetryTimes] || 0,
+            produceTimestamp = headers[CustomProps.produceTimestamp],
+            timeoutStamp = moment(produceTimestamp).add(o.consumeTimeout, 'ms');
+        if (
+            (!o.retryTimes || triedTimes >= o.retryTimes)   // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
+            || (o.consumeTimeout && produceTimestamp && timeoutStamp.isBefore(Date.now()))  // 消息超时
+        ) {
+
             this._error(err, message);
             return this._queue.ack(message);
         }
