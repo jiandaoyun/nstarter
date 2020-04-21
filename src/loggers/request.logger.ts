@@ -1,8 +1,8 @@
-import _ from 'lodash';
 import winston, { Logger as WinstonLogger } from 'winston';
 import Transport from 'winston-transport';
 import { RequestHandler, Request, Response } from 'express';
 import { LogLevel } from '../constants';
+import {once} from '../utils';
 
 /**
  * 请求日志记录
@@ -39,6 +39,7 @@ export class RequestLogger {
     private static _logRequest(req: Request, res: Response, startAt: [number, number]) {
         const time = process.hrtime(startAt);
         const duration = (time[0] * 1e3 + time[1] * 1e-6).toFixed(3);
+        const {headers} = req;
         const baseMeta = {
             path: req.originalUrl,
             ip: req.ip,
@@ -47,8 +48,8 @@ export class RequestLogger {
             duration,
             status: res.statusCode,
             method: req.method,
-            user_agent: _.get(req.headers, 'user-agent'),
-            req_id: _.get(req.headers, 'request-id') as string,
+            user_agent: headers['user-agent'],
+            req_id: headers['request-id'] as string,
             http_version: req.httpVersion
         };
         const meta = metaFormatter(req, res, baseMeta);
@@ -78,7 +79,7 @@ export class RequestLogger {
     public static get middleware(): RequestHandler {
         return (req, res, next) => {
             const startAt = process.hrtime();
-            const reqLogger = _.once(() => RequestLogger._logRequest(req, res, startAt));
+            const reqLogger = once(() => RequestLogger._logRequest(req, res, startAt));
             req.on('close', reqLogger);
             res.on('finish', reqLogger);
             return next();

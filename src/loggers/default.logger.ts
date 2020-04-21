@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import winston, { Logger as WinstonLogger } from 'winston';
 import Transport from 'winston-transport';
 
@@ -17,7 +16,11 @@ const levelConf = {
     }
 };
 
-type LogMessage = string | Error;
+interface LogError extends Error {
+    meta? : any
+}
+
+type LogMessage = string | LogError;
 winston.addColors(levelConf.colors);
 const logger = winston.loggers.add('default', {
     levels: levelConf.levels,
@@ -40,7 +43,7 @@ export class Logger {
                     ...meta,
                     error: msg,
                     extra: {
-                        ..._.get(msg, 'meta')
+                        ...msg.meta
                     }
                 }
             });
