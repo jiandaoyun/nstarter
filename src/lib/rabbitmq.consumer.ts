@@ -57,7 +57,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * 任务执行方法
      */
     private async _run(message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'run', [message]);
+        return _.invoke(this._options, 'run', message);
     }
 
     /**
@@ -66,7 +66,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param message
      */
     private async _retry(err: Error | null, message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'retry', [err, message]);
+        return _.invoke(this._options, 'retry', err, message);
     }
 
     /**
@@ -76,7 +76,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @private
      */
     private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
-        return _.invoke(this._options, 'republish', [content, options]);
+        return _.invoke(this._options, 'republish', content, options);
     }
 
     /**
@@ -86,7 +86,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @private
      */
     private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'error', [err, message]);
+        return _.invoke(this._options, 'error', err, message);
     }
 
     /**
