@@ -56,7 +56,8 @@ export enum RabbitProps {
 export enum CustomProps {
     produceTimestamp = 'x-p-timestamp',                      // 消息生产时间戳
     consumeRetryTimes = 'x-retry-times',                     // 消费重试次数
-    consumeRetryDelay = 'x-retry-delay'                      // 消费重试延时，单位：MS
+    consumeRetryDelay = 'x-retry-delay',                     // 消费重试延时，单位：MS
+    currentRetryTimes = 'x-current-times'                    // 当前重试次数
 }
 
 /**
