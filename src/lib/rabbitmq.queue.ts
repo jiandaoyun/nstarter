@@ -142,7 +142,12 @@ export class RabbitMqQueue<T> {
         message: IQueueMessage<T>,
         allUpTo?: boolean
     ): void {
+        if (message.isAckCalled) {
+            // 标记了临时属性，不在调用 ack 逻辑。
+            return;
+        }
         this._channelWrapper.ack(message as any, allUpTo);
+        message.isAckCalled = true;
     }
 
     public nack(
@@ -150,7 +155,12 @@ export class RabbitMqQueue<T> {
         allUpTo?: boolean,
         requeue?: boolean
     ): void {
+        if (message.isAckCalled) {
+            // 标记了临时属性，不在调用 nack 逻辑。
+            return;
+        }
         this._channelWrapper.nack(message as any, allUpTo, requeue);
+        message.isAckCalled = true;
     }
 
     /**

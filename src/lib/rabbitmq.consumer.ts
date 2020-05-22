@@ -160,7 +160,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         // 执行重试
         const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
         const pushDelay = headers[CustomProps.consumeRetryDelay],
-            triedTimes = headers[CustomProps.currentRetryTimes] || 0,
+            triedTimes = headers[CustomProps.consumeRetryTimes] || 0,
             produceTimestamp = headers[CustomProps.produceTimestamp],
             timeoutStamp = moment(produceTimestamp).add(o.consumeTimeout, 'ms');
         if (
@@ -176,7 +176,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             const publishHeaders: IProduceHeaders = _.defaults(
                 {
                     [CustomProps.produceTimestamp]: Date.now(),
-                    [CustomProps.currentRetryTimes]: triedTimes + 1,
+                    [CustomProps.consumeRetryTimes]: triedTimes + 1,
                 },
                 _.pick<IProduceHeaders>(headers, _.values(CustomProps))
             );
