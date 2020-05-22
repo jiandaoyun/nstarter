@@ -1,7 +1,7 @@
-import _ from 'lodash';
 import async from 'async';
-import { promisify } from 'util';
+import _ from 'lodash';
 import moment from 'moment';
+import { promisify } from 'util';
 
 import { AckPolicy, CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
@@ -109,8 +109,10 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                     return this._ackOrRetry(err, message)
                 }
             } finally {
-                // 确保消费过程 message 被 ack
-                this._queue.ack(message);
+                if (o.ackPolicy !== AckPolicy.before) {
+                    // 确保消费过程 message 被 ack
+                    this._queue.ack(message);
+                }
             }
         }, { noAck: false })
     }
@@ -140,7 +142,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 await this._retry(err, message);
             }, callback);
         })();
-        return this._queue.ack(message);
+        return;
     }
 
     /**
@@ -155,7 +157,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         if (!err) {
             // 正确处理完成，ACK
-            return this._queue.ack(message);
+            return;
         }
         // 执行重试
         const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
@@ -169,7 +171,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         ) {
 
             this._error(err, message);
-            return this._queue.ack(message);
+            return;
         }
         // 配置了 producer，调整重试参数，添加回队列，并删除原消息
         try {
@@ -189,8 +191,6 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             });
         } catch (err) {
             this._error(err, message);
-        } finally {
-            this._queue.ack(message);
         }
     }
 }
