@@ -17,7 +17,7 @@ const levelConf = {
 };
 
 interface LogError extends Error {
-    meta? : any
+    meta? : any;
 }
 
 type LogMessage = string | LogError;
