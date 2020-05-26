@@ -25,9 +25,6 @@ pipeline {
             }
         }
         stage('Publish') {
-            when {
-                branch 'master'
-            }
             steps {
                 nvm(
                     version: env.NODE_VERSION,
