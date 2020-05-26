@@ -8,3 +8,7 @@ node_modules/
 .git/
 .gitkeep
 /.gitignore
+
+jenkinsfile.gvy
+
+/lint/
