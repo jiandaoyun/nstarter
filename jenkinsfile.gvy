@@ -30,13 +30,9 @@ pipeline {
                     nvmNodeJsOrgMirror: env.NODE_MIRROR
                 ) {
                     withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
-                        try {
-                            sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
-                            sh(script: "npm whoami")
-                            sh(script: "npm publish", label: "publish")
-                        } finally {
-                            sh(script: "rm .npmrc", label: "clear token")
-                        }
+                        sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
+                        sh(script: "npm whoami")
+                        sh(script: "npm publish", label: "publish")
                     }
                 }
             }
@@ -53,6 +49,9 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 keepAll: false
             )
+            script {
+                sh(script: "rm .npmrc", label: "clear token")
+            }
         }
     }
 }
