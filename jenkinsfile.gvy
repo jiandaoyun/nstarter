@@ -9,7 +9,6 @@ pipeline {
     environment {
         NODE_VERSION = 'v12.16.2'
         NODE_MIRROR = 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/'
-        NPM_TOKEN = credentials('npm_release_token')
     }
     stages {
         stage('Build') {
@@ -30,7 +29,11 @@ pipeline {
                     version: env.NODE_VERSION,
                     nvmNodeJsOrgMirror: env.NODE_MIRROR
                 ) {
-                    sh(script: "npm publish", label: "publish")
+                    withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
+                        sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
+                        sh('npm whoami')
+                        sh(script: "npm publish", label: "publish")
+                    }
                 }
             }
         }
