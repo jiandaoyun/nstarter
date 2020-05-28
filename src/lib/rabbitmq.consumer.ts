@@ -1,9 +1,8 @@
 import async from 'async';
 import _ from 'lodash';
 import moment from 'moment';
-import { promisify } from 'util';
 
-import { AckPolicy, CustomProps, DefaultConfig, RetryMethod } from '../constants';
+import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
@@ -13,7 +12,6 @@ export interface IConsumerConfig<T> {
     retryTimes?: number;
     retryDelay?: DelayLevel;
     retryMethod?: RetryMethod;
-    ackPolicy?: AckPolicy;
     consumeTimeout?: number;
     run(message: IQueueMessage<T>): Promise<void>;
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
@@ -40,7 +38,6 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             retryTimes: DefaultConfig.RetryTimes,
             retryDelay: DefaultConfig.RetryDelay,
             retryMethod: RetryMethod.retry,
-            ackPolicy: AckPolicy.after,
             ...config
         };
     }
@@ -96,23 +93,17 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         await this._queue.subscribe(async (message: IQueueMessage<T>) => {
             try {
-                if (o.ackPolicy === AckPolicy.before) {
-                    // 执行前 ack
-                    this._queue.ack(message);
-                }
                 await this._run(message);
             } catch (err) {
                 if (o.retryMethod === RetryMethod.republish) {
-                    return this._ackOrRepublish(err, message);
+                    return this._handleErrorWithRepublish(err, message);
                 } else {
                     // 默认执行本地 retry
-                    return this._ackOrRetry(err, message)
+                    return this._handleErrorWithRetry(err, message)
                 }
             } finally {
-                if (o.ackPolicy !== AckPolicy.before) {
-                    // 确保消费过程 message 被 ack
-                    this._queue.ack(message);
-                }
+                // 确保消费过程 message 被 ack
+                this._queue.ack(message);
             }
         }, { noAck: false })
     }
@@ -129,19 +120,22 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param {Error} err
      * @param {IQueueMessage} message
      */
-    protected async _ackOrRetry(
+    protected async _handleErrorWithRetry(
         err: Error | null,
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        promisify<void>((callback) => {
-            if (!o.retryTimes) {
-                return callback(err);
-            }
-            async.retry(o.retryTimes, async () => {
-                await this._retry(err, message);
-            }, callback);
-        })();
+        if (!err) {
+            // 正确执行完成
+            return;
+        }
+        if (!o.retryTimes) {
+            await this._error(err, message);
+            return;
+        }
+        await async.retry(o.retryTimes, async () => {
+            await this._retry(err, message);
+        });
         return;
     }
 
@@ -150,7 +144,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param {Error} err
      * @param {IQueueMessage} message
      */
-    protected async _ackOrRepublish(
+    protected async _handleErrorWithRepublish(
         err: Error | null,
         message: IQueueMessage<T>
     ): Promise<void> {
@@ -169,8 +163,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             (!o.retryTimes || triedTimes >= o.retryTimes)   // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
             || (o.consumeTimeout && produceTimestamp && timeoutStamp.isBefore(Date.now()))  // 消息超时
         ) {
-
-            this._error(err, message);
+            await this._error(err, message);
             return;
         }
         // 配置了 producer，调整重试参数，添加回队列，并删除原消息
@@ -182,7 +175,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 },
                 _.pick<IProduceHeaders>(headers, _.values(CustomProps))
             );
-            this._republish(message.content, {
+            await this._republish(message.content, {
                 mandatory: true,
                 persistent: true,
                 deliveryMode: true,
@@ -190,7 +183,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 pushDelay
             });
         } catch (err) {
-            this._error(err, message);
+            await this._error(err, message);
         }
     }
 }

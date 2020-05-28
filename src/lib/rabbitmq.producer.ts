@@ -2,7 +2,6 @@ import _ from 'lodash';
 import async from 'async';
 import { Options } from 'amqplib';
 import moment from 'moment';
-import { promisify } from 'util';
 
 import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
@@ -112,20 +111,11 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
         options: Partial<IProduceOptions>
     ): Promise<void> {
         const o = this._options;
-        const formatOpts: Options.Publish = this._getProduceOptions(options);
-        if (!o.pushRetryTimes) {
-            return this._queue.publish(content, formatOpts);
-        }
-        return promisify<void>((callback) => {
-            if (!o.pushRetryTimes) {
-                return callback(null);
-            }
-            async.retry(o.pushRetryTimes, (callback) => {
-                this._queue.publish(content, formatOpts)
-                    .then(() => callback(),
-                        (err: Error) => callback(err));
-            }, callback);
-        })();
+        const formatOpts = this._getProduceOptions(options);
+        // 至少重试 1 次发布到队列
+        await async.retry(o.pushRetryTimes || 1, async () => {
+            await this._queue.publish(content, formatOpts);
+        });
     }
 
     /**
