@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import async from 'async';
+import retry from 'async-retry';
 import { Options } from 'amqplib';
 import moment from 'moment';
 
@@ -7,8 +7,12 @@ import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants'
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
+export interface IProducerConfig<T> extends Partial<IProduceOptions> {
+    onPublish?(queue: RabbitMqQueue<T>, content: IQueuePayload<T>): Promise<void>;
+}
+
 export interface IQueueProducer<T> {
-    publish(content: IQueuePayload<T>,options?: Partial<IProduceOptions>): Promise<void>;
+    publish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
     setup(): Promise<void>;
 }
 
@@ -27,7 +31,7 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
     protected readonly _options: Partial<IProduceOptions>;
     protected readonly _queue: RabbitMqQueue<T>;
 
-    constructor(queue: RabbitMqQueue<T>, options: Partial<IProduceOptions>) {
+    constructor(queue: RabbitMqQueue<T>, options: IProducerConfig<T>) {
         this._queue = queue;
         this._options = {
             retryTimes: DefaultConfig.RetryTimes,
@@ -113,8 +117,10 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
         const o = this._options;
         const formatOpts = this._getProduceOptions(options);
         // 至少重试 1 次发布到队列
-        await async.retry(o.pushRetryTimes || 1, async () => {
-            await this._queue.publish(content, formatOpts);
+        return retry(async () => {
+            return this._queue.publish(content, formatOpts);
+        }, {
+            retries: o.pushRetryTimes || 1
         });
     }
 
@@ -144,5 +150,10 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
  * @param queue
  * @param options
  */
-export const queueProducerFactory = <T>(queue: RabbitMqQueue<T>, options: Partial<IProduceOptions> = {}):
+export const queueProducerFactory = <T>(queue: RabbitMqQueue<T>, options: IProducerConfig<T> = {}):
     RabbitMqProducer<T> => new RabbitMqProducer<T>(queue, options);
+
+export const getQueueProducerFactory = (options: {}) => {
+    return <T>(queue: RabbitMqQueue<T>, options: IProducerConfig<T> = {}):
+        RabbitMqProducer<T> => new RabbitMqProducer<T>(queue, options);
+}

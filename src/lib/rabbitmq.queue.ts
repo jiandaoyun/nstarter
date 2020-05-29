@@ -142,25 +142,12 @@ export class RabbitMqQueue<T> {
         message: IQueueMessage<T>,
         allUpTo?: boolean
     ): void {
-        if (message.isAckCalled) {
-            // 标记了临时属性，不在调用 ack 逻辑。
-            return;
-        }
         this._channelWrapper.ack(message as any, allUpTo);
-        message.isAckCalled = true;
-    }
 
-    public nack(
-        message: IQueueMessage<T>,
-        allUpTo?: boolean,
-        requeue?: boolean
-    ): void {
-        if (message.isAckCalled) {
-            // 标记了临时属性，不在调用 nack 逻辑。
-            return;
+        let duration;
+        if (message.runAt) {
+            duration = Date.now() - message.runAt.getTime();
         }
-        this._channelWrapper.nack(message as any, allUpTo, requeue);
-        message.isAckCalled = true;
     }
 
     /**
@@ -168,7 +155,6 @@ export class RabbitMqQueue<T> {
      * @return {Promise<void>}
      */
     public async waitForSetup(): Promise<void> {
-        // @ts-ignore
         return this._channelWrapper.waitForConnect();
     }
 

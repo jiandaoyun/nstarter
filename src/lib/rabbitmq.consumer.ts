@@ -1,6 +1,6 @@
-import async from 'async';
 import _ from 'lodash';
 import moment from 'moment';
+import retry from 'async-retry';
 
 import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
@@ -17,6 +17,7 @@ export interface IConsumerConfig<T> {
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
     republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
     error?(err: Error, message: IQueueMessage<T>): void;
+    onFinish?(queue: RabbitMqQueue<T>, message: IQueueMessage<T>, duration: number): Promise<void>;
 }
 
 export interface IQueueConsumer<T> {
@@ -93,6 +94,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         await this._queue.subscribe(async (message: IQueueMessage<T>) => {
             try {
+                message.runAt = new Date();
                 await this._run(message);
             } catch (err) {
                 if (o.retryMethod === RetryMethod.republish) {
@@ -133,10 +135,11 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             await this._error(err, message);
             return;
         }
-        await async.retry(o.retryTimes, async () => {
+        return retry(async () => {
             await this._retry(err, message);
+        }, {
+            retries: o.retryTimes
         });
-        return;
     }
 
     /**
@@ -157,11 +160,11 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
         const pushDelay = headers[CustomProps.consumeRetryDelay],
             triedTimes = headers[CustomProps.consumeRetryTimes] || 0,
-            produceTimestamp = headers[CustomProps.produceTimestamp],
-            timeoutStamp = moment(produceTimestamp).add(o.consumeTimeout, 'ms');
+            produceTs = headers[CustomProps.produceTimestamp],
+            timeoutTs = moment(produceTs).add(o.consumeTimeout, 'ms');
         if (
             (!o.retryTimes || triedTimes >= o.retryTimes)   // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
-            || (o.consumeTimeout && produceTimestamp && timeoutStamp.isBefore(Date.now()))  // 消息超时
+            || (o.consumeTimeout && produceTs && timeoutTs.isBefore(Date.now()))  // 消息超时
         ) {
             await this._error(err, message);
             return;

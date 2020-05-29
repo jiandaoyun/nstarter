@@ -70,8 +70,7 @@ export type IQueueMessage<T> = Extend<ConsumeMessage, {
     properties: Extend<MessageProperties, {
         headers: IProduceHeaders
     }>,
-    // Ack/NAck 是否被调用过，消息上记录的临时属性
-    isAckCalled?: boolean
+    runAt?: Date,
 }>;
 
 export interface IMessageHandler<T> {
