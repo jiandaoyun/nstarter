@@ -124,8 +124,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             return retry(async () => {
                 await this._run(message);
             }, {
-                retries: o.retryTimes || 0,
-                minTimeout: o.retryDelay,
+                retries: o.retryTimes || DefaultConfig.Prefetch - 1,
+                minTimeout: o.retryDelay || DefaultConfig.RetryDelay,
                 randomize: false
             });
         } catch (err) {
@@ -146,7 +146,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         } catch (err) {
             // 执行重试
             const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
-            const pushDelay = headers[CustomProps.retryDelay],
+            const pushDelay = o.retryDelay,
                 triedTimes = headers[CustomProps.retryTimes] || 0,
                 produceTime = headers[CustomProps.produceTimestamp];
             let timeoutTime;

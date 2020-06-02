@@ -51,15 +51,11 @@ export interface IProduceOptions extends Options.Publish {
     deliveryMode: boolean;
     headers: IProduceHeaders;
     priority?: Priority;
-    expiration?: string | number;
+    // 超时时间 TTL
+    expiration?: number;
     pushRetryTimes?: number;
     // 延时添加到队列
     pushDelay?: number;
-    /**
-     * 消费者配置
-     */
-    retryTimes?: number;
-    retryDelay?: number;
 }
 
 /**

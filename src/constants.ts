@@ -56,7 +56,7 @@ export const DefaultConfig = {
     // 单个 Channel 消息处理并发数
     Prefetch: 10,
     // 消息消费默认 TTL，单位：ms
-    DeliverTTL: 60000,
+    DeliverTTL: 0,
     // 默认重试次数
     RetryTimes: 3,
     // 默认延时 1000ms
