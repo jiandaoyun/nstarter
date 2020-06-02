@@ -7,7 +7,7 @@ import {
 import { Priority } from './constants';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
-export type DelayLevel = string;
+export type Delay = number;
 
 export interface RabbitMQConfig {
     readonly brokers: {
@@ -35,7 +35,7 @@ export type IQueuePayload<T = IRabbitMqMessage> = T extends IRabbitMqMessage ? T
 
 export interface IProduceHeaders extends MessagePropertyHeaders {
     'x-retry-times'?: number;
-    'x-retry-delay'?: DelayLevel;
+    'x-retry-delay'?: number;
     'x-p-timestamp'?: number;
 }
 
@@ -53,12 +53,13 @@ export interface IProduceOptions extends Options.Publish {
     priority?: Priority;
     expiration?: string | number;
     pushRetryTimes?: number;
-    pushDelay?: DelayLevel; // 延时添加到队列
+    // 延时添加到队列
+    pushDelay?: number;
     /**
      * 消费者配置
      */
     retryTimes?: number;
-    retryDelay?: DelayLevel;
+    retryDelay?: number;
 }
 
 /**

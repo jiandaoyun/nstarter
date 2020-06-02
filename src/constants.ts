@@ -44,10 +44,9 @@ export enum RabbitProps {
  * 自定义消息 headers
  */
 export enum CustomProps {
-    produceTimestamp = 'x-p-timestamp',                      // 消息生产时间戳
-    consumeRetryTimes = 'x-retry-times',                     // 消费重试次数
-    consumeRetryDelay = 'x-retry-delay',                     // 消费重试延时，单位：MS
-    currentRetryTimes = 'x-current-times'                    // 当前重试次数
+    produceTimestamp = 'x-p-timestamp',               // 消息生产时间戳
+    retryTimes = 'x-retry-times',                     // 消费重试次数
+    retryDelay = 'x-retry-delay',                     // 消费重试延时，单位：MS
 }
 
 /**
@@ -60,8 +59,8 @@ export const DefaultConfig = {
     DeliverTTL: 60000,
     // 默认重试次数
     RetryTimes: 3,
-    // 默认延时
-    RetryDelay: '3s'
+    // 默认延时 1000ms
+    RetryDelay: 1000
 };
 
 /**

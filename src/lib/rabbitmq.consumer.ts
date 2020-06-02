@@ -1,16 +1,15 @@
 import _ from 'lodash';
-import moment from 'moment';
 import retry from 'async-retry';
 
 import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
-import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
+import { IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
 export interface IConsumerConfig<T> {
     retryTimes?: number;
-    retryDelay?: DelayLevel;
+    retryDelay?: number;
     retryMethod?: RetryMethod;
     consumeTimeout?: number;
     run(message: IQueueMessage<T>): Promise<void>;
@@ -55,16 +54,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * 任务执行方法
      */
     private async _run(message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'run', message);
-    }
-
-    /**
-     * 重试方法
-     * @param err
-     * @param message
-     */
-    private async _retry(err: Error | null, message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'retry', err, message);
+        message.runAt = new Date();
+        return this._options.run.apply(this, arguments);
     }
 
     /**
@@ -74,7 +65,9 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @private
      */
     private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
-        return _.invoke(this._options, 'republish', content, options);
+        if (this._options.republish) {
+            return this._options.republish.apply(this, arguments);
+        }
     }
 
     /**
@@ -84,7 +77,9 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @private
      */
     private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'error', err, message);
+        if (this._options.error) {
+            return this._options.error.apply(this, arguments);
+        }
     }
 
     /**
@@ -94,15 +89,15 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         await this._queue.subscribe(async (message: IQueueMessage<T>) => {
             try {
-                message.runAt = new Date();
-                await this._run(message);
-            } catch (err) {
                 if (o.retryMethod === RetryMethod.republish) {
-                    return this._handleErrorWithRepublish(err, message);
+                    // 队列重新发布重试
+                    await this._handleWithRepublish(message);
                 } else {
                     // 默认执行本地 retry
-                    return this._handleErrorWithRetry(err, message)
+                    await this._handleWithRetry(message)
                 }
+            } catch (err) {
+                await this._error(err, message);
             } finally {
                 // 确保消费过程 message 被 ack
                 this._queue.ack(message);
@@ -119,74 +114,72 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
 
     /**
      * 本地重试执行
-     * @param {Error} err
      * @param {IQueueMessage} message
      */
-    protected async _handleErrorWithRetry(
-        err: Error | null,
+    protected async _handleWithRetry(
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        if (!err) {
-            // 正确执行完成
-            return;
+        try {
+            return retry(async () => {
+                await this._run(message);
+            }, {
+                retries: o.retryTimes || 0,
+                minTimeout: o.retryDelay,
+                randomize: false
+            });
+        } catch (err) {
+            return this._error(err, message);
         }
-        if (!o.retryTimes) {
-            await this._error(err, message);
-            return;
-        }
-        return retry(async () => {
-            await this._retry(err, message);
-        }, {
-            retries: o.retryTimes
-        });
     }
 
     /**
-     * 调用消息生产者，重新添加到 rabbitMq 队列
-     * @param {Error} err
+     * 失败重新分发任务至队列的策略
      * @param {IQueueMessage} message
      */
-    protected async _handleErrorWithRepublish(
-        err: Error | null,
+    protected async _handleWithRepublish(
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        if (!err) {
-            // 正确处理完成，ACK
-            return;
-        }
-        // 执行重试
-        const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
-        const pushDelay = headers[CustomProps.consumeRetryDelay],
-            triedTimes = headers[CustomProps.consumeRetryTimes] || 0,
-            produceTs = headers[CustomProps.produceTimestamp],
-            timeoutTs = moment(produceTs).add(o.consumeTimeout, 'ms');
-        if (
-            (!o.retryTimes || triedTimes >= o.retryTimes)   // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
-            || (o.consumeTimeout && produceTs && timeoutTs.isBefore(Date.now()))  // 消息超时
-        ) {
-            await this._error(err, message);
-            return;
-        }
-        // 配置了 producer，调整重试参数，添加回队列，并删除原消息
         try {
-            const publishHeaders: IProduceHeaders = _.defaults(
-                {
-                    [CustomProps.produceTimestamp]: Date.now(),
-                    [CustomProps.consumeRetryTimes]: triedTimes + 1,
-                },
-                _.pick<IProduceHeaders>(headers, _.values(CustomProps))
-            );
-            await this._republish(message.content, {
-                mandatory: true,
-                persistent: true,
-                deliveryMode: true,
-                headers: publishHeaders,
-                pushDelay
-            });
+            await this._run(message);
         } catch (err) {
-            await this._error(err, message);
+            // 执行重试
+            const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
+            const pushDelay = headers[CustomProps.retryDelay],
+                triedTimes = headers[CustomProps.retryTimes] || 0,
+                produceTime = headers[CustomProps.produceTimestamp];
+            let timeoutTime;
+            if (produceTime && o.consumeTimeout) {
+                timeoutTime = produceTime + o.consumeTimeout;
+            }
+            if (
+                // 无重试策略 或 超出重试次数限定
+                (!o.retryTimes || triedTimes >= o.retryTimes)
+                // 消费超时
+                || (timeoutTime && timeoutTime < Date.now())
+            ) {
+                // 超出重试计数
+                await this._error(err, message);
+            } else {
+                // 重新发布至队列
+                try {
+                    // 无需额外 retry 逻辑，publish 封装中本身具备 publish retry 策略
+                    await this._republish(message.content, {
+                        mandatory: true,
+                        persistent: true,
+                        deliveryMode: true,
+                        headers: {
+                            ...headers,
+                            [CustomProps.produceTimestamp]: Date.now(),
+                            [CustomProps.retryTimes]: triedTimes + 1
+                        },
+                        pushDelay
+                    });
+                } catch (err) {
+                    await this._error(err, message);
+                }
+            }
         }
     }
 }

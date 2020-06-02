@@ -1,10 +1,9 @@
 import _ from 'lodash';
 import retry from 'async-retry';
 import { Options } from 'amqplib';
-import moment from 'moment';
 
 import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants';
-import { DelayLevel, IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
+import { IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 export interface IProducerConfig<T> extends Partial<IProduceOptions> {
@@ -37,21 +36,10 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             retryTimes: DefaultConfig.RetryTimes,
             retryDelay: DefaultConfig.RetryDelay,
             pushRetryTimes: 0,
-            pushDelay: '0',
+            pushDelay: 0,
             expiration: DefaultConfig.DeliverTTL,
             ...options
         }
-    }
-
-    private _parseDelay(
-        delay: DelayLevel
-    ): { val: number, unit: 's' | 'm' | 'h' } {
-        const o = this._options;
-        const matches = `${ delay || o.pushDelay }`.match(/^(\d+)([smh])$/);
-        return {
-            val: _.parseInt(_.get(matches, '[1]')),
-            unit: _.get(matches, '[2]')
-        };
     }
 
     /**
@@ -80,27 +68,22 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             retryDelay = options.retryDelay || o.retryDelay;
         if (retryTimes && retryDelay) {
             // 消费重试机制
-            _.set(headers, CustomProps.consumeRetryTimes, retryTimes);
-            _.set(headers, CustomProps.consumeRetryDelay, retryDelay);
+            headers[CustomProps.retryTimes] = retryTimes;
+            headers[CustomProps.retryDelay] = retryDelay;
         }
         if (o.expiration) {
             // 设置消息过期时间（TTL），到期会自动被队列中删除，不会被消费者消费
             publishOpts.expiration = o.expiration;
         }
-        const pushDelay = options.pushDelay || o.pushDelay || '0';
-        const { val, unit } = this._parseDelay(pushDelay),
-            messageTtl = moment.duration(val, unit).asMilliseconds();
-        if (messageTtl && _.isNumber(messageTtl)) {
-            // 消费重试机制
-            _.set(headers, RabbitProps.messageDelay, messageTtl);
-        }
+        // 消费重试机制
+        headers[RabbitProps.messageDelay] = options.pushDelay || o.pushDelay;
         // 记录发起时间
-        _.set(headers, CustomProps.produceTimestamp, Date.now());
-        _.extend(publishOpts, {
+        headers[CustomProps.produceTimestamp] = Date.now();
+        return {
+            ...publishOpts,
             headers,
             priority
-        });
-        return publishOpts;
+        };
     }
 
     /**
@@ -116,11 +99,10 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
     ): Promise<void> {
         const o = this._options;
         const formatOpts = this._getProduceOptions(options);
-        // 至少重试 1 次发布到队列
         return retry(async () => {
             return this._queue.publish(content, formatOpts);
         }, {
-            retries: o.pushRetryTimes || 1
+            retries: o.pushRetryTimes
         });
     }
 
@@ -152,8 +134,3 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
  */
 export const queueProducerFactory = <T>(queue: RabbitMqQueue<T>, options: IProducerConfig<T> = {}):
     RabbitMqProducer<T> => new RabbitMqProducer<T>(queue, options);
-
-export const getQueueProducerFactory = (options: {}) => {
-    return <T>(queue: RabbitMqQueue<T>, options: IProducerConfig<T> = {}):
-        RabbitMqProducer<T> => new RabbitMqProducer<T>(queue, options);
-}

@@ -3,6 +3,7 @@
         ".ts"
     ],
     "exclude": [
+        "test/**/*",
         "**/*.d.ts",
         "**/node_modules/*"
     ],
