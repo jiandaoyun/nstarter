@@ -35,7 +35,6 @@ export enum RetryMethod {
  */
 export enum RabbitProps {
     deadLetterExchange = 'x-dead-letter-exchange',           // 死信 Exchange 名称
-    messageTtl = 'x-message-ttl',                            // 队列消息 TTL 延时，单位：MS
     messageDelay = 'x-delay',                                // 队列消息动态延时，单位：MS
     delayDeliverType = 'x-delayed-type'                      // 延时消息 Exchange 分发规则
 }
@@ -44,9 +43,8 @@ export enum RabbitProps {
  * 自定义消息 headers
  */
 export enum CustomProps {
-    produceTimestamp = 'x-p-timestamp',               // 消息生产时间戳
+    publishTime = 'x-publish-time',                   // 消息生产时间戳
     retryTimes = 'x-retry-times',                     // 消费重试次数
-    retryDelay = 'x-retry-delay',                     // 消费重试延时，单位：MS
 }
 
 /**
@@ -54,13 +52,13 @@ export enum CustomProps {
  */
 export const DefaultConfig = {
     // 单个 Channel 消息处理并发数
-    Prefetch: 10,
-    // 消息消费默认 TTL，单位：ms
-    DeliverTTL: 0,
-    // 默认重试次数
-    RetryTimes: 3,
+    prefetch: 10,
+    // 默认重试次数，重试 2 次，总共执行 3 次
+    retryTimes: 2,
     // 默认延时 1000ms
-    RetryDelay: 1000
+    retryDelay: 1000,
+    // 消息发送重试延迟时间 (ms)
+    pushRetryDelay: 1000
 };
 
 /**

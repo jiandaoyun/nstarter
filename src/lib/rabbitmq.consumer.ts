@@ -1,8 +1,7 @@
-import _ from 'lodash';
 import retry from 'async-retry';
 
 import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
-import { IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
+import { IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
@@ -11,7 +10,7 @@ export interface IConsumerConfig<T> {
     retryTimes?: number;
     retryDelay?: number;
     retryMethod?: RetryMethod;
-    consumeTimeout?: number;
+    timeout?: number;
     run(message: IQueueMessage<T>): Promise<void>;
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
     republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
@@ -34,9 +33,9 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     constructor(queue: RabbitMqQueue<T>, config: IConsumerConfig<T>) {
         this._queue = queue;
         this._options = {
-            consumeTimeout: 0,
-            retryTimes: DefaultConfig.RetryTimes,
-            retryDelay: DefaultConfig.RetryDelay,
+            timeout: 0,
+            retryTimes: DefaultConfig.retryTimes,
+            retryDelay: DefaultConfig.retryDelay,
             retryMethod: RetryMethod.retry,
             ...config
         };
@@ -79,6 +78,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
         if (this._options.error) {
             return this._options.error.apply(this, arguments);
+        } else {
+            console.warn(`Rabbitmq job failed with unhandled error.`);
         }
     }
 
@@ -102,6 +103,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 // 确保消费过程 message 被 ack
                 this._queue.ack(message);
             }
+            // 采用手动 ack 策略，自动 ack 会将队列消息直接分发
         }, { noAck: false })
     }
 
@@ -120,17 +122,13 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        try {
-            return retry(async () => {
-                await this._run(message);
-            }, {
-                retries: o.retryTimes || DefaultConfig.Prefetch - 1,
-                minTimeout: o.retryDelay || DefaultConfig.RetryDelay,
-                randomize: false
-            });
-        } catch (err) {
-            return this._error(err, message);
-        }
+        return retry(async () => {
+            await this._run(message);
+        }, {
+            retries: o.retryTimes,
+            minTimeout: o.retryDelay,
+            randomize: false
+        });
     }
 
     /**
@@ -145,13 +143,13 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
             await this._run(message);
         } catch (err) {
             // 执行重试
-            const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
+            const headers = message.properties?.headers || {};
             const pushDelay = o.retryDelay,
-                triedTimes = headers[CustomProps.retryTimes] || 0,
-                produceTime = headers[CustomProps.produceTimestamp];
+                triedTimes = headers[CustomProps.retryTimes] || 0;
+            const publishTime = headers[CustomProps.publishTime];
             let timeoutTime;
-            if (produceTime && o.consumeTimeout) {
-                timeoutTime = produceTime + o.consumeTimeout;
+            if (publishTime && o.timeout) {
+                timeoutTime = publishTime + o.timeout;
             }
             if (
                 // 无重试策略 或 超出重试次数限定
@@ -171,7 +169,6 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                         deliveryMode: true,
                         headers: {
                             ...headers,
-                            [CustomProps.produceTimestamp]: Date.now(),
                             [CustomProps.retryTimes]: triedTimes + 1
                         },
                         pushDelay
@@ -196,8 +193,8 @@ export const queueConsumerFactory = <T>(queue: RabbitMqQueue<T>, options: IConsu
  * 队列消费者启动方法
  */
 export const startQueueConsumers = async(): Promise<void> => {
-    await Promise.all(_.map(queueConsumerRegistry,
-        (consumer: IQueueConsumer<any>) => consumer.start()
-    ));
+    await Promise.all(
+        queueConsumerRegistry.map((consumer: IQueueConsumer<any>) => consumer.start())
+    );
     return;
 };

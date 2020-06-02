@@ -5,14 +5,14 @@ import {
     queueFactory,
     queueProducerFactory,
     RetryMethod
-} from '../src';
-import { amqp } from './amqp';
-import { sleep } from './utils';
+} from '../../src';
+import { amqp } from '../amqp';
+import { sleep } from '../utils';
 
-describe('test: retry', () => {
+describe('test: republish', () => {
     const normalQueue = queueFactory(amqp.connection, {
         queue: {
-            name: 'test:retry',
+            name: 'test:republish',
             routingKey: 'normal',
             options: {
                 durable: false,
@@ -20,7 +20,7 @@ describe('test: retry', () => {
             }
         },
         exchange: {
-            name: 'test:retry',
+            name: 'test:republish',
             type: ExchangeType.fanout,
             options: {
                 durable: false,
@@ -32,16 +32,19 @@ describe('test: retry', () => {
     let count = 0;
     const producer = queueProducerFactory(normalQueue);
     const consumer = queueConsumerFactory(normalQueue, {
-        retryMethod: RetryMethod.retry,
+        retryMethod: RetryMethod.republish,
         retryTimes: 2,
         retryDelay: 0,
-        run: async (message: IQueueMessage<number>): Promise<void> => {
+        run: async (message: IQueueMessage<number>) => {
             console.log(`run: ${ count }`);
             count ++;
             if (count < message.content) {
                 throw Error('run failed');
             }
             console.log('run success');
+        },
+        republish: async (content, options) => {
+            return producer.publish(content, options);
         },
         error: async(err, message) => {
             console.error(err.message);
@@ -61,14 +64,12 @@ describe('test: retry', () => {
     });
 
     it('retry success', async() => {
-        // retry success
         count = 0;
         await producer.publish(1);
         await sleep(1000);
     });
 
     it('retry fail', async() => {
-        // retry fail
         count = 0;
         await producer.publish(5);
         await sleep(1000);

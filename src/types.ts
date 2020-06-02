@@ -12,12 +12,12 @@ export type Delay = number;
 export interface RabbitMQConfig {
     readonly brokers: {
         readonly host: string,
-        readonly port: number
+        readonly port?: number
     }[];
     readonly protocol: string;
     readonly user: string;
     readonly password: string;
-    readonly vhost: string;
+    readonly vhost?: string;
     // 链接配置
     readonly heartbeatInterval?: number;
     readonly reconnectInterval?: number;
@@ -54,6 +54,7 @@ export interface IProduceOptions extends Options.Publish {
     // 超时时间 TTL
     expiration?: number;
     pushRetryTimes?: number;
+    pushRetryDelay?: number;
     // 延时添加到队列
     pushDelay?: number;
 }

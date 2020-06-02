@@ -1,5 +1,5 @@
-import { ExchangeType, IQueueMessage, queueConsumerFactory, queueFactory, queueProducerFactory } from '../src';
-import { amqp } from './amqp';
+import { ExchangeType, IQueueMessage, queueConsumerFactory, queueFactory, queueProducerFactory } from '../../src';
+import { amqp } from '../amqp';
 
 describe('test: basic', () => {
 

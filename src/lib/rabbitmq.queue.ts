@@ -30,7 +30,7 @@ export interface IQueueConfig {
  */
 export class RabbitMqQueue<T> {
     protected _options: IQueueConfig;
-    protected prefetch = DefaultConfig.Prefetch;
+    protected prefetch = DefaultConfig.prefetch;
 
     protected queue: string;
     protected exchange: string;
@@ -46,7 +46,7 @@ export class RabbitMqQueue<T> {
             exchange: {
                 options: DefaultExchangeOptions
             },
-            prefetch: DefaultConfig.Prefetch
+            prefetch: DefaultConfig.prefetch
         });
         this._rabbitMq = rabbitMq;
         this._initChannelWrapper();
@@ -148,6 +148,7 @@ export class RabbitMqQueue<T> {
         if (message.runAt) {
             duration = Date.now() - message.runAt.getTime();
         }
+        // TODO log
     }
 
     /**
