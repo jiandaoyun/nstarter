@@ -98,4 +98,37 @@ describe('test: republish', () => {
             await consumer.stop();
         });
     });
+
+    context('republish unhandled', () => {
+        const queue = queueFactory(amqp.connection, normalQueueConf);
+        let producer: IQueueProducer<number>,
+            consumer: IQueueConsumer<number>;
+
+        before(async () => {
+            producer = queueProducerFactory(queue);
+            await producer.setup();
+        });
+
+        it('undefined republish', async () => {
+            let count = 0;
+            consumer = queueConsumerFactory(queue, {
+                retryMethod: RetryMethod.republish,
+                retryTimes: 2,
+                retryDelay: 0,
+                run: async (message: IQueueMessage<number>): Promise<void> => {
+                    count ++;
+                    if (count < message.content) {
+                        throw Error('run failed');
+                    }
+                }
+            });
+            await consumer.start();
+            await producer.publish(5);
+        });
+
+        after(async() => {
+            await sleep(300);
+            await consumer.stop();
+        });
+    });
 });

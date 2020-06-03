@@ -1,4 +1,11 @@
-import { ExchangeType, IQueueMessage, queueConsumerFactory, queueFactory, queueProducerFactory } from '../../src';
+import {
+    ExchangeType,
+    IQueueMessage,
+    queueConsumerFactory,
+    queueFactory,
+    queueProducerFactory,
+    startQueueConsumers
+} from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 
 describe('test: basic', () => {
@@ -16,7 +23,7 @@ describe('test: basic', () => {
     });
 
     it('consumer.start', async () => {
-        await consumer.start();
+        await startQueueConsumers();
     });
 
     it('producer.setup', async () => {

@@ -30,7 +30,6 @@ export interface IQueueConfig {
  */
 export class RabbitMqQueue<T> {
     protected _options: IQueueConfig;
-    protected prefetch = DefaultConfig.prefetch;
 
     protected queue: string;
     protected exchange: string;
@@ -65,8 +64,8 @@ export class RabbitMqQueue<T> {
             setup: async (channel: ConfirmChannel): Promise<any> => {
                 const { queue } = await channel.assertQueue(o.queue.name, o.queue.options);
                 this.queue = queue;
-                if (this.prefetch) {
-                    await channel.prefetch(this.prefetch);
+                if (o.prefetch) {
+                    await channel.prefetch(o.prefetch);
                 }
                 const { exchange } = await channel.assertExchange(
                     o.exchange.name, o.exchange.type, o.exchange.options

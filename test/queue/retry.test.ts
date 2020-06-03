@@ -10,6 +10,8 @@ import {
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../utils';
+import { createDeflateRaw } from 'zlib';
+import { spawn } from 'child_process';
 
 const expect = chai.expect;
 
@@ -85,6 +87,39 @@ describe('test: retry', () => {
             });
             consumer.start();
             producer.publish(5);
+        });
+
+        after(async() => {
+            await sleep(100);
+            await consumer.stop();
+        });
+    });
+
+    context('retry unhandled', () => {
+        const queue = queueFactory(amqp.connection, normalQueueConf);
+        let producer: IQueueProducer<number>,
+            consumer: IQueueConsumer<number>;
+
+        before(async () => {
+            producer = queueProducerFactory(queue);
+            await producer.setup();
+        });
+
+        it('unhandled error', async () => {
+            let count = 0;
+            consumer = queueConsumerFactory(queue, {
+                retryMethod: RetryMethod.retry,
+                retryTimes: 2,
+                retryDelay: 0,
+                run: async (message: IQueueMessage<number>): Promise<void> => {
+                    count ++;
+                    if (count < message.content) {
+                        throw Error('run failed');
+                    }
+                },
+            });
+            await consumer.start();
+            await producer.publish(5);
         });
 
         after(async() => {
