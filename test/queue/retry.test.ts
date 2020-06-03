@@ -1,80 +1,95 @@
+import chai from 'chai';
+
 import {
-    ExchangeType,
-    IQueueMessage,
+    IQueueConsumer,
+    IQueueMessage, IQueueProducer,
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
     RetryMethod
 } from '../../src';
-import { amqp } from '../amqp';
+import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../utils';
 
+const expect = chai.expect;
+
 describe('test: retry', () => {
-    const normalQueue = queueFactory(amqp.connection, {
-        queue: {
-            name: 'test:retry',
-            routingKey: 'normal',
-            options: {
-                durable: false,
-                autoDelete: true
-            }
-        },
-        exchange: {
-            name: 'test:retry',
-            type: ExchangeType.fanout,
-            options: {
-                durable: false,
-                autoDelete: true
-            }
-        }
+    context('retry success', () => {
+        const queue = queueFactory(amqp.connection, normalQueueConf);
+        let producer: IQueueProducer<number>,
+            consumer: IQueueConsumer<number>;
+
+        before(async () => {
+            producer = queueProducerFactory(queue);
+            await producer.setup();
+        });
+
+        it('retry success', (done) => {
+            let count = 0;
+            consumer = queueConsumerFactory(queue, {
+                retryMethod: RetryMethod.retry,
+                retryTimes: 2,
+                retryDelay: 0,
+                run: async (message: IQueueMessage<number>): Promise<void> => {
+                    count ++;
+                    if (count < message.content) {
+                        throw Error('run failed');
+                    }
+                    expect(count).to.equal(2);
+                    expect(message).to.exist;
+                    console.log('run success');
+                    done();
+                },
+                error: async(err, message) => {
+                    await expect(err).to.not.exist;
+                    await expect(message).to.exist;
+                }
+            });
+            consumer.start();
+            producer.publish(2);
+        });
+
+        after(async () => {
+            await sleep(100);
+            await consumer.stop();
+        });
     });
 
-    let count = 0;
-    const producer = queueProducerFactory(normalQueue);
-    const consumer = queueConsumerFactory(normalQueue, {
-        retryMethod: RetryMethod.retry,
-        retryTimes: 2,
-        retryDelay: 0,
-        run: async (message: IQueueMessage<number>): Promise<void> => {
-            console.log(`run: ${ count }`);
-            count ++;
-            if (count < message.content) {
-                throw Error('run failed');
-            }
-            console.log('run success');
-        },
-        error: async(err, message) => {
-            console.error(err.message);
-        }
-    });
+    context('retry fail', () => {
+        const queue = queueFactory(amqp.connection, normalQueueConf);
+        let producer: IQueueProducer<number>,
+            consumer: IQueueConsumer<number>;
 
-    it('consumer.register', async () => {
-        await consumer.register();
-    });
+        before(async () => {
+            producer = queueProducerFactory(queue);
+            await producer.setup();
+        });
 
-    it('consumer.start', async () => {
-        await consumer.start();
-    });
+        it('retry fail', (done) => {
+            let count = 0;
+            consumer = queueConsumerFactory(queue, {
+                retryMethod: RetryMethod.retry,
+                retryTimes: 2,
+                retryDelay: 0,
+                run: async (message: IQueueMessage<number>): Promise<void> => {
+                    count ++;
+                    if (count < message.content) {
+                        throw Error('run failed');
+                    }
+                },
+                error: async (err, message) => {
+                    await expect(err).to.exist;
+                    await expect(message).to.exist;
+                    done();
+                }
+            });
+            consumer.start();
+            producer.publish(5);
+        });
 
-    it('producer.setup', async () => {
-        await producer.setup();
-    });
-
-    it('retry success', async() => {
-        // retry success
-        count = 0;
-        await producer.publish(1);
-        await sleep(1000);
-    });
-
-    it('retry fail', async() => {
-        // retry fail
-        count = 0;
-        await producer.publish(5);
-        await sleep(1000);
-    });
-
-    after(async () => {
-        await consumer.stop();
+        after(async() => {
+            await sleep(100);
+            await consumer.stop();
+        });
     });
 });

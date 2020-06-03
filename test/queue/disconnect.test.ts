@@ -18,7 +18,7 @@ describe('test: disconnect', () => {
             routingKey: 'error',
             options: {
                 durable: false,
-                autoDelete: true
+                autoDelete: false
             }
         },
         exchange: {
@@ -26,7 +26,7 @@ describe('test: disconnect', () => {
             type: ExchangeType.delay,
             options: {
                 durable: false,
-                autoDelete: true,
+                autoDelete: false,
                 arguments: {
                     [RabbitProps.delayDeliverType]: 'non-exist'
                 }
@@ -47,7 +47,7 @@ describe('test: disconnect', () => {
     it('disconnect unhandle', async () => {
         const amqp = new AmqpConnector(rabbitmqConf);
         queueFactory(amqp.connection, queueOptions);
-        await sleep(1000);
+        await sleep(500);
         await amqp.connection.close();
     });
 });

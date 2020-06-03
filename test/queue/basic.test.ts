@@ -1,29 +1,11 @@
 import { ExchangeType, IQueueMessage, queueConsumerFactory, queueFactory, queueProducerFactory } from '../../src';
-import { amqp } from '../amqp';
+import { amqp, normalQueueConf } from '../amqp';
 
 describe('test: basic', () => {
+    const queue = queueFactory(amqp.connection, normalQueueConf);
 
-    const normalQueue = queueFactory(amqp.connection, {
-        queue: {
-            name: 'test:normal',
-            routingKey: 'normal',
-            options: {
-                durable: false,
-                autoDelete: true
-            }
-        },
-        exchange: {
-            name: 'test:normal',
-            type: ExchangeType.fanout,
-            options: {
-                durable: false,
-                autoDelete: true
-            }
-        }
-    });
-
-    const producer = queueProducerFactory(normalQueue);
-    const consumer = queueConsumerFactory(normalQueue, {
+    const producer = queueProducerFactory(queue);
+    const consumer = queueConsumerFactory(queue, {
         run: async (message: IQueueMessage<string>): Promise<void> => {
             console.log(message.content);
         }

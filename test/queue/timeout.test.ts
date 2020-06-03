@@ -1,79 +1,61 @@
+import chai from 'chai';
+
 import {
-    ExchangeType,
-    IQueueMessage,
+    IQueueConsumer,
+    IQueueMessage, IQueuePayload, IQueueProducer,
     queueConsumerFactory,
     queueFactory,
-    queueProducerFactory, RabbitProps,
+    queueProducerFactory,
     RetryMethod
 } from '../../src';
-import { amqp } from '../amqp';
+import { amqp, delayQueueConf } from '../amqp';
 import { sleep } from '../utils';
 
+const expect = chai.expect;
+
 describe('test: timeout', () => {
-    const queue = queueFactory(amqp.connection, {
-        queue: {
-            name: 'test:timeout',
-            routingKey: 'timeout',
-            options: {
-                durable: false,
-                autoDelete: true
-            }
-        },
-        exchange: {
-            name: 'test:timeout',
-            type: ExchangeType.delay,
-            options: {
-                durable: false,
-                autoDelete: true,
-                arguments: {
-                    [RabbitProps.delayDeliverType]: ExchangeType.fanout
-                }
-            }
-        },
-        prefetch: 0
-    });
+    const queue = queueFactory(amqp.connection, delayQueueConf);
+    let producer: IQueueProducer<number>,
+        consumer: IQueueConsumer<number>;
 
-    let count = 0;
-    const producer = queueProducerFactory(queue, {
-        pushDelay: 100,
-    });
-    const consumer = queueConsumerFactory(queue, {
-        retryMethod: RetryMethod.republish,
-        retryTimes: 5,
-        retryDelay: 100,
-        timeout: 200,
-        run: async (message: IQueueMessage<number>) => {
-            console.log(`runAt: ${ Date.now() } / ${ count }`);
-            count ++;
-            if (count < message.content) {
-                throw Error('run failed');
-            }
-            console.log('run success');
-        },
-        republish: async (content, options) => {
-            return producer.publish(content, options);
-        }
-    });
-
-    it('consumer.register', async () => {
-        await consumer.register();
-    });
-
-    it('consumer.start', async () => {
-        await consumer.start();
-    });
-
-    it('producer.setup', async () => {
+    before(async () => {
+        producer = queueProducerFactory(queue, {
+            pushDelay: 100
+        });
         await producer.setup();
     });
 
-    it('retry timeout', async() => {
-        count = 0;
-        await producer.publish(5);
-        await sleep(1000);
+    it('republish timeout', (done) => {
+        let count = 0;
+        consumer = queueConsumerFactory(queue, {
+            retryMethod: RetryMethod.republish,
+            retryTimes: 5,
+            retryDelay: 100,
+            timeout: 200,
+            run: async (message: IQueueMessage<number>) => {
+                console.debug(`runAt: ${ Date.now() } / ${ count }`);
+                count ++;
+                if (count < message.content) {
+                    throw Error('run failed');
+                }
+                console.log('run success');
+            },
+            republish: async (content: IQueuePayload<number>, options) => {
+                return producer.publish(content, options);
+            },
+            error: async (err: Error, message: IQueueMessage<number>) => {
+                expect(err).to.exist;
+                expect(message).to.exist;
+                expect(count).to.equal(2);
+                done();
+            }
+        });
+        consumer.start();
+        producer.publish(5);
     });
 
-    after(async () => {
+    after(async() => {
+        await sleep(200);
         await consumer.stop();
     });
 });

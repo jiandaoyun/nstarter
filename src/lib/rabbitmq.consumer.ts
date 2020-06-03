@@ -19,6 +19,7 @@ export interface IConsumerConfig<T> {
 }
 
 export interface IQueueConsumer<T> {
+    register(): IQueueConsumer<T>;
     start(): Promise<void>;
     stop(): Promise<void>;
 }
@@ -66,6 +67,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
         if (this._options.republish) {
             return this._options.republish.apply(this, arguments);
+        } else {
+            console.warn('Rabbitmq job failed with undefined republish method.');
         }
     }
 
