@@ -15,7 +15,7 @@ export interface IConsumerConfig<T> {
     retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
     republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
     error?(err: Error, message: IQueueMessage<T>): void;
-    onFinish?(queue: RabbitMqQueue<T>, message: IQueueMessage<T>, duration: number): Promise<void>;
+    onFinish?(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void;
 }
 
 export interface IQueueConsumer<T> {
@@ -54,8 +54,26 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * 任务执行方法
      */
     private async _run(message: IQueueMessage<T>): Promise<void> {
-        message.runAt = new Date();
-        return this._options.run.apply(this, arguments);
+        const startTime = Date.now();
+        await this._options.run.apply(this, arguments);
+        message.duration = Date.now() - startTime;
+        this._notifyFinish(message);
+    }
+
+    /**
+     * 任务执行完成反馈
+     * @param message
+     * @private
+     */
+    private _notifyFinish(message: IQueueMessage<T>): void {
+        if (this._options.onFinish) {
+            try {
+                this._options.onFinish.apply(this, [message, this._queue]);
+            } catch (err) {
+                // 记录异常，不阻塞调度
+                console.warn('Rabbitmq job finish notify failed');
+            }
+        }
     }
 
     /**

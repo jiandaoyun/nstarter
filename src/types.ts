@@ -7,7 +7,6 @@ import {
 import { Priority } from './constants';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
-export type Delay = number;
 
 export interface RabbitMQConfig {
     readonly brokers: {
@@ -68,7 +67,7 @@ export type IQueueMessage<T> = Extend<ConsumeMessage, {
     properties: Extend<MessageProperties, {
         headers: IProduceHeaders
     }>,
-    runAt?: Date,
+    duration?: number
 }>;
 
 export interface IMessageHandler<T> {

@@ -1,5 +1,4 @@
 import {
-    ExchangeType,
     IQueueMessage,
     queueConsumerFactory,
     queueFactory,
@@ -7,14 +6,23 @@ import {
     startQueueConsumers
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
+import { sleep } from '../utils';
 
 describe('test: basic', () => {
     const queue = queueFactory(amqp.connection, normalQueueConf);
 
-    const producer = queueProducerFactory(queue);
+    const producer = queueProducerFactory(queue, {
+        onPublish: (content, queue) => {
+            console.log(`${ queue.name } published.`);
+        }
+    });
     const consumer = queueConsumerFactory(queue, {
         run: async (message: IQueueMessage<string>): Promise<void> => {
             console.log(message.content);
+            await sleep(10);
+        },
+        onFinish: (message, queue) => {
+            console.log(`${ queue.name } finished.`);
         }
     });
 
@@ -35,6 +43,7 @@ describe('test: basic', () => {
     });
 
     after(async () => {
+        await sleep(100);
         await consumer.stop();
     });
 });

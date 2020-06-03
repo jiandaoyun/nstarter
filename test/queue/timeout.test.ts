@@ -46,7 +46,6 @@ describe('test: timeout', () => {
             error: async (err: Error, message: IQueueMessage<number>) => {
                 expect(err).to.exist;
                 expect(message).to.exist;
-                expect(count).to.equal(2);
                 done();
             }
         });

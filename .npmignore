@@ -12,8 +12,13 @@ node_modules/
 coverage/
 .nyc_output/
 
+.mocharc.yml
+.nycrc
+
 test/
 
 jenkinsfile.gvy
 
 /lint/
+/.eslintignore
+/.eslintrc.js

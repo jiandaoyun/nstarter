@@ -52,6 +52,13 @@ export class RabbitMqQueue<T> {
     }
 
     /**
+     * 获取队列名称
+     */
+    public get name(): string {
+        return this._options.queue.name;
+    }
+
+    /**
      * 初始化
      * @private
      */
@@ -91,7 +98,7 @@ export class RabbitMqQueue<T> {
     protected async _deserializePayload<T>(content: Buffer): Promise<IQueuePayload<T>> {
         let result: IQueuePayload<T>;
         try {
-            result = JSON.parse(_.toString(Buffer.from(content)));
+            result = JSON.parse(Buffer.from(content).toString());
         } catch (e) {
             result = {} as any;
         }
@@ -142,12 +149,6 @@ export class RabbitMqQueue<T> {
         allUpTo?: boolean
     ): void {
         this._channelWrapper.ack(message as any, allUpTo);
-
-        let duration;
-        if (message.runAt) {
-            duration = Date.now() - message.runAt.getTime();
-        }
-        // TODO log
     }
 
     /**

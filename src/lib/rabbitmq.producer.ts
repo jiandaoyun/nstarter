@@ -6,7 +6,7 @@ import { IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 export interface IProducerConfig<T> extends Partial<IProduceOptions> {
-    onPublish?(queue: RabbitMqQueue<T>, content: IQueuePayload<T>): Promise<void>;
+    onPublish?(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void;
 }
 
 export interface IQueueProducer<T> {
@@ -25,7 +25,7 @@ export interface IQueueProducer<T> {
  * @property _options.priority - 消息投递优先级
  */
 class RabbitMqProducer<T> implements IQueueProducer<T> {
-    protected readonly _options: Partial<IProduceOptions>;
+    protected readonly _options: IProducerConfig<T>;
     protected readonly _queue: RabbitMqQueue<T>;
 
     constructor(queue: RabbitMqQueue<T>, options: IProducerConfig<T>) {
@@ -35,7 +35,7 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             pushRetryDelay: DefaultConfig.pushRetryDelay,
             pushDelay: 0,
             ...options
-        }
+        };
     }
 
     /**
@@ -84,12 +84,29 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
         const o = this._options;
         const publishOpts = this._getProduceOptions(options || {});
         return retry(async () => {
-            return this._queue.publish(content, publishOpts);
+            await this._queue.publish(content, publishOpts);
+            this._notifyPublish(content);
         }, {
             retries: o.pushRetryTimes,
             minTimeout: o.pushRetryDelay,
             randomize: false
         });
+    }
+
+    /**
+     * 通知发布成功
+     * @param content
+     * @private
+     */
+    public _notifyPublish(content: IQueuePayload<T>): void {
+        if (this._options.onPublish) {
+            try {
+                this._options.onPublish.apply(this, [content, this._queue]);
+            } catch (err) {
+                // 记录执行异常，但不阻塞队列任务正常调度
+                console.warn('Rabbitmq job publish notify failed.');
+            }
+        }
     }
 
     /**
