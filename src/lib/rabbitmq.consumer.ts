@@ -1,22 +1,10 @@
 import retry from 'async-retry';
 
 import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
-import { IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
+import { IConsumerConfig, IProducerConfig, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
-
-export interface IConsumerConfig<T> {
-    retryTimes?: number;
-    retryDelay?: number;
-    retryMethod?: RetryMethod;
-    timeout?: number;
-    run(message: IQueueMessage<T>): Promise<void>;
-    retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
-    republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
-    error?(err: Error, message: IQueueMessage<T>): void;
-    onFinish?(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void;
-}
 
 export interface IQueueConsumer<T> {
     register(): IQueueConsumer<T>;
@@ -82,7 +70,7 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param options
      * @private
      */
-    private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
+    private async _republish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void> {
         if (this._options.republish) {
             return this._options.republish.apply(this, arguments);
         } else {

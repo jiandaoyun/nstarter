@@ -1,8 +1,7 @@
 # RabbitMQ 队列
 
-TODO
+## 使用说明
 
-## 使用
 ### AMQP 链接
 ```typescript
 import AmqpConnectManager from 'amqp-connection-manager';
@@ -55,7 +54,7 @@ import { demo_queue, IDemoMessage } from './queue';
  */
 const produceOption: Partial<IProduceOptions> = {
     // 设置延时等级
-    pushDelay: DelayLevel.level6 // 10s
+    pushDelay: 10000 // 10s
 };
 
 export const producer = queueProducerFactory<IDemoMessage>(demo_queue, produceOption);
@@ -113,50 +112,38 @@ Push 模式，客户端订阅队列消息，消息由服务端“推送”给客
 
 | 参数名 | 类型 | 参数说明 |
 | :-- | :-- | :-- |
-| messageHandler | IMessageHandler<T> | 消息处理逻辑 |
-| options | object | 参数配置 |
-| options.noAck | boolean | 是否不需要手动 ACK |
-| options.exclusive | boolean | 是否启用匿名队列订阅，服务端分配一个匿名队列，断开链接后自动删除 |
+| `messageHandler` | `IMessageHandler<T>` | 消息处理逻辑 |
+| `options` | object | 参数配置 |
+| `options.exclusive` | boolean | 是否启用匿名队列订阅，服务端分配一个匿名队列，断开链接后自动删除 |
 
 #### RabbitMqQueue#publish(content: IQueuePayload<T>, options: Publish): Promise<void>
-Confirm 模式，将消息内容发送到 RabbitMQ 中的 Exchange，确保消息准确被添加到队列，且持久化保存后返回。消息分发规则由 ```routingKey``` 和 ```exchange```规则确定。
+Confirm 模式，将消息内容发送到 RabbitMQ 中的 Exchange，确保消息准确被添加到队列，且持久化保存后返回。消息分发规则由 `routingKey` 和 `exchange` 规则确定。
 
 | 参数名 | 类型 | 参数说明 |
 | :-- | :-- | :-- |
-| content | any | 消息内容 |
-| options | IProduceOptions | 消息参数 |
-| options.mandatory | boolean | 消息无法被正确“投递”时，服务端处理逻辑。```true``` 返回报错，```false```丢弃消息 |
-| options.persistent | boolean | 是否消息持久化存储，同```deliveryMode``` |
-| options.deliveryMode | boolean | 是否消息持久化存储，同```persistent``` |
-| options.headers | IProduceHeaders | 消息生产者 headers |
-| options.priority | Priority | 消息优先级，高优先级先分发消费 |
-| options.expiration | number | 消息 TTL 时长，覆盖全局 ```deliverTimeout``` |
-| options.pushRetryTimes | number | 覆盖全局```pushRetryTimes``` |
-| options.pushDelay | DelayLevel | 覆盖全局```pushDelay``` |
-| options.retryTimes | number | 覆盖全局```retryTimes``` |
-| options.retryDelay | Delay | 覆盖全局```retryDelay``` |
+| `content` | `any` | 消息内容 |
+| `options` | `IProducerConfig<T>` | 消息参数, 参考 `RabbitMqProducer` 说明 |
 
 #### RabbitMqQueue#ack(message: IQueueMessage<T>, allUpTo?: boolean): Promise<void>
-确认消息消费，RabbitMQ 会将对应的消息删除。```allUpTo```为```true```，会将该消息之前的所有消息均 ack 掉。
+确认消息消费，RabbitMQ 会将对应的消息删除。`allUpTo` 为 `true`，会将该消息之前的所有消息均 ack 掉。
 
 #### RabbitMqQueue#nack(message: IQueueMessage<T>, allUpTo?: boolean, requeue?: boolean): Promise<void>
-RabbitMQ 会“拿回”该消息的。```requeue```为```true```会重新将该消息放回队列，否则丢弃该消息。
+RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消息放回队列，否则丢弃该消息。
 
 ### RabbitMqProducer
 | 参数名 | 类型 | 参数说明 |
 | :-- | :-- | :-- |
-| queue | RabbitMqQueue<T> | 队列对象 |
-| options | Partial<IProduceOptions> | 消息参数 |
-| options.mandatory | boolean | 消息无法被正确“投递”时，服务端处理逻辑。```true``` 返回报错，```false```丢弃消息 |
-| options.persistent | boolean | 是否消息持久化存储，同```deliveryMode``` |
-| options.deliveryMode | boolean | 是否消息持久化存储，同```persistent``` |
-| options.headers | IProduceHeaders | 消息生产者 headers |
-| options.priority | Priority | 消息优先级，高优先级先分发消费 |
-| options.expiration | number | 消息 TTL 时长，覆盖全局 ```deliverTimeout``` |
-| options.pushRetryTimes | number | 消息发送时，本地重试次数 |
-| options.pushDelay | DelayLevel | 消息发送时，本地重试延时 |
-| options.retryTimes | number | 消息重试次数 |
-| options.retryDelay | DelayLevel | 消息重试延时 |
+| `queue` | `RabbitMqQueue<T>` | 队列对象 |
+| `options` | `IProducerConfig<T>` | 消息参数 |
+| `options.mandatory` | `boolean` | 消息无法被正确“投递”时，服务端处理逻辑。`true` 返回报错，`false`丢弃消息 |
+| `options.persistent` | `boolean` | 是否消息持久化存储，同 `deliveryMode` |
+| `options.deliveryMode` | `boolean` | 是否消息持久化存储，同 `persistent` |
+| `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
+| `options.priority` | Priority | 消息优先级，高优先级先分发消费 |
+| `options.expiration` | number | 消息 TTL 时长，覆盖全局 ```deliverTimeout``` |
+| `options.pushRetryTimes` | number | 消息发送时，本地重试次数 |
+| `options.pushDelay` | DelayLevel | 消息发送时，本地重试延时 |
+| `options`
 
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。
@@ -167,17 +154,16 @@ RabbitMQ 会“拿回”该消息的。```requeue```为```true```会重新将该
 ### RabbitMqConsumer
 | 参数名 | 类型 | 参数说明 |
 | :-- | :-- | :-- |
-| queue | RabbitMqQueue<T> | 队列对象 |
-| options | IConsumerConfig<T> | 消费者参数 |
-| options.retryTimes | number | 重试次数 |
-| options.retryDelay | DelayLevel | 重试延时等级 |
-| options.retryMethod | RetryMethod | 重试策略，RetryMethod.retry 本地重试，RetryMethod.republish 重新发布到队列 |
-| options.ackPolicy | AckPolicy | 消息 ACK 策略，AckPolicy.before 执行前，AckPolicy.after 执行后 |
-| options.consumeTimeout | number | 消息消费超时时间，从消息生产开始算，republish 会刷新时间 |
-| options.run | (message: IQueueMessage<T>): Promise<void>; | 消息消费逻辑 |
-| options.retry | (err: Error, message: IQueueMessage<T>, count: number): Promise<void>; | 消息本地重试逻辑 |
-| options.republish | (content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>; | 消息重新发布逻辑 |
-| options.error | (err: Error, message: IQueueMessage<T>): void; | 错误处理逻辑 |
+| `queue` | `RabbitMqQueue<T>` | 队列对象 |
+| `options` | `IConsumerConfig<T>` | 消费者参数 |
+| `options.retryTimes` | `number` | 重试次数 |
+| `options.retryDelay` | `DelayLevel` | 重试延时等级 (仅对延迟队列生效) |
+| `options.retryMethod` | `RetryMethod` | 重试策略，RetryMethod.retry 本地重试，`RetryMethod.republish` 重新发布到队列 |
+| `options.timeout` | `number` | 消息消费超时时间，从消息生产开始算，`republish` 会刷新时间 |
+| `options.run` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |
+| `options.republish` | `(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>` | 消息重新发布逻辑 |
+| `options.error` | `(err: Error, message: IQueueMessage<T>): void` | 错误处理逻辑 |
+| `options.onFinish()` | `(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void` | 队列执行完成 |
 
 #### RabbitMqConsumer#start(): Promise<void>
 启动消费者, 执行任务订阅。

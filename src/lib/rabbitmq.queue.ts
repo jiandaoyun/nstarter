@@ -1,27 +1,18 @@
-import _ from 'lodash';
 import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
 import { ConfirmChannel, ConsumeMessage, Options } from 'amqplib';
+import { DefaultConfig, ExchangeType, OverflowMethod, RabbitProps } from '../constants';
+import { IMessageHandler, IQueueMessage, IQueuePayload } from '../types';
 import AssertExchange = Options.AssertExchange;
 import AssertQueue = Options.AssertQueue;
 import Publish = Options.Publish;
 import Consume = Options.Consume;
-import { DefaultConfig, DefaultExchangeOptions, DefaultQueueOptions, ExchangeType } from '../constants';
-import { IMessageHandler, IQueuePayload, IQueueMessage } from '../types';
 
 export interface IQueueConfig {
-    // 队列配置
-    queue: {
-        name: string,
-        routingKey: string,
-        options?: AssertQueue
-    };
-    // 交换器配置
-    exchange: {
-        name: string,
-        type: ExchangeType,
-        options?: AssertExchange
-    };
+    name: string;
     prefetch?: number;
+    maxLength?: number;
+    overflowMethod?: OverflowMethod;
+    isDelay?: boolean;
 }
 
 /**
@@ -38,15 +29,13 @@ export class RabbitMqQueue<T> {
     protected _consumerTag: string;
 
     constructor(rabbitMq: AmqpConnectionManager, options: IQueueConfig) {
-        this._options = _.defaultsDeep(options, {
-            queue: {
-                options: DefaultQueueOptions
-            },
-            exchange: {
-                options: DefaultExchangeOptions
-            },
-            prefetch: DefaultConfig.prefetch
-        });
+        this._options = {
+            prefetch: DefaultConfig.prefetch,
+            maxLength: undefined,
+            overflowMethod: OverflowMethod.reject_publish,
+            isDelay: false,
+            ...options
+        }
         this._rabbitMq = rabbitMq;
         this._initChannelWrapper();
     }
@@ -55,7 +44,46 @@ export class RabbitMqQueue<T> {
      * 获取队列名称
      */
     public get name(): string {
-        return this._options.queue.name;
+        return this._options.name;
+    }
+
+    /**
+     * 生成队列配置
+     * @private
+     */
+    private _getQueueOptions(): AssertQueue {
+        const options: AssertQueue = {
+            durable: true,
+            autoDelete: false,
+            exclusive: false
+        };
+        // 队列溢出策略
+        if (this._options.maxLength) {
+            options.arguments = {
+                [RabbitProps.maxMessageLength]: this._options.maxLength,
+                [RabbitProps.overflowMethod]: this._options.overflowMethod,
+            };
+        }
+        return options;
+    }
+
+    /**
+     * 生成 exchange 配置
+     * @private
+     */
+    private _getExchangeOptions(): AssertExchange {
+        const options: AssertExchange = {
+            durable: true,
+            autoDelete: false,
+            internal: false
+        };
+        // 延迟队列
+        if (this._options.isDelay) {
+            options.arguments = {
+                [RabbitProps.delayDeliverType]: DefaultConfig.exchangeType
+            };
+        }
+        return options;
     }
 
     /**
@@ -69,16 +97,17 @@ export class RabbitMqQueue<T> {
             // 启动、重连加载逻辑
             // 注册到 rabbitMQ 内部的 setups 队列中，启动或重连时调用
             setup: async (channel: ConfirmChannel): Promise<any> => {
-                const { queue } = await channel.assertQueue(o.queue.name, o.queue.options);
+                const { queue } = await channel.assertQueue(o.name, this._getQueueOptions());
                 this.queue = queue;
                 if (o.prefetch) {
                     await channel.prefetch(o.prefetch);
                 }
+                const exchangeType = o.isDelay ? ExchangeType.delay : DefaultConfig.exchangeType;
                 const { exchange } = await channel.assertExchange(
-                    o.exchange.name, o.exchange.type, o.exchange.options
+                    o.name, exchangeType, this._getExchangeOptions()
                 );
                 this.exchange = exchange;
-                await channel.bindQueue(queue, exchange, o.queue.routingKey);
+                await channel.bindQueue(queue, exchange, DefaultConfig.routingKey);
             }
         });
     }
@@ -139,9 +168,8 @@ export class RabbitMqQueue<T> {
      * @param options
      */
     public async publish(content: IQueuePayload<T>, options: Publish) {
-        const o = this._options;
         const payload = await this._serializePayload(content);
-        return this._channelWrapper.publish(this.exchange, o.queue.routingKey, payload, options);
+        return this._channelWrapper.publish(this.exchange, DefaultConfig.routingKey, payload, options);
     }
 
     public ack(

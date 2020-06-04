@@ -2,15 +2,11 @@ import retry from 'async-retry';
 import { Options } from 'amqplib';
 
 import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants';
-import { IProduceHeaders, IProduceOptions, IQueuePayload } from '../types';
+import { IProduceHeaders, IProducerConfig, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
-export interface IProducerConfig<T> extends Partial<IProduceOptions> {
-    onPublish?(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void;
-}
-
 export interface IQueueProducer<T> {
-    publish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
+    publish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void>;
     setup(): Promise<void>;
 }
 
@@ -40,11 +36,11 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
 
     /**
      * 格式化消息生产配置
-     * @param {Partial<IProduceOptions>} options - 配置参数
+     * @param {IProducerConfig<T>} options - 配置参数
      * @return {Options.Publish}
      * @private
      */
-    protected _getProduceOptions(options: Partial<IProduceOptions>): Options.Publish {
+    protected _getProduceOptions(options: IProducerConfig<T>): Options.Publish {
         const o = this._options;
         const publishOpts: Options.Publish = {
             mandatory: true,
@@ -77,10 +73,10 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
     /**
      * 发送队列消息
      * @param {IQueuePayload<T>} content - 内容
-     * @param {Partial<IProduceOptions>} options -
+     * @param {IProducerConfig<T>>} options -
      * @return {Promise<void>}
      */
-    public async publish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
+    public async publish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void> {
         const o = this._options;
         const publishOpts = this._getProduceOptions(options || {});
         return retry(async () => {

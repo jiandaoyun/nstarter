@@ -4,7 +4,8 @@ import {
     MessagePropertyHeaders,
     Options
 } from 'amqplib';
-import { Priority } from './constants';
+import { Priority, RetryMethod } from './constants';
+import { RabbitMqQueue } from './lib/rabbitmq.queue';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
@@ -41,14 +42,14 @@ export interface IProduceHeaders extends MessagePropertyHeaders {
 /**
  * 生产消息配置
  */
-export interface IProduceOptions extends Options.Publish {
+export interface IProducerConfig<T> extends Options.Publish {
     /**
      * 生产者配置
      */
-    mandatory: boolean;
-    persistent: boolean;
-    deliveryMode: boolean;
-    headers: IProduceHeaders;
+    mandatory?: boolean;
+    persistent?: boolean;
+    deliveryMode?: boolean;
+    headers?: IProduceHeaders;
     priority?: Priority;
     // 超时时间 TTL
     expiration?: number;
@@ -56,6 +57,18 @@ export interface IProduceOptions extends Options.Publish {
     pushRetryDelay?: number;
     // 延时添加到队列
     pushDelay?: number;
+    onPublish?(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void;
+}
+
+export interface IConsumerConfig<T> {
+    retryTimes?: number;
+    retryDelay?: number;
+    retryMethod?: RetryMethod;
+    timeout?: number;
+    run(message: IQueueMessage<T>): Promise<void>;
+    republish?(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void>;
+    error?(err: Error, message: IQueueMessage<T>): void;
+    onFinish?(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void;
 }
 
 /**

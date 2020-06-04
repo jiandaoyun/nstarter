@@ -13,26 +13,8 @@ const expect = chai.expect;
 
 describe('test: disconnect', () => {
     const queueOptions = {
-        queue: {
-            name: 'test:error',
-            routingKey: 'error',
-            options: {
-                durable: false,
-                autoDelete: false
-            }
-        },
-        exchange: {
-            name: 'test:error',
-            type: ExchangeType.delay,
-            options: {
-                durable: false,
-                autoDelete: false,
-                arguments: {
-                    [RabbitProps.delayDeliverType]: 'non-exist'
-                }
-            }
-        },
-        prefetch: 0
+        name: 'test:normal',
+        maxLength: 100
     };
 
     it('disconnect', (done) => {

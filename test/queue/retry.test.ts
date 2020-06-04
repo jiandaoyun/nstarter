@@ -10,8 +10,6 @@ import {
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../utils';
-import { createDeflateRaw } from 'zlib';
-import { spawn } from 'child_process';
 
 const expect = chai.expect;
 
@@ -52,7 +50,7 @@ describe('test: retry', () => {
         });
 
         after(async () => {
-            await sleep(100);
+            await sleep(150);
             await consumer.stop();
         });
     });
@@ -90,7 +88,7 @@ describe('test: retry', () => {
         });
 
         after(async() => {
-            await sleep(100);
+            await sleep(150);
             await consumer.stop();
         });
     });

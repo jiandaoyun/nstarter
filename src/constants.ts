@@ -31,12 +31,23 @@ export enum RetryMethod {
 }
 
 /**
+ * 队列超出长度后的处理策略
+ * @enum OverflowMethod
+ */
+export enum OverflowMethod {
+    reject_publish = 'reject-publish',  // 拒绝新任务入队
+    drop_head = 'drop-head'             // 删除队首尚未分发的任务(如果指定了死信队列会分发至对应 Exchange)
+}
+
+/**
  * RabbitMQ 内置参数、headers
  */
 export enum RabbitProps {
     deadLetterExchange = 'x-dead-letter-exchange',           // 死信 Exchange 名称
     messageDelay = 'x-delay',                                // 队列消息动态延时，单位：MS
-    delayDeliverType = 'x-delayed-type'                      // 延时消息 Exchange 分发规则
+    delayDeliverType = 'x-delayed-type',                     // 延时消息 Exchange 分发规则
+    maxMessageLength = 'x-max-length',                       // 队列消息最大长度, 超过后会被移到死信队列中
+    overflowMethod = 'x-overflow'                            // 队列超出长度限制后的行为
 }
 
 /**
@@ -51,6 +62,10 @@ export enum CustomProps {
  * RabbitMQ 默认配置
  */
 export const DefaultConfig = {
+    // 默认分发策略
+    exchangeType: ExchangeType.fanout,
+    // 默认分发标识
+    routingKey: '',
     // 单个 Channel 消息处理并发数
     prefetch: 10,
     // 默认重试次数，重试 2 次，总共执行 3 次
@@ -59,23 +74,4 @@ export const DefaultConfig = {
     retryDelay: 1000,
     // 消息发送重试延迟时间 (ms)
     pushRetryDelay: 1000
-};
-
-/**
- * 队列默认配置
- */
-export const DefaultQueueOptions = {
-    exclusive: false,
-    durable: true,
-    autoDelete: false
-};
-
-/**
- * Exchange 默认配置
- */
-export const DefaultExchangeOptions = {
-    durable: true,
-    autoDelete: false,
-    internal: false,
-    alternateExchange: 'nstarter.default_aex'
 };
