@@ -40,9 +40,9 @@ describe('test: republish', () => {
                     console.log('run success');
                     done();
                 },
-                error: async (err, message) => {
-                    await expect(err).to.not.exist;
-                    await expect(message).to.exist;
+                error: (err, message) => {
+                    expect(err).to.not.exist;
+                    expect(message).to.exist;
                 },
                 republish: async (content: IQueuePayload<number>, options) => {
                     return producer.publish(content, options);
@@ -73,17 +73,18 @@ describe('test: republish', () => {
             consumer = queueConsumerFactory(queue, {
                 retryMethod: RetryMethod.republish,
                 retryTimes: 2,
-                retryDelay: 0,
+                retryDelay: 50,
                 run: async (message: IQueueMessage<number>): Promise<void> => {
                     count ++;
                     if (count < message.content) {
                         throw Error('run failed');
                     }
                 },
-                error: async (err, message) => {
-                    await expect(err).to.exist;
-                    await expect(message).to.exist;
+                error: (err, message) => {
+                    expect(err).to.exist;
+                    expect(message).to.exist;
                     done();
+                    throw Error('error');
                 },
                 republish: async (content: IQueuePayload<number>, options) => {
                     return producer.publish(content, options);

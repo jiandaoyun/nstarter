@@ -61,9 +61,7 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             headers[RabbitProps.messageDelay] = pushDelay;
         }
         // 记录发起时间
-        if (!headers[CustomProps.publishTime]) {
-            headers[CustomProps.publishTime] = Date.now();
-        }
+        headers[CustomProps.publishTime] = Date.now();
         return {
             ...publishOpts,
             headers

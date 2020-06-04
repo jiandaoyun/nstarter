@@ -135,12 +135,8 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | :-- | :-- | :-- |
 | `queue` | `RabbitMqQueue<T>` | 队列对象 |
 | `options` | `IProducerConfig<T>` | 消息参数 |
-| `options.mandatory` | `boolean` | 消息无法被正确“投递”时，服务端处理逻辑。`true` 返回报错，`false`丢弃消息 |
-| `options.persistent` | `boolean` | 是否消息持久化存储，同 `deliveryMode` |
-| `options.deliveryMode` | `boolean` | 是否消息持久化存储，同 `persistent` |
 | `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
 | `options.priority` | Priority | 消息优先级，高优先级先分发消费 |
-| `options.expiration` | number | 消息 TTL 时长，覆盖全局 ```deliverTimeout``` |
 | `options.pushRetryTimes` | number | 消息发送时，本地重试次数 |
 | `options.pushDelay` | DelayLevel | 消息发送时，本地重试延时 |
 | `options`

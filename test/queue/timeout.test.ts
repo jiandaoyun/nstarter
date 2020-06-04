@@ -35,6 +35,7 @@ describe('test: timeout', () => {
             run: async (message: IQueueMessage<number>) => {
                 console.debug(`runAt: ${ Date.now() } / ${ count }`);
                 count ++;
+                await sleep(200);
                 if (count < message.content) {
                     throw Error('run failed');
                 }
@@ -43,7 +44,7 @@ describe('test: timeout', () => {
             republish: async (content: IQueuePayload<number>, options) => {
                 return producer.publish(content, options);
             },
-            error: async (err: Error, message: IQueueMessage<number>) => {
+            error: (err: Error, message: IQueueMessage<number>) => {
                 expect(err).to.exist;
                 expect(message).to.exist;
                 done();

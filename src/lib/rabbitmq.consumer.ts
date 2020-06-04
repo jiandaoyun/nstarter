@@ -3,6 +3,7 @@ import retry from 'async-retry';
 import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
 import { IConsumerConfig, IProducerConfig, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
+import { createDeflateRaw } from 'zlib';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
@@ -84,9 +85,14 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param message
      * @private
      */
-    private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
+    private _error(err: Error, message?: IQueueMessage<T>): void {
         if (this._options.error) {
-            return this._options.error.apply(this, arguments);
+            try {
+                this._options.error.apply(this, arguments);
+            } catch (err) {
+                // 记录异常，不阻塞调度
+                console.warn('Rabbitmq job error process failed.');
+            }
         } else {
             console.warn(`Rabbitmq job failed with unhandled error.`);
         }

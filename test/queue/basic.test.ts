@@ -14,6 +14,7 @@ describe('test: basic', () => {
     const producer = queueProducerFactory(queue, {
         onPublish: (content, queue) => {
             console.log(`${ queue.name } published.`);
+            throw new Error('publish Error');
         }
     });
     const consumer = queueConsumerFactory(queue, {
@@ -23,6 +24,7 @@ describe('test: basic', () => {
         },
         onFinish: (message, queue) => {
             console.log(`${ queue.name } finished.`);
+            throw new Error('finish Error');
         }
     });
 

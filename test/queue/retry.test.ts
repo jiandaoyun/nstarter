@@ -40,9 +40,9 @@ describe('test: retry', () => {
                     console.log('run success');
                     done();
                 },
-                error: async(err, message) => {
-                    await expect(err).to.not.exist;
-                    await expect(message).to.exist;
+                error: (err, message) => {
+                    expect(err).to.not.exist;
+                    expect(message).to.exist;
                 }
             });
             consumer.start();
@@ -77,9 +77,9 @@ describe('test: retry', () => {
                         throw Error('run failed');
                     }
                 },
-                error: async (err, message) => {
-                    await expect(err).to.exist;
-                    await expect(message).to.exist;
+                error: (err, message) => {
+                    expect(err).to.exist;
+                    expect(message).to.exist;
                     done();
                 }
             });

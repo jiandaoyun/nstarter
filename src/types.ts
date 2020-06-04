@@ -46,13 +46,8 @@ export interface IProducerConfig<T> extends Options.Publish {
     /**
      * 生产者配置
      */
-    mandatory?: boolean;
-    persistent?: boolean;
-    deliveryMode?: boolean;
     headers?: IProduceHeaders;
     priority?: Priority;
-    // 超时时间 TTL
-    expiration?: number;
     pushRetryTimes?: number;
     pushRetryDelay?: number;
     // 延时添加到队列

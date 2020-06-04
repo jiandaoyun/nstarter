@@ -1,11 +1,6 @@
 import chai from 'chai';
 
-import {
-    AmqpConnector,
-    ExchangeType,
-    queueFactory,
-    RabbitProps
-} from '../../src';
+import { AmqpConnector, queueFactory, } from '../../src';
 import { sleep } from '../utils';
 import { rabbitmqConf } from '../config';
 
