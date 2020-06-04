@@ -4,15 +4,24 @@
 
 ### AMQP 链接
 ```typescript
-import AmqpConnectManager from 'amqp-connection-manager';
-const amqp = AmqpConnectManager.connect('amqp://user:password@127.0.0.1:5672/%2F', {
+import AmqpConnector from 'nstarter-rabbitmq';
+const amqp = AmqpConnector({
+    user: 'user',
+    password: 'password',
+    brokers: [
+        {
+            host: '127.0.0.1',
+            port: 5672
+        }
+    ],
     heartbeatIntervalInSeconds: 60,
     reconnectTimeInSeconds: 1
 });
 ```
+
 ### 队列启动
 ```typescript
-import { ExchangeType, IQueueConfig, queueFactory, IRabbitMqMessage } from 'nstarter-rabbitmq';
+import { IQueueConfig, queueFactory, IRabbitMqMessage } from 'nstarter-rabbitmq';
 
 export interface IDemoMessage extends IRabbitMqMessage {
     value: string;
@@ -20,26 +29,10 @@ export interface IDemoMessage extends IRabbitMqMessage {
 
 // 队列配置
 const queueConfig: IQueueConfig = {
-    queue: {
-        name: 'queue:demo:normal',
-        routingKey: '',
-        options: {
-            exclusive: false,
-            durable: false,
-            autoDelete: true
-        }
-    },
-    exchange: {
-        name: 'exchange:demo:normal',
-        type: ExchangeType.fanout,
-        options: {
-            durable: false,
-            internal: false,
-            autoDelete: true,
-            alternateExchange: 'demo.alternate_exchange'
-        }
-    },
-    prefetch: 2
+    name: 'demo:normal',
+    prefetch: 2,
+    maxLength: 10000,
+    isDelay: true
 };
 
 export const demo_queue = queueFactory<IDemoMessage>(amqp, queueConfig);
@@ -136,16 +129,16 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `queue` | `RabbitMqQueue<T>` | 队列对象 |
 | `options` | `IProducerConfig<T>` | 消息参数 |
 | `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
-| `options.priority` | Priority | 消息优先级，高优先级先分发消费 |
-| `options.pushRetryTimes` | number | 消息发送时，本地重试次数 |
-| `options.pushDelay` | DelayLevel | 消息发送时，本地重试延时 |
-| `options`
+| `options.priority` | `Priority` | 消息优先级，高优先级先分发消费 |
+| `options.pushRetryTimes` | `number` | 消息发送时，本地重试次数 |
+| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 |
+| `options.onPublish` | `(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void` | | 
 
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。
 
 #### RabbitMqProducer#publish(content: IQueuePayload<T>, options: Publish): Promise<void>
-此方法带本地重试机制。参数内容同 ```RabbitMqQueue#publish(content, options)```。
+此方法带本地重试机制。参数内容同 `RabbitMqQueue#publish(content, options)`。
 
 ### RabbitMqConsumer
 | 参数名 | 类型 | 参数说明 |
@@ -156,9 +149,9 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options.retryDelay` | `DelayLevel` | 重试延时等级 (仅对延迟队列生效) |
 | `options.retryMethod` | `RetryMethod` | 重试策略，RetryMethod.retry 本地重试，`RetryMethod.republish` 重新发布到队列 |
 | `options.timeout` | `number` | 消息消费超时时间，从消息生产开始算，`republish` 会刷新时间 |
-| `options.run` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |
-| `options.republish` | `(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>` | 消息重新发布逻辑 |
-| `options.error` | `(err: Error, message: IQueueMessage<T>): void` | 错误处理逻辑 |
+| `options.run()` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |
+| `options.republish()` | `(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>` | 消息重新发布逻辑 |
+| `options.error()` | `(err: Error, message: IQueueMessage<T>): void` | 错误处理逻辑 |
 | `options.onFinish()` | `(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void` | 队列执行完成 |
 
 #### RabbitMqConsumer#start(): Promise<void>
