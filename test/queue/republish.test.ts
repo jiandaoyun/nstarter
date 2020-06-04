@@ -83,8 +83,11 @@ describe('test: republish', () => {
                 error: (err, message) => {
                     expect(err).to.exist;
                     expect(message).to.exist;
-                    done();
-                    throw Error('error');
+                    if (count > 1) {
+                        done();
+                    } else {
+                        throw Error('error');
+                    }
                 },
                 republish: async (content: IQueuePayload<number>, options) => {
                     return producer.publish(content, options);
