@@ -88,7 +88,7 @@ describe('test: retry', () => {
         });
 
         after(async() => {
-            await sleep(150);
+            await sleep(200);
             await consumer.stop();
         });
     });
@@ -121,7 +121,7 @@ describe('test: retry', () => {
         });
 
         after(async() => {
-            await sleep(100);
+            await sleep(200);
             await consumer.stop();
         });
     });
