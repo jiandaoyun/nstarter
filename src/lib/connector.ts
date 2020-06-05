@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import AmqpConnectManager, { AmqpConnectionManager } from 'amqp-connection-manager';
 import { RabbitMQConfig } from '../types';
 
@@ -17,6 +16,8 @@ export class AmqpConnector {
             this.connection.on('disconnect', (err?: Error) => {
                 if (err && errorHandler) {
                     errorHandler(err);
+                } else {
+                    console.error('Rabbitmq disconnect unhandled.');
                 }
             });
         });
@@ -25,7 +26,7 @@ export class AmqpConnector {
     private get amqpUrls(): string[] {
         const { user, password, protocol, brokers } = this._config,
             vhost = encodeURIComponent(this._config.vhost || '/');
-        return _.map(brokers, (broker) => {
+        return brokers.map((broker) => {
             const { host, port = 5672 } = broker;
             return `${ protocol }://${ user }:${ password }@${ host }:${ port }/${ vhost }`;
         });

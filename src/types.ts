@@ -4,20 +4,20 @@ import {
     MessagePropertyHeaders,
     Options
 } from 'amqplib';
-import { Priority } from './constants';
+import { Priority, RetryMethod } from './constants';
+import { RabbitMqQueue } from './lib/rabbitmq.queue';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
-export type DelayLevel = string;
 
 export interface RabbitMQConfig {
     readonly brokers: {
         readonly host: string,
-        readonly port: number
+        readonly port?: number
     }[];
     readonly protocol: string;
     readonly user: string;
     readonly password: string;
-    readonly vhost: string;
+    readonly vhost?: string;
     // 链接配置
     readonly heartbeatInterval?: number;
     readonly reconnectInterval?: number;
@@ -35,30 +35,35 @@ export type IQueuePayload<T = IRabbitMqMessage> = T extends IRabbitMqMessage ? T
 
 export interface IProduceHeaders extends MessagePropertyHeaders {
     'x-retry-times'?: number;
-    'x-retry-delay'?: DelayLevel;
+    'x-retry-delay'?: number;
     'x-p-timestamp'?: number;
 }
 
 /**
  * 生产消息配置
  */
-export interface IProduceOptions extends Options.Publish {
+export interface IProducerConfig<T> extends Options.Publish {
     /**
      * 生产者配置
      */
-    mandatory: boolean;
-    persistent: boolean;
-    deliveryMode: boolean;
-    headers: IProduceHeaders;
+    headers?: IProduceHeaders;
     priority?: Priority;
-    expiration?: string | number;
     pushRetryTimes?: number;
-    pushDelay?: DelayLevel; // 延时添加到队列
-    /**
-     * 消费者配置
-     */
+    pushRetryDelay?: number;
+    // 延时添加到队列
+    pushDelay?: number;
+    onPublish?(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void;
+}
+
+export interface IConsumerConfig<T> {
     retryTimes?: number;
-    retryDelay?: DelayLevel;
+    retryDelay?: number;
+    retryMethod?: RetryMethod;
+    timeout?: number;
+    run(message: IQueueMessage<T>): Promise<void>;
+    republish?(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void>;
+    error?(err: Error, message: IQueueMessage<T>): void;
+    onFinish?(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void;
 }
 
 /**
@@ -70,8 +75,7 @@ export type IQueueMessage<T> = Extend<ConsumeMessage, {
     properties: Extend<MessageProperties, {
         headers: IProduceHeaders
     }>,
-    // Ack/NAck 是否被调用过，消息上记录的临时属性
-    isAckCalled?: boolean
+    duration?: number
 }>;
 
 export interface IMessageHandler<T> {

@@ -31,13 +31,12 @@ export enum RetryMethod {
 }
 
 /**
- * 消息 ack 策略
+ * 队列超出长度后的处理策略
+ * @enum OverflowMethod
  */
-export enum AckPolicy {
-    // 执行前
-    before = 'before',
-    // 执行后
-    after = 'after'
+export enum OverflowMethod {
+    reject_publish = 'reject-publish',  // 拒绝新任务入队
+    drop_head = 'drop-head'             // 删除队首尚未分发的任务(如果指定了死信队列会分发至对应 Exchange)
 }
 
 /**
@@ -45,50 +44,34 @@ export enum AckPolicy {
  */
 export enum RabbitProps {
     deadLetterExchange = 'x-dead-letter-exchange',           // 死信 Exchange 名称
-    messageTtl = 'x-message-ttl',                            // 队列消息 TTL 延时，单位：MS
     messageDelay = 'x-delay',                                // 队列消息动态延时，单位：MS
-    delayDeliverType = 'x-delayed-type'                      // 延时消息 Exchange 分发规则
+    delayDeliverType = 'x-delayed-type',                     // 延时消息 Exchange 分发规则
+    maxMessageLength = 'x-max-length',                       // 队列消息最大长度, 超过后会被移到死信队列中
+    overflowMethod = 'x-overflow'                            // 队列超出长度限制后的行为
 }
 
 /**
  * 自定义消息 headers
  */
 export enum CustomProps {
-    produceTimestamp = 'x-p-timestamp',                      // 消息生产时间戳
-    consumeRetryTimes = 'x-retry-times',                     // 消费重试次数
-    consumeRetryDelay = 'x-retry-delay',                     // 消费重试延时，单位：MS
-    currentRetryTimes = 'x-current-times'                    // 当前重试次数
+    publishTime = 'x-publish-time',                   // 消息生产时间戳
+    retryTimes = 'x-retry-times',                     // 消费重试次数
 }
 
 /**
  * RabbitMQ 默认配置
  */
 export const DefaultConfig = {
+    // 默认分发策略
+    exchangeType: ExchangeType.fanout,
+    // 默认分发标识
+    routingKey: '',
     // 单个 Channel 消息处理并发数
-    Prefetch: 10,
-    // 消息消费默认 TTL，单位：ms
-    DeliverTTL: 60000,
-    // 默认重试次数
-    RetryTimes: 3,
-    // 默认延时
-    RetryDelay: '3s'
-};
-
-/**
- * 队列默认配置
- */
-export const DefaultQueueOptions = {
-    exclusive: false,
-    durable: true,
-    autoDelete: false
-};
-
-/**
- * Exchange 默认配置
- */
-export const DefaultExchangeOptions = {
-    durable: true,
-    autoDelete: false,
-    internal: false,
-    alternateExchange: 'nstarter.default_aex'
+    prefetch: 10,
+    // 默认重试次数，重试 2 次，总共执行 3 次
+    retryTimes: 2,
+    // 默认延时 1000ms
+    retryDelay: 1000,
+    // 消息发送重试延迟时间 (ms)
+    pushRetryDelay: 1000
 };

@@ -1,27 +1,14 @@
-import async from 'async';
-import _ from 'lodash';
-import moment from 'moment';
-import { promisify } from 'util';
+import retry from 'async-retry';
 
-import { AckPolicy, CustomProps, DefaultConfig, RetryMethod } from '../constants';
-import { DelayLevel, IProduceHeaders, IProduceOptions, IQueueMessage, IQueuePayload } from '../types';
+import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
+import { IConsumerConfig, IProducerConfig, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
+import { createDeflateRaw } from 'zlib';
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
-export interface IConsumerConfig<T> {
-    retryTimes?: number;
-    retryDelay?: DelayLevel;
-    retryMethod?: RetryMethod;
-    ackPolicy?: AckPolicy;
-    consumeTimeout?: number;
-    run(message: IQueueMessage<T>): Promise<void>;
-    retry?(err: Error, message: IQueueMessage<T>, count: number): Promise<void>;
-    republish?(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>;
-    error?(err: Error, message: IQueueMessage<T>): void;
-}
-
 export interface IQueueConsumer<T> {
+    register(): IQueueConsumer<T>;
     start(): Promise<void>;
     stop(): Promise<void>;
 }
@@ -36,11 +23,10 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
     constructor(queue: RabbitMqQueue<T>, config: IConsumerConfig<T>) {
         this._queue = queue;
         this._options = {
-            consumeTimeout: 0,
-            retryTimes: DefaultConfig.RetryTimes,
-            retryDelay: DefaultConfig.RetryDelay,
+            timeout: 0,
+            retryTimes: DefaultConfig.retryTimes,
+            retryDelay: DefaultConfig.retryDelay,
             retryMethod: RetryMethod.retry,
-            ackPolicy: AckPolicy.after,
             ...config
         };
     }
@@ -57,16 +43,26 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * 任务执行方法
      */
     private async _run(message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'run', message);
+        const startTime = Date.now();
+        await this._options.run.apply(this, arguments);
+        message.duration = Date.now() - startTime;
+        this._notifyFinish(message);
     }
 
     /**
-     * 重试方法
-     * @param err
+     * 任务执行完成反馈
      * @param message
+     * @private
      */
-    private async _retry(err: Error | null, message: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'retry', err, message);
+    private _notifyFinish(message: IQueueMessage<T>): void {
+        if (this._options.onFinish) {
+            try {
+                this._options.onFinish.apply(this, [message, this._queue]);
+            } catch (err) {
+                // 记录异常，不阻塞调度
+                console.warn('Rabbitmq job finish notify failed');
+            }
+        }
     }
 
     /**
@@ -75,8 +71,12 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param options
      * @private
      */
-    private async _republish(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void> {
-        return _.invoke(this._options, 'republish', content, options);
+    private async _republish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void> {
+        if (this._options.republish) {
+            return this._options.republish.apply(this, arguments);
+        } else {
+            console.warn('Rabbitmq job failed with undefined republish method.');
+        }
     }
 
     /**
@@ -85,8 +85,17 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param message
      * @private
      */
-    private async _error(err: Error, message?: IQueueMessage<T>): Promise<void> {
-        return _.invoke(this._options, 'error', err, message);
+    private _error(err: Error, message?: IQueueMessage<T>): void {
+        if (this._options.error) {
+            try {
+                this._options.error.apply(this, arguments);
+            } catch (err) {
+                // 记录异常，不阻塞调度
+                console.warn('Rabbitmq job error process failed.');
+            }
+        } else {
+            console.warn(`Rabbitmq job failed with unhandled error.`);
+        }
     }
 
     /**
@@ -96,24 +105,20 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
         const o = this._options;
         await this._queue.subscribe(async (message: IQueueMessage<T>) => {
             try {
-                if (o.ackPolicy === AckPolicy.before) {
-                    // 执行前 ack
-                    this._queue.ack(message);
-                }
-                await this._run(message);
-            } catch (err) {
                 if (o.retryMethod === RetryMethod.republish) {
-                    return this._ackOrRepublish(err, message);
+                    // 队列重新发布重试
+                    await this._handleWithRepublish(message);
                 } else {
                     // 默认执行本地 retry
-                    return this._ackOrRetry(err, message)
+                    await this._handleWithRetry(message)
                 }
+            } catch (err) {
+                await this._error(err, message);
             } finally {
-                if (o.ackPolicy !== AckPolicy.before) {
-                    // 确保消费过程 message 被 ack
-                    this._queue.ack(message);
-                }
+                // 确保消费过程 message 被 ack
+                this._queue.ack(message);
             }
+            // 采用手动 ack 策略，自动 ack 会将队列消息直接分发
         }, { noAck: false })
     }
 
@@ -126,71 +131,67 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
 
     /**
      * 本地重试执行
-     * @param {Error} err
      * @param {IQueueMessage} message
      */
-    protected async _ackOrRetry(
-        err: Error | null,
+    protected async _handleWithRetry(
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        promisify<void>((callback) => {
-            if (!o.retryTimes) {
-                return callback(err);
-            }
-            async.retry(o.retryTimes, async () => {
-                await this._retry(err, message);
-            }, callback);
-        })();
-        return;
+        return retry(async () => {
+            await this._run(message);
+        }, {
+            retries: o.retryTimes,
+            minTimeout: o.retryDelay,
+            randomize: false
+        });
     }
 
     /**
-     * 调用消息生产者，重新添加到 rabbitMq 队列
-     * @param {Error} err
+     * 失败重新分发任务至队列的策略
      * @param {IQueueMessage} message
      */
-    protected async _ackOrRepublish(
-        err: Error | null,
+    protected async _handleWithRepublish(
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
-        if (!err) {
-            // 正确处理完成，ACK
-            return;
-        }
-        // 执行重试
-        const headers = _.get(message.properties, 'headers', {}) as IProduceHeaders;
-        const pushDelay = headers[CustomProps.consumeRetryDelay],
-            triedTimes = headers[CustomProps.consumeRetryTimes] || 0,
-            produceTimestamp = headers[CustomProps.produceTimestamp],
-            timeoutStamp = moment(produceTimestamp).add(o.consumeTimeout, 'ms');
-        if (
-            (!o.retryTimes || triedTimes >= o.retryTimes)   // 不需要重试、重试机会使用完毕，队列 ACK 删除消息（防止无限重复消费）
-            || (o.consumeTimeout && produceTimestamp && timeoutStamp.isBefore(Date.now()))  // 消息超时
-        ) {
-
-            this._error(err, message);
-            return;
-        }
-        // 配置了 producer，调整重试参数，添加回队列，并删除原消息
         try {
-            const publishHeaders: IProduceHeaders = _.defaults(
-                {
-                    [CustomProps.produceTimestamp]: Date.now(),
-                    [CustomProps.consumeRetryTimes]: triedTimes + 1,
-                },
-                _.pick<IProduceHeaders>(headers, _.values(CustomProps))
-            );
-            this._republish(message.content, {
-                mandatory: true,
-                persistent: true,
-                deliveryMode: true,
-                headers: publishHeaders,
-                pushDelay
-            });
+            await this._run(message);
         } catch (err) {
-            this._error(err, message);
+            // 执行重试
+            const headers = message.properties?.headers || {};
+            const pushDelay = o.retryDelay,
+                triedTimes = headers[CustomProps.retryTimes] || 0;
+            const publishTime = headers[CustomProps.publishTime];
+            let timeoutTime;
+            if (publishTime && o.timeout) {
+                timeoutTime = publishTime + o.timeout;
+            }
+            if (
+                // 无重试策略 或 超出重试次数限定
+                (!o.retryTimes || triedTimes >= o.retryTimes)
+                // 消费超时
+                || (timeoutTime && timeoutTime < Date.now())
+            ) {
+                // 超出重试计数
+                await this._error(err, message);
+            } else {
+                // 重新发布至队列
+                try {
+                    // 无需额外 retry 逻辑，publish 封装中本身具备 publish retry 策略
+                    await this._republish(message.content, {
+                        mandatory: true,
+                        persistent: true,
+                        deliveryMode: true,
+                        headers: {
+                            ...headers,
+                            [CustomProps.retryTimes]: triedTimes + 1
+                        },
+                        pushDelay
+                    });
+                } catch (err) {
+                    await this._error(err, message);
+                }
+            }
         }
     }
 }
@@ -207,8 +208,8 @@ export const queueConsumerFactory = <T>(queue: RabbitMqQueue<T>, options: IConsu
  * 队列消费者启动方法
  */
 export const startQueueConsumers = async(): Promise<void> => {
-    await Promise.all(_.map(queueConsumerRegistry,
-        (consumer: IQueueConsumer<any>) => consumer.start()
-    ));
+    await Promise.all(
+        queueConsumerRegistry.map((consumer: IQueueConsumer<any>) => consumer.start())
+    );
     return;
 };

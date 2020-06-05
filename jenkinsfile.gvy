@@ -18,8 +18,18 @@ pipeline {
                     nvmNodeJsOrgMirror: env.NODE_MIRROR
                 ) {
                     sh(script: "npm install", label: "install")
-                    sh(script: "npm run eslint:html", label: "eslint")
                     sh(script: "npm run build", label: "build")
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                nvm(
+                    version: env.NODE_VERSION,
+                    nvmNodeJsOrgMirror: env.NODE_MIRROR
+                ) {
+                    sh(script: "npm run eslint:html", label: "eslint")
+                    sh(script: "npm run test", label: "test")
                 }
             }
         }
@@ -45,6 +55,15 @@ pipeline {
                 reportDir: 'lint',
                 reportFiles: 'eslint.html',
                 reportTitles: '代码质量',
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: false
+            )
+            publishHTML(
+                reportName: '单元测试覆盖率报告',
+                reportDir: 'coverage/lcov-report',
+                reportFiles: 'index.html',
+                reportTitles: '覆盖率',
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
                 keepAll: false

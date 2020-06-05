@@ -6,4 +6,7 @@ lint/
 .vscode/
 .idea/
 
+coverage/
+.nyc_output/
+
 *.code-workspace
