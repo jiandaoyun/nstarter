@@ -61,7 +61,6 @@ export interface IConsumerConfig<T> {
     retryMethod?: RetryMethod;
     timeout?: number;
     run(message: IQueueMessage<T>): Promise<void>;
-    republish?(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void>;
     error?(err: Error, message: IQueueMessage<T>): void;
     onFinish?(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void;
 }

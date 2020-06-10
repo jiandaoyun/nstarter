@@ -6,7 +6,7 @@ import {
     startQueueConsumers
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
-import { sleep } from '../utils';
+import { sleep } from '../../src/utils';
 
 describe('test: basic', () => {
     const queue = queueFactory(amqp.connection, normalQueueConf);

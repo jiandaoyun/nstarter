@@ -1,9 +1,11 @@
 import retry from 'async-retry';
 
-import { CustomProps, DefaultConfig, RetryMethod } from '../constants';
-import { IConsumerConfig, IProducerConfig, IQueueMessage, IQueuePayload } from '../types';
+import { CustomProps, DefaultConfig, defaultStopTimeout, RabbitProps, RetryMethod } from '../constants';
+import { IConsumerConfig, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
-import { createDeflateRaw } from 'zlib';
+import { sleep } from '../utils';
+import { Options } from 'amqplib';
+import Publish = Options.Publish;
 
 const queueConsumerRegistry: IQueueConsumer<any>[] = [];
 
@@ -71,12 +73,8 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
      * @param options
      * @private
      */
-    private async _republish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void> {
-        if (this._options.republish) {
-            return this._options.republish.apply(this, arguments);
-        } else {
-            console.warn('Rabbitmq job failed with undefined republish method.');
-        }
+    private async _republish(content: IQueuePayload<T>, options: Publish): Promise<void> {
+        await this._queue.publish(content, options);
     }
 
     /**
@@ -119,13 +117,19 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 this._queue.ack(message);
             }
             // 采用手动 ack 策略，自动 ack 会将队列消息直接分发
-        }, { noAck: false })
+        }, { noAck: false });
     }
 
     /**
      * 停止消费者执行
      */
-    public async stop(): Promise<void> {
+    public async stop(timeoutMs = defaultStopTimeout): Promise<void> {
+        await this._queue.unsubscribe();
+        const waitStart = Date.now();
+        // 队列中存在未消费完任务 且 等待未超时
+        while (this._queue.length() > 0 && Date.now() - waitStart < timeoutMs) {
+            await sleep(1000);
+        }
         return this._queue.close();
     }
 
@@ -178,15 +182,15 @@ class RabbitMqConsumer<T> implements IQueueConsumer<T> {
                 // 重新发布至队列
                 try {
                     // 无需额外 retry 逻辑，publish 封装中本身具备 publish retry 策略
+                    headers[CustomProps.retryTimes] = triedTimes + 1;
+                    if (pushDelay) {
+                        headers[RabbitProps.messageDelay] = pushDelay;
+                    }
                     await this._republish(message.content, {
                         mandatory: true,
                         persistent: true,
                         deliveryMode: true,
-                        headers: {
-                            ...headers,
-                            [CustomProps.retryTimes]: triedTimes + 1
-                        },
-                        pushDelay
+                        headers
                     });
                 } catch (err) {
                     await this._error(err, message);

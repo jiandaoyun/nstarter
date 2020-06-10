@@ -9,7 +9,7 @@ import {
     RetryMethod
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
-import { sleep } from '../utils';
+import { sleep } from '../../src/utils';
 
 const expect = chai.expect;
 
