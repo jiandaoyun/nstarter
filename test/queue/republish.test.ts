@@ -1,11 +1,11 @@
 import chai from 'chai';
 
 import {
-    IQueueConsumer,
-    IQueueMessage, IQueueProducer,
+    ConsumerEvents,
+    IQueueMessage,
     queueConsumerFactory,
     queueFactory,
-    queueProducerFactory,
+    queueProducerFactory, RabbitMqConsumer, RabbitMqProducer,
     RetryMethod
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
@@ -15,9 +15,9 @@ const expect = chai.expect;
 
 describe('test: republish', () => {
     context('republish success', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
-        let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
+        let producer: RabbitMqProducer<number>,
+            consumer: RabbitMqConsumer<number>;
 
         before(async () => {
             producer = queueProducerFactory(queue);
@@ -26,7 +26,7 @@ describe('test: republish', () => {
 
         it('republish success', (done) => {
             let count = 0;
-            consumer = queueConsumerFactory(queue, {
+            consumer = queueConsumerFactory<number>(queue, {
                 retryMethod: RetryMethod.republish,
                 retryTimes: 2,
                 retryDelay: 0,
@@ -39,13 +39,13 @@ describe('test: republish', () => {
                     expect(message).to.exist;
                     console.log('run success');
                     done();
-                },
-                error: (err, message) => {
-                    expect(err).to.not.exist;
-                    expect(message).to.exist;
                 }
             });
             consumer.start();
+            consumer.on(ConsumerEvents.error, (err, message) => {
+                expect(err).to.not.exist;
+                expect(message).to.exist;
+            });
             producer.publish(2);
         });
 
@@ -56,9 +56,9 @@ describe('test: republish', () => {
     });
 
     context('republish fail', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
-        let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
+        let producer: RabbitMqProducer<number>,
+            consumer: RabbitMqConsumer<number>;
 
         before(async () => {
             producer = queueProducerFactory(queue)
@@ -67,7 +67,7 @@ describe('test: republish', () => {
 
         it('republish fail', (done) => {
             let count = 0;
-            consumer = queueConsumerFactory(queue, {
+            consumer = queueConsumerFactory<number>(queue, {
                 retryMethod: RetryMethod.republish,
                 retryTimes: 2,
                 retryDelay: 50,
@@ -76,52 +76,19 @@ describe('test: republish', () => {
                     if (count < message.content) {
                         throw Error('run failed');
                     }
-                },
-                error: (err, message) => {
-                    expect(err).to.exist;
-                    expect(message).to.exist;
-                    if (count > 1) {
-                        done();
-                    } else {
-                        throw Error('error');
-                    }
                 }
             });
             consumer.start();
-            producer.publish(5);
-        });
-
-        after(async() => {
-            await sleep(300);
-            await consumer.stop();
-        });
-    });
-
-    context('republish unhandled', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
-        let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
-
-        before(async () => {
-            producer = queueProducerFactory(queue);
-            await producer.setup();
-        });
-
-        it('undefined republish', async () => {
-            let count = 0;
-            consumer = queueConsumerFactory(queue, {
-                retryMethod: RetryMethod.republish,
-                retryTimes: 2,
-                retryDelay: 0,
-                run: async (message: IQueueMessage<number>): Promise<void> => {
-                    count ++;
-                    if (count < message.content) {
-                        throw Error('run failed');
-                    }
+            consumer.on(ConsumerEvents.error,  (err, message) => {
+                expect(err).to.exist;
+                expect(message).to.exist;
+                if (count > 1) {
+                    done();
+                } else {
+                    throw Error('error');
                 }
             });
-            await consumer.start();
-            await producer.publish(5);
+            producer.publish(5);
         });
 
         after(async() => {

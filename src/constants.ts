@@ -59,6 +59,23 @@ export enum CustomProps {
 }
 
 /**
+ * 队列生产事件
+ */
+export enum ProducerEvents {
+    publish = 'publish',
+}
+
+/**
+ * 消费事件
+ */
+export enum ConsumerEvents {
+    run = 'run',
+    error = 'error',
+    finish = 'finish',
+    retry = 'retry',
+}
+
+/**
  * RabbitMQ 默认配置
  */
 export const DefaultConfig = {

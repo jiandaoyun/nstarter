@@ -1,13 +1,16 @@
+import { EventEmitter } from "events";
 import retry from 'async-retry';
 import { Options } from 'amqplib';
 
-import { CustomProps, DefaultConfig, Priority, RabbitProps } from '../constants';
+import { CustomProps, DefaultConfig, Priority, ProducerEvents, RabbitProps } from '../constants';
 import { IProduceHeaders, IProducerConfig, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 
-export interface IQueueProducer<T> {
-    publish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void>;
-    setup(): Promise<void>;
+/**
+ * 生产事件
+ */
+export declare interface RabbitMqProducer<T> {
+    on(event: ProducerEvents.publish, listener: (content: IQueuePayload<T>) => void): this;
 }
 
 /**
@@ -20,11 +23,12 @@ export interface IQueueProducer<T> {
  * @property _options.expiration - 消息投递超时时长，超过时间未被消费，会被删除
  * @property _options.priority - 消息投递优先级
  */
-class RabbitMqProducer<T> implements IQueueProducer<T> {
+export class RabbitMqProducer<T> extends EventEmitter {
     protected readonly _options: IProducerConfig<T>;
     protected readonly _queue: RabbitMqQueue<T>;
 
     constructor(queue: RabbitMqQueue<T>, options: IProducerConfig<T>) {
+        super();
         this._queue = queue;
         this._options = {
             pushRetryTimes: 0,
@@ -32,6 +36,13 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
             pushDelay: 0,
             ...options
         };
+    }
+
+    /**
+     * 获取队列实例
+     */
+    public get queue(): RabbitMqQueue<T> {
+        return this._queue;
     }
 
     /**
@@ -76,29 +87,13 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
     public async publish(content: IQueuePayload<T>): Promise<void> {
         const o = this._options;
         return retry(async () => {
+            this.emit(ProducerEvents.publish, content);
             await this._queue.publish(content, this._getProduceOptions({}));
-            this._notifyPublish(content);
         }, {
             retries: o.pushRetryTimes,
             minTimeout: o.pushRetryDelay,
             randomize: false
         });
-    }
-
-    /**
-     * 通知发布成功
-     * @param content
-     * @private
-     */
-    public _notifyPublish(content: IQueuePayload<T>): void {
-        if (this._options.onPublish) {
-            try {
-                this._options.onPublish.apply(this, [content, this._queue]);
-            } catch (err) {
-                // 记录执行异常，但不阻塞队列任务正常调度
-                console.warn('Rabbitmq job publish notify failed.');
-            }
-        }
     }
 
     /**

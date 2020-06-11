@@ -131,8 +131,7 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
 | `options.priority` | `Priority` | 消息优先级，高优先级先分发消费 |
 | `options.pushRetryTimes` | `number` | 消息发送时，本地重试次数 |
-| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 |
-| `options.onPublish` | `(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void` | | 
+| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 | 
 
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。
@@ -150,7 +149,6 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options.retryMethod` | `RetryMethod` | 重试策略，RetryMethod.retry 本地重试，`RetryMethod.republish` 重新发布到队列 |
 | `options.timeout` | `number` | 消息消费超时时间，从消息生产开始算，`republish` 会刷新时间 |
 | `options.run()` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |
-| `options.republish()` | `(content: IQueuePayload<T>, options?: Partial<IProduceOptions>): Promise<void>` | 消息重新发布逻辑 |
 | `options.error()` | `(err: Error, message: IQueueMessage<T>): void` | 错误处理逻辑 |
 | `options.onFinish()` | `(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void` | 队列执行完成 |
 

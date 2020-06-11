@@ -1,11 +1,11 @@
 import chai from 'chai';
 
 import {
-    IQueueConsumer,
-    IQueueMessage, IQueueProducer,
+    ConsumerEvents,
+    IQueueMessage,
     queueConsumerFactory,
     queueFactory,
-    queueProducerFactory,
+    queueProducerFactory, RabbitMqConsumer, RabbitMqProducer,
     RetryMethod
 } from '../../src';
 import { amqp, delayQueueConf } from '../amqp';
@@ -14,9 +14,9 @@ import { sleep } from '../../src/utils';
 const expect = chai.expect;
 
 describe('test: timeout', () => {
-    const queue = queueFactory(amqp.connection, delayQueueConf);
-    let producer: IQueueProducer<number>,
-        consumer: IQueueConsumer<number>;
+    const queue = queueFactory<number>(amqp.connection, delayQueueConf);
+    let producer: RabbitMqProducer<number>,
+        consumer: RabbitMqConsumer<number>;
 
     before(async () => {
         producer = queueProducerFactory(queue, {
@@ -27,7 +27,7 @@ describe('test: timeout', () => {
 
     it('republish timeout', (done) => {
         let count = 0;
-        consumer = queueConsumerFactory(queue, {
+        consumer = queueConsumerFactory<number>(queue, {
             retryMethod: RetryMethod.republish,
             retryTimes: 5,
             retryDelay: 100,
@@ -40,14 +40,14 @@ describe('test: timeout', () => {
                     throw Error('run failed');
                 }
                 console.log('run success');
-            },
-            error: (err: Error, message: IQueueMessage<number>) => {
-                expect(err).to.exist;
-                expect(message).to.exist;
-                done();
             }
         });
         consumer.start();
+        consumer.on(ConsumerEvents.error, (err: Error, message: IQueueMessage<number>) => {
+            expect(err).to.exist;
+            expect(message).to.exist;
+            done();
+        });
         producer.publish(5);
     });
 
