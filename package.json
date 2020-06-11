@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
-    "test": "nyc mocha --config .mocharc.yml",
+    "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
     "clean": "rimraf coverage && rimraf .nyc_output"

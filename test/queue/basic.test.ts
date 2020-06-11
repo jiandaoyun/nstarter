@@ -1,4 +1,5 @@
 import {
+    ConsumerEvents,
     IQueueMessage,
     queueConsumerFactory,
     queueFactory,
@@ -21,11 +22,10 @@ describe('test: basic', () => {
         run: async (message: IQueueMessage<string>): Promise<void> => {
             console.log(message.content);
             await sleep(10);
-        },
-        onFinish: (message, queue) => {
-            console.log(`${ queue.name } finished.`);
-            throw new Error('finish Error');
         }
+    });
+    consumer.on(ConsumerEvents.finish, (message, queue) => {
+        console.log(`${ queue.name } finished.`);
     });
 
     it('consumer.register', async () => {

@@ -1,8 +1,9 @@
 import chai from 'chai';
 
 import {
-    IQueueConsumer,
-    IQueueMessage, IQueueProducer,
+    ConsumerEvents,
+    IQueueMessage,
+    IQueueProducer,
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
@@ -10,14 +11,15 @@ import {
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../../src/utils';
+import { RabbitMqConsumer } from '../../src/lib/rabbitmq.consumer';
 
 const expect = chai.expect;
 
 describe('test: retry', () => {
     context('retry success', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
         let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
+            consumer: RabbitMqConsumer<number>;
 
         before(async () => {
             producer = queueProducerFactory(queue);
@@ -26,7 +28,7 @@ describe('test: retry', () => {
 
         it('retry success', (done) => {
             let count = 0;
-            consumer = queueConsumerFactory(queue, {
+            consumer = queueConsumerFactory<number>(queue, {
                 retryMethod: RetryMethod.retry,
                 retryTimes: 2,
                 retryDelay: 0,
@@ -40,12 +42,12 @@ describe('test: retry', () => {
                     console.log('run success');
                     done();
                 },
-                error: (err, message) => {
-                    expect(err).to.not.exist;
-                    expect(message).to.exist;
-                }
             });
             consumer.start();
+            consumer.on(ConsumerEvents.error, (err, message) => {
+                expect(err).to.not.exist;
+                expect(message).to.exist;
+            });
             producer.publish(2);
         });
 
@@ -56,9 +58,9 @@ describe('test: retry', () => {
     });
 
     context('retry fail', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
         let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
+            consumer: RabbitMqConsumer<number>;
 
         before(async () => {
             producer = queueProducerFactory(queue);
@@ -67,7 +69,7 @@ describe('test: retry', () => {
 
         it('retry fail', (done) => {
             let count = 0;
-            consumer = queueConsumerFactory(queue, {
+            consumer = queueConsumerFactory<number>(queue, {
                 retryMethod: RetryMethod.retry,
                 retryTimes: 2,
                 retryDelay: 0,
@@ -76,12 +78,12 @@ describe('test: retry', () => {
                     if (count < message.content) {
                         throw Error('run failed');
                     }
-                },
-                error: (err, message) => {
-                    expect(err).to.exist;
-                    expect(message).to.exist;
-                    done();
                 }
+            });
+            consumer.on(ConsumerEvents.error, (err, message) => {
+                expect(err).to.exist;
+                expect(message).to.exist;
+                done();
             });
             consumer.start();
             producer.publish(5);
@@ -94,9 +96,9 @@ describe('test: retry', () => {
     });
 
     context('retry unhandled', () => {
-        const queue = queueFactory(amqp.connection, normalQueueConf);
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
         let producer: IQueueProducer<number>,
-            consumer: IQueueConsumer<number>;
+            consumer: RabbitMqConsumer<number>;
 
         before(async () => {
             producer = queueProducerFactory(queue);
@@ -105,7 +107,7 @@ describe('test: retry', () => {
 
         it('unhandled error', async () => {
             let count = 0;
-            consumer = queueConsumerFactory(queue, {
+            consumer = queueConsumerFactory<number>(queue, {
                 retryMethod: RetryMethod.retry,
                 retryTimes: 2,
                 retryDelay: 0,
