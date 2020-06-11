@@ -52,7 +52,6 @@ export interface IProducerConfig<T> extends Options.Publish {
     pushRetryDelay?: number;
     // 延时添加到队列
     pushDelay?: number;
-    onPublish?(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void;
 }
 
 export interface IConsumerConfig<T> {

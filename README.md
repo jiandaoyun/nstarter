@@ -131,8 +131,7 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
 | `options.priority` | `Priority` | 消息优先级，高优先级先分发消费 |
 | `options.pushRetryTimes` | `number` | 消息发送时，本地重试次数 |
-| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 |
-| `options.onPublish` | `(content: IQueuePayload<T>, queue: RabbitMqQueue<T>): void` | | 
+| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 | 
 
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。

@@ -1,6 +1,7 @@
 import {
     ConsumerEvents,
     IQueueMessage,
+    ProducerEvents,
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
@@ -12,20 +13,18 @@ import { sleep } from '../../src/utils';
 describe('test: basic', () => {
     const queue = queueFactory(amqp.connection, normalQueueConf);
 
-    const producer = queueProducerFactory(queue, {
-        onPublish: (content, queue) => {
-            console.log(`${ queue.name } published.`);
-            throw new Error('publish Error');
-        }
-    });
+    const producer = queueProducerFactory(queue);
+    producer.on(ProducerEvents.publish, (content) => {
+        console.log(`${ producer.queue.name } published.`);
+    })
     const consumer = queueConsumerFactory(queue, {
         run: async (message: IQueueMessage<string>): Promise<void> => {
             console.log(message.content);
             await sleep(10);
         }
     });
-    consumer.on(ConsumerEvents.finish, (message, queue) => {
-        console.log(`${ queue.name } finished.`);
+    consumer.on(ConsumerEvents.finish, (message) => {
+        console.log(`${ consumer.queue.name } finished.`);
     });
 
     it('consumer.register', async () => {

@@ -31,7 +31,7 @@ export declare interface RabbitMqConsumer<T> {
     /**
      * 任务执行完成
      */
-    on(event: ConsumerEvents.finish, listener: (message: IQueueMessage<T>, queue: RabbitMqQueue<T>) => void): this;
+    on(event: ConsumerEvents.finish, listener: (message: IQueueMessage<T>) => void): this;
 }
 
 /**
@@ -51,6 +51,13 @@ export class RabbitMqConsumer<T> extends EventEmitter {
             retryMethod: RetryMethod.retry,
             ...config
         };
+    }
+
+    /**
+     * 获取队列实例
+     */
+    public get queue(): RabbitMqQueue<T> {
+        return this._queue;
     }
 
     /**
@@ -148,10 +155,10 @@ export class RabbitMqConsumer<T> extends EventEmitter {
     ): Promise<void> {
         const o = this._options;
         return retry(async (err, attempt) => {
-            await this._run(message);
             if (attempt > 0) {
                 this.emit(ConsumerEvents.retry, err, message, attempt);
             }
+            await this._run(message);
         }, {
             retries: o.retryTimes,
             minTimeout: o.retryDelay,
@@ -196,13 +203,13 @@ export class RabbitMqConsumer<T> extends EventEmitter {
                     if (pushDelay) {
                         headers[RabbitProps.messageDelay] = pushDelay;
                     }
+                    this.emit(ConsumerEvents.retry, err, message, retryTimes);
                     await this._republish(message.content, {
                         mandatory: true,
                         persistent: true,
                         deliveryMode: true,
                         headers
                     });
-                    this.emit(ConsumerEvents.retry, err, message, retryTimes);
                 } catch (err) {
                     await this._error(err, message);
                 }

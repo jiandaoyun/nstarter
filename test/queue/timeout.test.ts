@@ -3,21 +3,19 @@ import chai from 'chai';
 import {
     ConsumerEvents,
     IQueueMessage,
-    IQueueProducer,
     queueConsumerFactory,
     queueFactory,
-    queueProducerFactory,
+    queueProducerFactory, RabbitMqConsumer, RabbitMqProducer,
     RetryMethod
 } from '../../src';
 import { amqp, delayQueueConf } from '../amqp';
 import { sleep } from '../../src/utils';
-import { RabbitMqConsumer } from '../../src/lib/rabbitmq.consumer';
 
 const expect = chai.expect;
 
 describe('test: timeout', () => {
     const queue = queueFactory<number>(amqp.connection, delayQueueConf);
-    let producer: IQueueProducer<number>,
+    let producer: RabbitMqProducer<number>,
         consumer: RabbitMqConsumer<number>;
 
     before(async () => {

@@ -3,22 +3,20 @@ import chai from 'chai';
 import {
     ConsumerEvents,
     IQueueMessage,
-    IQueueProducer,
     queueConsumerFactory,
     queueFactory,
-    queueProducerFactory,
+    queueProducerFactory, RabbitMqConsumer, RabbitMqProducer,
     RetryMethod
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../../src/utils';
-import { RabbitMqConsumer } from '../../src/lib/rabbitmq.consumer';
 
 const expect = chai.expect;
 
 describe('test: republish', () => {
     context('republish success', () => {
         const queue = queueFactory<number>(amqp.connection, normalQueueConf);
-        let producer: IQueueProducer<number>,
+        let producer: RabbitMqProducer<number>,
             consumer: RabbitMqConsumer<number>;
 
         before(async () => {
@@ -59,7 +57,7 @@ describe('test: republish', () => {
 
     context('republish fail', () => {
         const queue = queueFactory<number>(amqp.connection, normalQueueConf);
-        let producer: IQueueProducer<number>,
+        let producer: RabbitMqProducer<number>,
             consumer: RabbitMqConsumer<number>;
 
         before(async () => {
