@@ -2,14 +2,14 @@ import chai from 'chai';
 
 import {
     IQueueConsumer,
-    IQueueMessage, IQueuePayload, IQueueProducer,
+    IQueueMessage, IQueueProducer,
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
     RetryMethod
 } from '../../src';
 import { amqp, delayQueueConf } from '../amqp';
-import { sleep } from '../utils';
+import { sleep } from '../../src/utils';
 
 const expect = chai.expect;
 
@@ -40,9 +40,6 @@ describe('test: timeout', () => {
                     throw Error('run failed');
                 }
                 console.log('run success');
-            },
-            republish: async (content: IQueuePayload<number>, options) => {
-                return producer.publish(content, options);
             },
             error: (err: Error, message: IQueueMessage<number>) => {
                 expect(err).to.exist;

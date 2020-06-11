@@ -2,14 +2,14 @@ import chai from 'chai';
 
 import {
     IQueueConsumer,
-    IQueueMessage, IQueuePayload, IQueueProducer,
+    IQueueMessage, IQueueProducer,
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
     RetryMethod
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
-import { sleep } from '../utils';
+import { sleep } from '../../src/utils';
 
 const expect = chai.expect;
 
@@ -43,9 +43,6 @@ describe('test: republish', () => {
                 error: (err, message) => {
                     expect(err).to.not.exist;
                     expect(message).to.exist;
-                },
-                republish: async (content: IQueuePayload<number>, options) => {
-                    return producer.publish(content, options);
                 }
             });
             consumer.start();
@@ -88,9 +85,6 @@ describe('test: republish', () => {
                     } else {
                         throw Error('error');
                     }
-                },
-                republish: async (content: IQueuePayload<number>, options) => {
-                    return producer.publish(content, options);
                 }
             });
             consumer.start();

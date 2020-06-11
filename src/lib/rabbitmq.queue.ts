@@ -1,4 +1,4 @@
-import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
+import { AmqpConnectionManager, ChannelWrapper, SetupFunc } from 'amqp-connection-manager';
 import { ConfirmChannel, ConsumeMessage, Options } from 'amqplib';
 import { DefaultConfig, ExchangeType, OverflowMethod, RabbitProps } from '../constants';
 import { IMessageHandler, IQueueMessage, IQueuePayload } from '../types';
@@ -27,6 +27,7 @@ export class RabbitMqQueue<T> {
     protected _rabbitMq: AmqpConnectionManager;
     protected _channelWrapper: ChannelWrapper;
     protected _consumerTag: string;
+    protected _setupFunc: SetupFunc;
 
     constructor(rabbitMq: AmqpConnectionManager, options: IQueueConfig) {
         this._options = {
@@ -142,24 +143,40 @@ export class RabbitMqQueue<T> {
         options: Consume
     ): Promise<void> {
         await this.waitForSetup();
-        return this._channelWrapper
-            .addSetup(async(channel: ConfirmChannel) => {
-                const { consumerTag } = await channel.consume(
-                    this.queue,
-                    async (message: ConsumeMessage | null) => {
-                        if (!message) {
-                            return;
-                        }
-                        const payload: IQueueMessage<T> = {
-                            ...message,
-                            content: await this._deserializePayload(message.content)
-                        };
-                        process.nextTick(() => messageHandler(payload));
-                    },
-                    options
-                );
-                this._consumerTag = consumerTag;
-            });
+        this._setupFunc = async (channel: ConfirmChannel) => {
+            const { consumerTag } = await channel.consume(
+                this.queue,
+                async (message: ConsumeMessage | null) => {
+                    if (!message) {
+                        return;
+                    }
+                    const payload: IQueueMessage<T> = {
+                        ...message,
+                        content: await this._deserializePayload(message.content)
+                    };
+                    process.nextTick(() => messageHandler(payload));
+                },
+                options
+            );
+            this._consumerTag = consumerTag;
+        };
+        return this._channelWrapper.addSetup(this._setupFunc);
+    }
+
+    /**
+     * 取消任务订阅
+     */
+    public async unsubscribe(): Promise<void> {
+        return this._channelWrapper.removeSetup(this._setupFunc, async (channel: ConfirmChannel) => {
+            await channel.cancel(this._consumerTag);
+        });
+    }
+
+    /**
+     * 获取队列长度
+     */
+    public length() {
+        return this._channelWrapper.queueLength();
     }
 
     /**

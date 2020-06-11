@@ -75,3 +75,8 @@ export const DefaultConfig = {
     // 消息发送重试延迟时间 (ms)
     pushRetryDelay: 1000
 };
+
+/**
+ * 默认停止等待时间
+ */
+export const defaultStopTimeout = 10000;

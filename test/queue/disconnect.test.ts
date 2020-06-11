@@ -1,7 +1,7 @@
 import chai from 'chai';
 
 import { AmqpConnector, queueFactory, } from '../../src';
-import { sleep } from '../utils';
+import { sleep } from '../../src/utils';
 import { rabbitmqConf } from '../config';
 
 const expect = chai.expect;

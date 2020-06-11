@@ -71,14 +71,12 @@ class RabbitMqProducer<T> implements IQueueProducer<T> {
     /**
      * 发送队列消息
      * @param {IQueuePayload<T>} content - 内容
-     * @param {IProducerConfig<T>>} options -
      * @return {Promise<void>}
      */
-    public async publish(content: IQueuePayload<T>, options?: IProducerConfig<T>): Promise<void> {
+    public async publish(content: IQueuePayload<T>): Promise<void> {
         const o = this._options;
-        const publishOpts = this._getProduceOptions(options || {});
         return retry(async () => {
-            await this._queue.publish(content, publishOpts);
+            await this._queue.publish(content, this._getProduceOptions({}));
             this._notifyPublish(content);
         }, {
             retries: o.pushRetryTimes,
