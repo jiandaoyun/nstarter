@@ -9,8 +9,8 @@ import Consume = Options.Consume;
 
 export interface IQueueConfig {
     name: string;
-    prefetch?: number;
-    maxLength?: number;
+    prefetch: number;
+    maxLength: number;
     overflowMethod?: OverflowMethod;
     isDelay?: boolean;
 }

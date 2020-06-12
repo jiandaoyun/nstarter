@@ -42,7 +42,7 @@ export interface IProduceHeaders extends MessagePropertyHeaders {
 /**
  * 生产消息配置
  */
-export interface IProducerConfig<T> extends Options.Publish {
+export interface IProducerConfig extends Options.Publish {
     /**
      * 生产者配置
      */

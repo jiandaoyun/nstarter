@@ -24,10 +24,10 @@ export declare interface RabbitMqProducer<T> {
  * @property _options.priority - 消息投递优先级
  */
 export class RabbitMqProducer<T> extends EventEmitter {
-    protected readonly _options: IProducerConfig<T>;
+    protected readonly _options: IProducerConfig;
     protected readonly _queue: RabbitMqQueue<T>;
 
-    constructor(queue: RabbitMqQueue<T>, options: IProducerConfig<T>) {
+    constructor(queue: RabbitMqQueue<T>, options: IProducerConfig) {
         super();
         this._queue = queue;
         this._options = {
@@ -51,7 +51,7 @@ export class RabbitMqProducer<T> extends EventEmitter {
      * @return {Options.Publish}
      * @private
      */
-    protected _getProduceOptions(options: IProducerConfig<T>): Options.Publish {
+    protected _getProduceOptions(options: IProducerConfig): Options.Publish {
         const o = this._options;
         const publishOpts: Options.Publish = {
             mandatory: true,
@@ -109,5 +109,5 @@ export class RabbitMqProducer<T> extends EventEmitter {
  * @param queue
  * @param options
  */
-export const queueProducerFactory = <T>(queue: RabbitMqQueue<T>, options: IProducerConfig<T> = {}):
+export const queueProducerFactory = <T>(queue: RabbitMqQueue<T>, options: IProducerConfig = {}):
     RabbitMqProducer<T> => new RabbitMqProducer<T>(queue, options);
