@@ -63,9 +63,8 @@ producer
 
 ### 消费者，向队列订阅消息
 ```typescript
-import { AckPolicy, IProduceOptions, queueConsumerFactory, RetryMethod, IConsumerConfig, startQueueConsumers } from 'nstarter-rabbitmq';
+import { AckPolicy, queueConsumerFactory, RetryMethod, IConsumerConfig, startQueueConsumers } from 'nstarter-rabbitmq';
 import { queue, IDemoMessage } from'./queue';
-import { producer } from './producer';
 
 const consumerConfig: IConsumerConfig<IDemoMessage> = {
     retryMethod: RetryMethod.republish,
@@ -74,9 +73,6 @@ const consumerConfig: IConsumerConfig<IDemoMessage> = {
     run(message): Promise<void> {
         const demoMessage: IDemoMessage = message.content;
         console.log(demoMessage);            
-    },
-    republish(content: IDemoMessage, options?: Partial<IProduceOptions>): Promise<void> {
-        return producer.publish(content, options);
     }
 };
 
@@ -149,8 +145,6 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options.retryMethod` | `RetryMethod` | 重试策略，RetryMethod.retry 本地重试，`RetryMethod.republish` 重新发布到队列 |
 | `options.timeout` | `number` | 消息消费超时时间，从消息生产开始算，`republish` 会刷新时间 |
 | `options.run()` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |
-| `options.error()` | `(err: Error, message: IQueueMessage<T>): void` | 错误处理逻辑 |
-| `options.onFinish()` | `(message: IQueueMessage<T>, queue: RabbitMqQueue<T>): void` | 队列执行完成 |
 
 #### RabbitMqConsumer#start(): Promise<void>
 启动消费者, 执行任务订阅。
