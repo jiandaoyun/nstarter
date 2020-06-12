@@ -4,6 +4,6 @@ module.exports = {
         "nstarter/typescript",
     ],
     rules: {
-        '@typescript-eslint/unified-signatures': false
+        '@typescript-eslint/unified-signatures': 0
     }
 };
