@@ -74,7 +74,7 @@ export class RabbitMqConsumer<T> extends EventEmitter {
     private async _run(message: IQueueMessage<T>): Promise<void> {
         const startTime = Date.now();
         this.emit(ConsumerEvents.run, message);
-        const result = await this._options.run.apply(this, arguments);
+        const result = await this._options.run(message);
         message.duration = Date.now() - startTime;
         this._notifyFinish(message);
         return result;

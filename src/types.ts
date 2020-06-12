@@ -5,7 +5,6 @@ import {
     Options
 } from 'amqplib';
 import { Priority, RetryMethod } from './constants';
-import { RabbitMqQueue } from './lib/rabbitmq.queue';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
@@ -23,15 +22,7 @@ export interface RabbitMQConfig {
     readonly reconnectInterval?: number;
 }
 
-/**
- * 消息体
- */
-export interface IRabbitMqMessage {
-    mqId?: string;
-    seqNo?: number;
-}
-
-export type IQueuePayload<T = IRabbitMqMessage> = T extends IRabbitMqMessage ? T : number | string;
+export type IQueuePayload<T> = T;
 
 export interface IProduceHeaders extends MessagePropertyHeaders {
     'x-retry-times'?: number;
@@ -59,7 +50,9 @@ export interface IConsumerConfig<T> {
     retryDelay?: number;
     retryMethod?: RetryMethod;
     timeout?: number;
-    run(message: IQueueMessage<T>): Promise<void>;
+    run: {
+        (message: IQueueMessage<T>): Promise<void>
+    };
 }
 
 /**
