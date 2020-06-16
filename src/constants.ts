@@ -24,6 +24,8 @@ export enum Priority {
  * 消费者重试策略
  */
 export enum RetryMethod {
+    // 不重试
+    none = 'none',
     // 本地重试
     retry = 'retry',
     // 重新发布到队列
@@ -86,9 +88,11 @@ export const DefaultConfig = {
     // 单个 Channel 消息处理并发数
     prefetch: 10,
     // 默认重试次数，重试 2 次，总共执行 3 次
-    retryTimes: 2,
+    retryTimes: 3,
     // 默认延时 1000ms
     retryDelay: 1000,
+    // 发布重试次数
+    pushRetryTimes: 1,
     // 消息发送重试延迟时间 (ms)
     pushRetryDelay: 1000
 };

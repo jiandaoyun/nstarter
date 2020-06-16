@@ -9,7 +9,8 @@ const expect = chai.expect;
 describe('test: disconnect', () => {
     const queueOptions = {
         name: 'test:normal',
-        maxLength: 100
+        prefetch: 0,
+        maxLength: 0
     };
 
     it('disconnect', (done) => {

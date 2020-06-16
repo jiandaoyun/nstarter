@@ -46,10 +46,11 @@ export class RabbitMqConsumer<T> extends EventEmitter {
         this._queue = queue;
         this._options = {
             timeout: 0,
-            retryTimes: DefaultConfig.retryTimes,
             retryDelay: DefaultConfig.retryDelay,
             retryMethod: RetryMethod.retry,
-            ...config
+            ...config,
+            // 总共重试 1~n 次
+            retryTimes: Math.max(config.retryTimes ?? DefaultConfig.retryTimes, 1) - 1
         };
     }
 
@@ -124,7 +125,7 @@ export class RabbitMqConsumer<T> extends EventEmitter {
                     await this._handleWithRetry(message)
                 }
             } catch (err) {
-                await this._error(err, message);
+                this._error(err, message);
             } finally {
                 // 确保消费过程 message 被 ack
                 this._queue.ack(message);
@@ -154,13 +155,15 @@ export class RabbitMqConsumer<T> extends EventEmitter {
         message: IQueueMessage<T>
     ): Promise<void> {
         const o = this._options;
+        // 不重试状态重试次数为 0
+        const retryTimes = o.retryMethod === RetryMethod.none ? 0 : o.retryTimes;
         return retry(async (err, attempt) => {
             if (attempt > 0) {
                 this.emit(ConsumerEvents.retry, err, message, attempt);
             }
             await this._run(message);
         }, {
-            retries: o.retryTimes,
+            retries: retryTimes,
             minTimeout: o.retryDelay,
             randomize: false
         });

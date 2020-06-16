@@ -42,6 +42,7 @@ describe('test: retry', () => {
                 },
             });
             consumer.start();
+            sleep(100);
             consumer.on(ConsumerEvents.error, (err, message) => {
                 expect(err).to.not.exist;
                 expect(message).to.exist;
@@ -84,6 +85,7 @@ describe('test: retry', () => {
                 done();
             });
             consumer.start();
+            sleep(100);
             producer.publish(5);
         });
 
@@ -118,6 +120,43 @@ describe('test: retry', () => {
             });
             await consumer.start();
             await producer.publish(5);
+        });
+
+        after(async() => {
+            await sleep(200);
+            await consumer.stop();
+        });
+    });
+
+    context('no retry', () => {
+        const queue = queueFactory<number>(amqp.connection, normalQueueConf);
+        let producer: RabbitMqProducer<number>,
+            consumer: RabbitMqConsumer<number>;
+
+        before(async () => {
+            producer = queueProducerFactory(queue);
+            await producer.setup();
+        });
+
+        it('unhandled error', (done) => {
+            let count = 0;
+            consumer = queueConsumerFactory<number>(queue, {
+                retryMethod: RetryMethod.none,
+                run: async (message: IQueueMessage<number>): Promise<void> => {
+                    count ++;
+                    if (count < message.content) {
+                        throw Error('run failed');
+                    }
+                },
+            });
+            consumer.start();
+            sleep(100);
+            producer.publish(5);
+            consumer.on(ConsumerEvents.error, (err, message) => {
+                expect(err).to.exist;
+                expect(message).to.exist;
+                done();
+            });
         });
 
         after(async() => {

@@ -42,6 +42,7 @@ describe('test: republish', () => {
                 }
             });
             consumer.start();
+            sleep(100);
             consumer.on(ConsumerEvents.error, (err, message) => {
                 expect(err).to.not.exist;
                 expect(message).to.exist;
@@ -61,7 +62,9 @@ describe('test: republish', () => {
             consumer: RabbitMqConsumer<number>;
 
         before(async () => {
-            producer = queueProducerFactory(queue)
+            producer = queueProducerFactory(queue, {
+                pushRetryTimes: 3
+            })
             await producer.setup();
         });
 
@@ -79,6 +82,7 @@ describe('test: republish', () => {
                 }
             });
             consumer.start();
+            sleep(100);
             consumer.on(ConsumerEvents.error,  (err, message) => {
                 expect(err).to.exist;
                 expect(message).to.exist;

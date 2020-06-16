@@ -31,10 +31,11 @@ export class RabbitMqProducer<T> extends EventEmitter {
         super();
         this._queue = queue;
         this._options = {
-            pushRetryTimes: 0,
             pushRetryDelay: DefaultConfig.pushRetryDelay,
             pushDelay: 0,
-            ...options
+            ...options,
+            // 总共重试 1~n 次
+            pushRetryTimes: Math.max(options.pushRetryTimes ?? DefaultConfig.pushRetryTimes, 1) - 1,
         };
     }
 
