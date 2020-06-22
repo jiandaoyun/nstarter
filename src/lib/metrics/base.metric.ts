@@ -7,7 +7,7 @@ export abstract class BaseMetric<T extends Metric> {
 
     public register() {
         this._registry.registerMetric(this.metric);
-        return this.metric;
+        return this;
     }
 
     public get metric() {
