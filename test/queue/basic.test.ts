@@ -47,5 +47,6 @@ describe('test: basic', () => {
     after(async () => {
         await sleep(100);
         await stopQueueConsumers();
+        await consumer.close();
     });
 });
