@@ -236,5 +236,13 @@ export const startQueueConsumers = async(): Promise<void> => {
     await Promise.all(
         queueConsumerRegistry.map((consumer: RabbitMqConsumer<any>) => consumer.start())
     );
-    return;
 };
+
+/**
+ * 队列停止消费
+ */
+export const stopQueueConsumers = async(): Promise<void> => {
+    await Promise.all(
+        queueConsumerRegistry.map((consumer) => consumer.stop())
+    );
+}

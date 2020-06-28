@@ -2,7 +2,7 @@ export const rabbitmqConf = {
     user: 'user',
     password: '89KfbL1Wa7bq7H9FbA4Xx3aR',
     brokers: [{
-        host: '172.24.67.101',
+        host: '172.24.67.103',
         port: 5672
     }],
     protocol: 'amqp',
