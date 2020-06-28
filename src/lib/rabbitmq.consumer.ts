@@ -137,8 +137,15 @@ export class RabbitMqConsumer<T> extends EventEmitter {
     /**
      * 停止消费者执行
      */
-    public async stop(timeoutMs = defaultStopTimeout): Promise<void> {
+    public async stop(): Promise<void> {
         await this._queue.unsubscribe();
+    }
+
+    /**
+     * 关闭队列连接
+     * @param timeoutMs
+     */
+    public async close(timeoutMs = defaultStopTimeout): Promise<void> {
         const waitStart = Date.now();
         // 队列中存在未消费完任务 且 等待未超时
         while (this._queue.length() > 0 && Date.now() - waitStart < timeoutMs) {
@@ -236,5 +243,13 @@ export const startQueueConsumers = async(): Promise<void> => {
     await Promise.all(
         queueConsumerRegistry.map((consumer: RabbitMqConsumer<any>) => consumer.start())
     );
-    return;
 };
+
+/**
+ * 队列停止消费
+ */
+export const stopQueueConsumers = async(): Promise<void> => {
+    await Promise.all(
+        queueConsumerRegistry.map((consumer) => consumer.stop())
+    );
+}

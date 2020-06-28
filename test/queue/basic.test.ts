@@ -5,7 +5,8 @@ import {
     queueConsumerFactory,
     queueFactory,
     queueProducerFactory,
-    startQueueConsumers
+    startQueueConsumers,
+    stopQueueConsumers
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../../src/utils';
@@ -45,6 +46,7 @@ describe('test: basic', () => {
 
     after(async () => {
         await sleep(100);
-        await consumer.stop();
+        await stopQueueConsumers();
+        await consumer.close();
     });
 });
