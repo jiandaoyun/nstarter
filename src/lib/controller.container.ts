@@ -29,5 +29,5 @@ export const registerCtl = (target: Constructor) => {
  */
 export const getCtl: PropertyDecorator = <T>(target: Constructor<T>): T => {
     const meta = Reflect.getMetadata(controllerMetaKey, target);
-    return controllerMetaKey.get<T>(meta.id);
+    return controllerContainer.get<T>(meta.id);
 };
