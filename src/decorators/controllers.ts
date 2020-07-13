@@ -44,9 +44,9 @@ export const InjectController: (
  * 异步 Controller 实例方法装饰器
  * @desc 保证异步 Controller 方法中抛出的错误可以正常进入 Express Middleware Chain 中
  */
-export const AsyncController: () => MethodDecorator = () => (
-    target,
-    propertyKey,
+export const AsyncController = (
+    target: unknown,
+    propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<RequestHandler>
 ) => {
     const { value } = descriptor;
