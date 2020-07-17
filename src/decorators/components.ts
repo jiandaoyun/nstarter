@@ -10,7 +10,7 @@ const { lazyInject } = getDecorators(componentContainer);
  * @param identifier
  * @param scope
  */
-export function provideComponent<T extends Constructor>(
+export function Component<T extends Constructor>(
     scope?: BindingScope,
     identifier?: string
 ) {
@@ -34,7 +34,7 @@ export function provideComponent<T extends Constructor>(
  * 组件对象引用注入装饰器
  * @param identifier
  */
-export function injectComponent(identifier?: string | symbol) {
+export function InjectComponent(identifier?: string | symbol) {
     return function (target: any, key: string) {
         let id = identifier;
         if (!id) {

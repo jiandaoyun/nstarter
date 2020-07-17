@@ -19,14 +19,14 @@ import {
     registerErrorMessages,
 
     // 组件管理
-    provideComponent,
-    injectComponent,
+    Component,
+    InjectComponent,
     registerComponent,
     getComponent,
 
     // 服务管理
-    provideSvc,
-    injectSvc,
+    Service,
+    InjectService,
     registerSvc,
     getSvc,
 
@@ -40,5 +40,5 @@ import {
 * [日志](01.logs.md)
 * [异常处理](02.exceptions.md)
 * [组件管理](03.components.md)
-* [服务管理](04.services.md)
-* [运行环境](05.environment.md)
+* [服务管理](05.services.md)
+* [运行环境](06.environment.md)
