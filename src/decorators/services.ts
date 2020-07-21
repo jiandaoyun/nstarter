@@ -7,7 +7,7 @@ const { lazyInject } = getDecorators(serviceContainer);
  * 服务定义装饰器
  * @param identifier
  */
-export function Service<T extends Constructor>(identifier?: string | symbol) {
+export function service<T extends Constructor>(identifier?: string | symbol) {
     return (constructor: T) => {
         let id = identifier;
         if (!id) {
@@ -24,7 +24,7 @@ export function Service<T extends Constructor>(identifier?: string | symbol) {
  * 服务对象引用注入装饰器
  * @param identifier
  */
-export function InjectService(identifier?: string | symbol) {
+export function injectService(identifier?: string | symbol) {
     return function (target: any, key: string) {
         let id = identifier;
         if (!id) {

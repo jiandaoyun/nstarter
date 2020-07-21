@@ -11,10 +11,10 @@ import { controllerContainer, controllerMetaKey } from '../lib';
 const { lazyInject } = getDecorators(controllerContainer);
 
 /**
- * Controller 类装饰器
+ * controller 类装饰器
  * @param id - 标识符
  */
-export const Controller: (
+export const controller: (
     id?: string | symbol
 ) => ClassDecorator =
     (id) => (constructor) => {
@@ -27,11 +27,11 @@ export const Controller: (
     };
 
 /**
- * Controller 注入属性装饰器
+ * controller 注入属性装饰器
  * @param id - 标识符
- * @deprecated 代码中 Controller 不应彼此依赖
+ * @deprecated 代码中 controller 不应彼此依赖
  */
-export const InjectController: (
+export const injectController: (
     id?: string | symbol
 ) => PropertyDecorator =
     (id) => (target, propertyKey) => {
@@ -41,10 +41,10 @@ export const InjectController: (
     };
 
 /**
- * 异步 Controller 实例方法装饰器
- * @desc 保证异步 Controller 方法中抛出的错误可以正常进入 Express Middleware Chain 中
+ * 异步 controller 实例方法装饰器
+ * @desc 保证异步 controller 方法中抛出的错误可以正常进入 Express Middleware Chain 中
  */
-export const AsyncController = (
+export const asyncControllerMethod = (
     target: unknown,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<RequestHandler>

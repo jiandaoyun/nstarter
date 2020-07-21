@@ -19,14 +19,20 @@ import {
     registerErrorMessages,
 
     // 组件管理
-    Component,
-    InjectComponent,
+    component,
+    injectComponent,
     registerComponent,
     getComponent,
 
+    // 控制器管理
+    controller,
+    injectController,
+    registerController,
+    getController,
+
     // 服务管理
-    Service,
-    InjectService,
+    service,
+    injectService,
     registerSvc,
     getSvc,
 
@@ -40,5 +46,6 @@ import {
 * [日志](01.logs.md)
 * [异常处理](02.exceptions.md)
 * [组件管理](03.components.md)
+* [控制器管理](04.controllers.md)
 * [服务管理](05.services.md)
 * [运行环境](06.environment.md)
