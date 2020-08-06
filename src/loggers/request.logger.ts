@@ -14,7 +14,7 @@ export interface IRequestMeta {
     ip: string;
     body: any;
     query: any;
-    duration: string;
+    duration: number;
     status: number;
     method: string;
     user_agent?: string;
@@ -30,16 +30,15 @@ let metaFormatter: IRequestMetaFormatter =
     (req, res, meta) => meta;
 
 export class RequestLogger {
-    private static _formatRequest(req: Request, res: Response, duration: string) {
+    private static _formatRequest(req: Request, res: Response, duration: number) {
         return `${ req.ip } ${ req.method } ${ req.originalUrl } HTTP/${
             req.httpVersion } ${ res.statusCode || '-' } ${
             res.getHeader('content-length') || '-' } - ${ duration } ms`;
     }
 
-    private static _logRequest(req: Request, res: Response, startAt: [number, number]) {
-        const time = process.hrtime(startAt);
-        const duration = (time[0] * 1e3 + time[1] * 1e-6).toFixed(3);
-        const {headers} = req;
+    private static _logRequest(req: Request, res: Response, startTime: number) {
+        const duration = Date.now() - startTime;
+        const { headers } = req;
         const baseMeta = {
             path: req.originalUrl,
             ip: req.ip,
@@ -78,8 +77,8 @@ export class RequestLogger {
 
     public static get middleware(): RequestHandler {
         return (req, res, next) => {
-            const startAt = process.hrtime();
-            const reqLogger = once(() => RequestLogger._logRequest(req, res, startAt));
+            const startTime = Date.now();
+            const reqLogger = once(() => RequestLogger._logRequest(req, res, startTime));
             req.on('close', reqLogger);
             res.on('finish', reqLogger);
             return next();
