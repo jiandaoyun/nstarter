@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        node { label 'develop' }
+        node { label 'default' }
     }
     options {
         disableConcurrentBuilds()
