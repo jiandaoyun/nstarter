@@ -10,5 +10,5 @@ export const entityMetaKey = Symbol.for('ioc#entity');
  */
 export const getEntityProperty = <T, P>(target: Constructor<T>): P => {
     const identifier = Reflect.getMetadata(entityMetaKey, target);
-    return identifier.properties || {};
+    return identifier?.properties ?? {};
 };
