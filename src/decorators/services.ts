@@ -1,5 +1,6 @@
 import getDecorators from 'inversify-inject-decorators';
 import { serviceContainer, serviceMetaKey } from '../lib';
+import { camelCase } from '../utils';
 
 const { lazyInject } = getDecorators(serviceContainer);
 
@@ -11,7 +12,7 @@ export function service<T extends Constructor>(identifier?: string | symbol) {
     return (constructor: T) => {
         let id = identifier;
         if (!id) {
-            id = constructor.name.toLowerCase();
+            id = camelCase(constructor.name);
         }
         Reflect.defineMetadata(serviceMetaKey, {
             id,
@@ -28,7 +29,7 @@ export function injectService(identifier?: string | symbol) {
     return function (target: any, key: string) {
         let id = identifier;
         if (!id) {
-            id = key.toLowerCase();
+            id = camelCase(key);
         }
         return lazyInject(id)(target, key);
     };
