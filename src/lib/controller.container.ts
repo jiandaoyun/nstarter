@@ -27,7 +27,7 @@ export const registerCtl = (target: Constructor) => {
  * 服务对象实例的获取方法
  * @param target - 被注册服务的构造函数
  */
-export const getCtl: PropertyDecorator = <T>(target: Constructor<T>): T => {
+export const getCtl = <T>(target: Constructor<T>): T => {
     const meta = Reflect.getMetadata(controllerMetaKey, target);
     return controllerContainer.get<T>(meta.id);
 };
