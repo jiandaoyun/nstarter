@@ -1,6 +1,6 @@
 {
   "name": "nstarter-core",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "The core package for nstarter projects.",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,7 @@
     "mocha": "^8.1.1",
     "nstarter-tsconfig": "^0.2.0",
     "ts-node": "^8.10.2",
-    "typescript": "^3.7.3"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "http-status": "^1.4.2",
