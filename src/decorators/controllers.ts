@@ -4,7 +4,6 @@
  * @date  2020/07/08
  */
 
-import { Request, Response, NextFunction, RequestHandler } from 'express';
 import getDecorators from 'inversify-inject-decorators';
 import { controllerContainer, controllerMetaKey } from '../lib';
 
