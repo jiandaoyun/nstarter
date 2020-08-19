@@ -4,6 +4,7 @@
  * @date  2020/07/08
  */
 
+import { NextFunction, Request, Response } from 'express';
 import { Container, injectable } from 'inversify';
 import 'reflect-metadata';
 
@@ -20,7 +21,39 @@ export const controllerMetaKey = Symbol.for('ioc#controller');
  */
 export const registerCtl = (target: Constructor) => {
     const identifier = Reflect.getMetadata(controllerMetaKey, target);
-    controllerContainer.bind(identifier.id).to(injectable()(target));
+    controllerContainer
+        .bind(identifier.id)
+        .to(injectable()(target))
+        .onActivation((context, target: object) => {
+            return new Proxy(target, {
+                get(
+                    target: Function,
+                    propertyKey: PropertyKey,
+                    receiver: unknown
+                ): Function {
+                    const value = Reflect.get(target, propertyKey, receiver);
+                    if (value) {
+                        return (
+                            req: Request,
+                            res: Response,
+                            next: NextFunction
+                        ) => {
+                            let n = 1;
+                            const nextOnlyNTimes = (...args: unknown[]) => {
+                                if (0 < n--) {
+                                    next(...args);
+                                }
+                            };
+                            Promise
+                                .resolve(value(req, res, nextOnlyNTimes))
+                                .catch(nextOnlyNTimes);
+                        };
+                    } else {
+                        return value;
+                    }
+                }
+            });
+        });
 };
 
 /**
