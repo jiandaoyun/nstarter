@@ -24,6 +24,6 @@ export const getGrpcServiceClient = (pkg: string, service: string): Client => {
         return new GrpcClient(clientRegistry.get(pkg), grpc.credentials.createInsecure());
     } else {
         // 客户端未定义
-        throw new Error(`Grpc client '${ pkg }.${ service }' not found.`)
+        throw new Error(`Grpc client '${ pkg }.${ service }' not found.`);
     }
 };
