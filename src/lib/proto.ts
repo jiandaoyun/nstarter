@@ -12,9 +12,8 @@ export const protoRegistry: Record<string, typeof Client> = {};
  */
 export const loadProtoPackage = async (options: IPackageLoadOptions) => {
     const o = {
-        protoPath: '',
-        package: DEFAULT_PKG,
-        ...options,
+        protoPath: options.protoPath || '',
+        package: options.package || DEFAULT_PKG,
         loader: {
             keepCase: true,
             longs: String,
