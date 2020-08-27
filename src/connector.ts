@@ -6,6 +6,8 @@ import { IMongodbConfig, IMongodbQueryParams } from './types';
 
 const _isObjectEmpty = (obj: {}) => !Object.keys(obj).length;
 
+export let defaultConnection: Connection;
+
 export class MongodbConnector {
     public readonly connection: Connection;
     private readonly _options: IMongodbConfig;
@@ -109,5 +111,16 @@ export class MongodbConnector {
 
     public isReady(): boolean {
         return this.connection.readyState === 1;
+    }
+
+    /**
+     * 将当前实例设为默认实例 (不允许覆盖)
+     */
+    public setAsDefault(): boolean {
+        if (defaultConnection) {
+            return false;
+        }
+        defaultConnection = this.connection;
+        return true;
     }
 }
