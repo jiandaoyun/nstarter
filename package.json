@@ -1,0 +1,35 @@
+{
+  "name": "nstarter-mongodb",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "./dist",
+  "types": "./dist",
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+  },
+  "peerDependencies": {
+    "@types/mongoose": "5.5.34",
+    "nstarter-core": "^0.4.4",
+    "mongoose": "5.10.0"
+  },
+  "devDependencies": {
+    "@types/mongoose": "5.5.34",
+    "@types/node": "^12.12.54",
+    "eslint": "^6.8.0",
+    "eslint-config-nstarter": "^1.0.5",
+    "nstarter-core": "^0.4.4",
+    "nstarter-tsconfig": "^0.2.0",
+    "mongoose": "5.10.0",
+    "typescript": "^3.8.3"
+  },
+  "engine": {
+    "node": ">=12.16.2"
+  }
+}
