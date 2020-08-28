@@ -1,17 +1,13 @@
-/node_modules/
-/dist/
-/build/
-/lint/
-
-/log/
-
-/conf.d/config.override.*
-
-package-lock.json
-config.schema.json
-
-.nyc_output/
-coverage/
+node_modules/
+dist/
+build/
+lint/
 
 .vscode/
 .idea/
+
+coverage/
+.nyc_output/
+
+*.code-workspace
+
