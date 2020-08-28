@@ -103,3 +103,22 @@ import { mongodbConfigSchema } from 'nstarter-mongodb';
 ```typescript
 import { IMongodbConfig } from 'nstarter-mongodb';
 ```
+
+## 仓库方法定义
+
+对于仓库操作方法的定义，可以基于 nstarter-mongodb 提供的模板类与工具方法实现，使用 `MongodbRepo` 配合 `repoProvider` 可以支持上下文的数据库 session 管理。当然对于无需使用 session 的场景，也可以选择不使用该特性。
+
+```typescript
+import { MongodbRepo, repoProvider } from 'nstarter-mongodb';
+import { userModel } from '../models/user.model';
+
+class UserRepo extends MongodbRepo {
+    public async createOne(user: IUserModel) {
+        return userModel.create([user], {
+            session: this._session
+        });
+    }
+}
+
+export const userRepo = repoProvider(UserRepo);
+```
