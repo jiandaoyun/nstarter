@@ -15,6 +15,11 @@ export interface NpmInstallConf {
     readonly npm: boolean;
 }
 
+/**
+ *
+ * @param args
+ * @param project
+ */
 export function getDeployQuestions(args: DeployArguments, project: DeployProject): Question[] {
     const moduleChoices: ChoiceType[] = [];
     const moduleLabelMap: Record<string, string> = {};
@@ -80,7 +85,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
         pageSize: _.size(moduleChoices),
         choices: moduleChoices,
         validate: (selected: string[]) => {
-            let check : boolean | string = true;
+            let check: boolean | string = true;
             if (_.isEmpty(moduleDependencyMap)) {
                 return check;
             }
@@ -92,7 +97,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
                 }
                 _.forEach(moduleDependency, (dependent) => {
                     if (!selectedSet.has(dependent)) {
-                        check = `Module "${ moduleLabelMap[name] }" depends on "${ moduleLabelMap[dependent ]}".`;
+                        check = `Module "${ moduleLabelMap[name] }" depends on "${ moduleLabelMap[dependent] }".`;
                         return false;
                     }
                     return;
@@ -101,12 +106,12 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
             return check;
         }
     },
-    {
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Confirm initialized now?',
-        default: false
-    }];
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Confirm initialized now?',
+            default: false
+        }];
 }
 
 export const npmInstallQuestions = [{

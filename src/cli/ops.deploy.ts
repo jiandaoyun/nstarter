@@ -28,15 +28,15 @@ export class DeployOperations {
     public deploy(callback: Function) {
         this._prompt(getDeployQuestions(this._args, this._project))
             .then((answers: DeployConf) => {
-                answers = _.defaults({
+                const resultAnswers = _.defaults({
                     name: this._args.name,
                     workdir: this._args.target
                 }, answers);
-                this._deployConf = answers;
-                if (!answers.confirm) {
+                this._deployConf = resultAnswers;
+                if (!resultAnswers.confirm) {
                     return callback();
                 }
-                this._project.initialize(answers, callback);
+                this._project.initialize(resultAnswers, callback);
             });
     }
 
