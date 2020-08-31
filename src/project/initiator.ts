@@ -12,12 +12,12 @@ import { logger } from '../logger';
 import { Utils } from '../utils';
 
 interface InitiatorConf {
-    source: string,
-    target: string,
-    params: Record<string, string | number>,
-    selectedModules: ProjectModule[],
-    ignoredModules: ProjectModule[],
-    ignoredFiles: string[]
+    source: string;
+    target: string;
+    params: Record<string, string | number>;
+    selectedModules: ProjectModule[];
+    ignoredModules: ProjectModule[];
+    ignoredFiles: string[];
 }
 
 export class ProjectInitiator {
@@ -98,6 +98,7 @@ export class ProjectInitiator {
             isAlt = false;
         const moduleStack: string[] = [];
         reader.on('line', (line) => {
+            let result = line;
             // check project module
             const moduleStart = _.get(line.match(/^\s*\/{2}#module\s+([\w|]+)$/), 1);
             if (moduleStart && this._isModuleIgnored(moduleStart)) {
@@ -125,7 +126,7 @@ export class ProjectInitiator {
             }
             if (isAlt) {
                 if (isIgnored) {
-                    line = _.replace(line, /\/{2}#\s+/, '');
+                    result = _.replace(line, /\/{2}#\s+/, '');
                 } else {
                     return;
                 }
@@ -134,7 +135,7 @@ export class ProjectInitiator {
             }
 
             // Write to target file
-            output.write(`${line}\n`);
+            output.write(`${ result }\n`);
         });
         reader.on('close', () => {
             output.end();
@@ -166,9 +167,7 @@ export class ProjectInitiator {
             read: (callback) => {
                 fs.readFile(this._getSourcePath(path), 'utf-8', callback);
             },
-            parse: ['read', (results, callback: AsyncResultCallback<any>) => {
-                return callback(null, parse(results.read));
-            }]
+            parse: ['read', async (results) => parse(results.read)]
         }, (err, results) => callback(err, results && results.parse));
     }
 
@@ -244,7 +243,7 @@ export class ProjectInitiator {
             mkdir: ['group', (results, callback) => {
                 logger.info('create target directories');
                 async.eachLimit(results.group.dir, this._concurrency, (path, callback) => {
-                    logger.debug(`mkdir: ${path}`);
+                    logger.debug(`mkdir: ${ path }`);
                     this._createDirectory(path, callback);
                 }, (err) => callback(err));
             }],
@@ -252,7 +251,7 @@ export class ProjectInitiator {
             copy: ['mkdir', (results, callback) => {
                 logger.info('copy project files');
                 async.eachLimit(results.group.file, this._concurrency, (path, callback) => {
-                    logger.debug(`copy: ${path}`);
+                    logger.debug(`copy: ${ path }`);
                     this._copyFile(path, callback);
                 }, (err) => callback(err));
             }],
@@ -260,7 +259,7 @@ export class ProjectInitiator {
             deploy: ['mkdir', (results, callback) => {
                 logger.info('deploy code files');
                 async.eachLimit(results.group.code, this._concurrency, (path, callback) => {
-                    logger.debug(`deploy: ${path}`);
+                    logger.debug(`deploy: ${ path }`);
                     this._copyCode(path, callback);
                 }, (err) => callback(err));
             }]
@@ -277,9 +276,9 @@ export class ProjectInitiator {
             read = (callback) => this._readYaml(file, callback);
             write = (obj, callback) => this._writeYaml(obj, file, callback);
         } else {
-            return callback(new Error(`Config file "${file}" is not supported`));
+            return callback(new Error(`Config file "${ file }" is not supported`));
         }
-        logger.debug(`config: ${file}`);
+        logger.debug(`config: ${ file }`);
         async.auto<{
             read: any,
             config: object,
@@ -288,9 +287,7 @@ export class ProjectInitiator {
             read: (callback) => {
                 read(callback);
             },
-            config: ['read', (results, callback: AsyncResultCallback<object>) => {
-                return callback(null, process(results.read));
-            }],
+            config: ['read', async (results) => process(results.read)],
             write: ['config', (results, callback) => {
                 write(results.config, callback);
             }]
@@ -369,7 +366,7 @@ export class ProjectInitiator {
                 stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
                 stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
             });
-        logger.info(`git init at "${target}"`);
+        logger.info(`git init at "${ target }"`);
         async.auto({
             init: (callback) => {
                 git.init()

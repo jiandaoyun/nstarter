@@ -29,7 +29,7 @@ class Cli {
         return path.resolve('./');
     }
 
-    public initConfig (callback: Function) {
+    public initConfig(callback: Function) {
         this._config = new Config(this._workDir, callback);
     }
 
@@ -79,8 +79,7 @@ class Cli {
     public runCommand(callback: Function) {
         const argv = yargs
             // deploy
-            .command('$0 [target]', 'CLI tools to deploy TypeScript project.', (yargs) => {
-                return yargs
+            .command('$0 [target]', 'CLI tools to deploy TypeScript project.', (yargs) => yargs
                     .positional('target', {
                         describe: 'Target deploy path.',
                         type: 'string'
@@ -95,8 +94,7 @@ class Cli {
                             describe: 'Show debug info.',
                             type: 'boolean'
                         }
-                    });
-            }, (argv) => {
+                    }), (argv) => {
                 async.auto({
                     template: (callback) => this.prepareTemplate(callback),
                     deploy: ['template', (results, callback) => {
@@ -106,8 +104,7 @@ class Cli {
                 }, (err) => callback(err));
             })
             // config
-            .command('config set <key> <value>', 'Config template starter options.', (yargs) => {
-                return yargs
+            .command('config set <key> <value>', 'Config template starter options.', (yargs) => yargs
                     .positional('key', {
                         describe: 'The key to set value at.',
                         type: 'string'
@@ -115,8 +112,7 @@ class Cli {
                     .positional('value', {
                         describe: 'The value to set.',
                         type: 'string'
-                    });
-            }, (argv) => {
+                    }), (argv) => {
                 // check command
                 if (!argv.set && _.get(argv, ['_', 0]) === 'config') {
                     return;
@@ -124,15 +120,11 @@ class Cli {
                 this._config.setConfig(argv.key, argv.value, callback);
             })
             // update
-            .command('update template', 'Update local template cache.', (yargs) => {
-                return yargs;
-            }, (argv) => {
+            .command('update template', 'Update local template cache.', (yargs) => yargs, (argv) => {
                 this.updateTemplate(callback);
             })
             // clean
-            .command('clean', 'Clear local template cache.', (yargs) => {
-                return yargs;
-            }, (argv) => {
+            .command('clean', 'Clear local template cache.', (yargs) => yargs, (argv) => {
                 if (!fs.pathExistsSync(this._templatePath)) {
                     return callback();
                 }
@@ -149,7 +141,7 @@ class Cli {
         }
     }
 
-    public run (callback: Function) {
+    public run(callback: Function) {
         async.auto({
             config: (callback) => this.initConfig(callback),
             runCommand: ['config', (results, callback) => {

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
 import { logger } from './logger';
@@ -17,8 +16,7 @@ export class Config {
     private readonly _confFile: string;
     private _conf: StarterConf = {};
 
-    constructor(confPath: string, callback: Function) {
-        confPath = confPath || './';
+    constructor(confPath = './', callback: Function) {
         fs.ensureDirSync(confPath);
         this._confFile = path.join(confPath, this._confName);
         this._initConfig(callback);
@@ -51,7 +49,7 @@ export class Config {
             // set to default template
             this._conf.template = undefined;
         } else {
-            const isValid = /((git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:/\-~]+)(\.git)(\/)?/.test(template);
+            const isValid = /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)([\w.@:/\-~]+)(\.git)(\/)?/.test(template);
             if (isValid) {
                 this._conf.template = template;
             } else {

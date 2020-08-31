@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import os from 'os';
 import winston, { format } from 'winston';
 import Transport from 'winston-transport';
@@ -32,9 +31,9 @@ const transports: Transport[] = [];
 
 // custom log formatter
 const formatter = format.printf((info) => {
-    let output = `${info.timestamp} - [${info.level}] ${info.message}`;
+    let output = `${ info.timestamp } - [${ info.level }] ${ info.message }`;
     if (info.error) {
-        output = `${output}${os.EOL}\t${info.error.stack}`;
+        output = `${ output }${ os.EOL }\t${ info.error.stack }`;
     }
     return output;
 });
