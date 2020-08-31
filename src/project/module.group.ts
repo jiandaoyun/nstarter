@@ -1,17 +1,13 @@
 import { ProjectModule } from './module.conf';
+import { IModuleGroupType } from '../types/project';
 
-export interface ModuleGroupType {
-    name: string;
-    label: string;
-}
-
-export class ProjectModuleGroup implements ModuleGroupType {
+export class ProjectModuleGroup implements IModuleGroupType {
     public readonly isValid: boolean;
     public readonly name: string;
     public readonly label: string;
     private _modules: ProjectModule[] = [];
 
-    constructor (conf: ModuleGroupType) {
+    constructor (conf: IModuleGroupType) {
         if (!conf.name) {
             this.isValid = false;
             return;

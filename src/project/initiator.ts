@@ -7,25 +7,16 @@ import readline from 'readline';
 import { safeLoad, safeDump } from 'js-yaml';
 import simplegit from 'simple-git/promise';
 
-import { ProjectModule } from './module.conf';
 import { logger } from '../logger';
 import { Utils } from '../utils';
-
-interface InitiatorConf {
-    source: string;
-    target: string;
-    params: Record<string, string | number>;
-    selectedModules: ProjectModule[];
-    ignoredModules: ProjectModule[];
-    ignoredFiles: string[];
-}
+import { IInitiatorConf } from '../types/project';
 
 export class ProjectInitiator {
-    private readonly _options: InitiatorConf;
+    private readonly _options: IInitiatorConf;
     private readonly _concurrency = 10;
     private _ignoredModuleSet: Set<string>;
 
-    constructor(options: InitiatorConf) {
+    constructor(options: IInitiatorConf) {
         this._options = _.defaults(options, {
             params: {},
             ignoredModules: [],

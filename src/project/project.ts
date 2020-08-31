@@ -5,23 +5,19 @@ import { spawn } from 'child_process';
 import { safeLoad } from 'js-yaml';
 import moment from 'moment-timezone';
 
-import { ProjectModuleGroup, ModuleGroupType } from './module.group';
+import { ProjectModuleGroup } from './module.group';
 import { logger } from '../logger';
-import { ProjectModule, ModuleConf } from './module.conf';
+import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
-import { DeployConf } from '../cli';
+import { IDeployConf } from '../cli';
 import { Utils } from '../utils';
+import { IModuleConf, IModuleGroupType, IProjectConf } from '../types/project';
 
-interface ProjectConf {
-    modules: ModuleConf[];
-    module_types: ModuleGroupType[];
-    ignore_files: string[];
-}
 
 export class DeployProject {
     public readonly isValid: boolean;
-    private _projectSrc: string;
-    private _options: ProjectConf;
+    private readonly _projectSrc: string;
+    private readonly _options: IProjectConf;
     private _moduleGroups: ProjectModuleGroup[] = [];
     private _moduleGroupMap: Record<string, ProjectModuleGroup> = {};
     private _moduleMap: Record<string, ProjectModule> = {};
@@ -49,7 +45,7 @@ export class DeployProject {
             name: 'default',
             label: 'Default Modules'
         });
-        _.forEach(moduleGroups, (groupConf: ModuleGroupType) => {
+        _.forEach(moduleGroups, (groupConf: IModuleGroupType) => {
             const group = new ProjectModuleGroup(groupConf);
             if (group.isValid) {
                 if (this._moduleGroupMap[group.name]) {
@@ -68,7 +64,7 @@ export class DeployProject {
             logger.warn(`Project modules not found.`);
             return;
         }
-        _.forEach(o.modules, (moduleConf: ModuleConf) => {
+        _.forEach(o.modules, (moduleConf: IModuleConf) => {
             const module = new ProjectModule(moduleConf);
             if (module.isValid) {
                 if (this._moduleMap[module.name]) {
@@ -92,7 +88,7 @@ export class DeployProject {
         return this._moduleGroups;
     }
 
-    public initialize(options: DeployConf, callback: Function) {
+    public initialize(options: IDeployConf, callback: Function) {
         const selected = new Set(options.modules);
         const ignoredModules: ProjectModule[] = [],
             selectedModules: ProjectModule[] = [];
@@ -117,7 +113,7 @@ export class DeployProject {
         initiator.deploy(callback);
     }
 
-    public npmInitialize(options: DeployConf, callback: Function) {
+    public npmInitialize(options: IDeployConf, callback: Function) {
         logger.info('run npm install');
         const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
         const npmProc = spawn(npmCmd, ['install'], {

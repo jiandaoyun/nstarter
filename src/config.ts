@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { logger } from './logger';
 
-interface StarterConf {
+interface IStarterConf {
     template?: string;
 }
 
@@ -14,7 +14,7 @@ const DEFAULT_TEMPLATE = 'https://github.com/jiandaoyun/nstarter-ts-express.git'
 export class Config {
     private readonly _confName = 'config.json';
     private readonly _confFile: string;
-    private _conf: StarterConf = {};
+    private _conf: IStarterConf = {};
 
     constructor(confPath = './', callback: Function) {
         fs.ensureDirSync(confPath);

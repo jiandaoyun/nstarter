@@ -2,25 +2,14 @@ import _ from 'lodash';
 import fs from 'fs-extra';
 import { Question, Separator, ChoiceType } from 'inquirer';
 import { DeployProject } from '../project';
-import { DeployArguments } from './args';
-
-export interface DeployConf {
-    readonly name: string;
-    readonly workdir: string;
-    readonly modules: string[];
-    readonly confirm: boolean;
-}
-
-export interface NpmInstallConf {
-    readonly npm: boolean;
-}
+import { IDeployArguments, IDeployConf } from '../types/cli';
 
 /**
  *
  * @param args
  * @param project
  */
-export function getDeployQuestions(args: DeployArguments, project: DeployProject): Question[] {
+export function getDeployQuestions(args: IDeployArguments, project: DeployProject): Question[] {
     const moduleChoices: ChoiceType[] = [];
     const moduleLabelMap: Record<string, string> = {};
     const moduleDependencyMap: Record<string, string[]> = {};
@@ -58,7 +47,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
         type: 'input',
         name: 'workdir',
         message: 'Project path:',
-        default: (answers: DeployConf) => {
+        default: (answers: IDeployConf) => {
             let path = './';
             if (!_.isEmpty(fs.readdirSync(path))) {
                 path += answers.name || '';
@@ -93,7 +82,7 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
             _.forEach(selected, (name) => {
                 const moduleDependency = moduleDependencyMap[name];
                 if (!moduleDependency) {
-                    return;
+                    return true;
                 }
                 _.forEach(moduleDependency, (dependent) => {
                     if (!selectedSet.has(dependent)) {
@@ -102,6 +91,8 @@ export function getDeployQuestions(args: DeployArguments, project: DeployProject
                     }
                     return;
                 });
+                return !_.isString(check);
+
             });
             return check;
         }

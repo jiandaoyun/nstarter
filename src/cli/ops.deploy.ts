@@ -2,24 +2,19 @@ import _ from 'lodash';
 import async from 'async';
 import { createPromptModule, PromptModule } from 'inquirer';
 
-import {
-    getDeployQuestions,
-    DeployConf,
-    npmInstallQuestions,
-    NpmInstallConf
-} from './questions';
+import { getDeployQuestions, npmInstallQuestions } from './questions';
 import { DeployProject } from '../project';
-import { DeployArguments } from './args';
 import { logger } from '../logger';
+import { IDeployArguments, IDeployConf, INpmInstallConf } from '../types/cli';
 
 
 export class DeployOperations {
     private _prompt: PromptModule;
-    private _deployConf: DeployConf;
-    private _args: DeployArguments;
+    private _deployConf: IDeployConf;
+    private _args: IDeployArguments;
     private _project: DeployProject;
 
-    constructor (args: DeployArguments, template: string) {
+    constructor (args: IDeployArguments, template: string) {
         this._prompt = createPromptModule();
         this._args = args;
         this._project = new DeployProject(template);
@@ -27,7 +22,7 @@ export class DeployOperations {
 
     public deploy(callback: Function) {
         this._prompt(getDeployQuestions(this._args, this._project))
-            .then((answers: DeployConf) => {
+            .then((answers: IDeployConf) => {
                 const resultAnswers = _.defaults({
                     name: this._args.name,
                     workdir: this._args.target
@@ -42,7 +37,7 @@ export class DeployOperations {
 
     public npmInstall(callback: Function) {
         this._prompt(npmInstallQuestions)
-            .then((answers: NpmInstallConf) => {
+            .then((answers: INpmInstallConf) => {
                 if (answers.npm === false) {
                     logger.info('Skip npm install by user.');
                     return callback();

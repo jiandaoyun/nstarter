@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import async from 'async';
-import simplegit, { outputHandler } from 'simple-git/promise';
+import simpleGit, { outputHandler } from 'simple-git/promise';
 import fs from 'fs-extra';
 import path from 'path';
 import yargs from 'yargs';
@@ -9,11 +9,11 @@ import { logger, LogLevel } from '../logger';
 import { Utils } from '../utils';
 import { pkg } from '../pkg';
 import { DeployOperations } from './ops.deploy';
-import { DeployConf } from './questions';
 import { Config } from '../config';
+import { IDeployConf } from '../types/cli';
 
 export {
-    DeployConf
+    IDeployConf
 };
 
 class Cli {
@@ -51,7 +51,7 @@ class Cli {
             return callback();
         }
         logger.info(`clone project template into "${ this._templatePath }"`);
-        const git = simplegit().outputHandler(this._gitHandler);
+        const git = simpleGit().outputHandler(this._gitHandler);
         async.auto({
             clone: (callback) => {
                 fs.ensureDirSync(this._workDir);
@@ -67,7 +67,7 @@ class Cli {
             return callback();
         }
         logger.info(`update project template at "${ this._templatePath }"`);
-        const git = simplegit(this._templatePath)
+        const git = simpleGit(this._templatePath)
             .outputHandler(this._gitHandler);
         async.auto({
             update: (callback) => {
@@ -119,7 +119,7 @@ class Cli {
                 }
                 this._config.setConfig(argv.key, argv.value, callback);
             })
-            // update
+            // update template
             .command('update template', 'Update local template cache.', (yargs) => yargs, (argv) => {
                 this.updateTemplate(callback);
             })

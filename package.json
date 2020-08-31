@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Starter tool for node projects with template.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/jiandaoyun/nstarter"
@@ -11,6 +11,7 @@
     "nstarter": "./dist/index.js"
   },
   "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
     "prestart": "tsc --build tsconfig.json",
     "start": "node ./dist/index.js",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
@@ -54,7 +55,7 @@
     "typescript": "^3.8.3"
   },
   "engines": {
-    "node": ">=8.0 <11.0",
+    "node": ">=8.0",
     "npm": ">=4.0"
   }
 }

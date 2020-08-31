@@ -1,18 +1,6 @@
-import _ from 'lodash';
+import { IModuleConf } from '../types/project';
 
-export interface ModuleConf {
-    name: string;
-    label: string;
-    type: string;
-    default: boolean;
-    files: string[];
-    config: string[];
-    packages: string[];
-    scripts: string[];
-    dependencies: string[];
-}
-
-export class ProjectModule implements ModuleConf {
+export class ProjectModule implements IModuleConf {
     public readonly isValid: boolean;
 
     public readonly name: string;
@@ -25,7 +13,7 @@ export class ProjectModule implements ModuleConf {
     public readonly scripts: string[];
     public readonly dependencies: string[];
 
-    constructor (conf: ModuleConf) {
+    constructor (conf: IModuleConf) {
         if (!conf.name && !conf.type) {
             this.isValid = false;
             return;
@@ -38,7 +26,7 @@ export class ProjectModule implements ModuleConf {
         this.config = conf.config || [];
         this.packages = conf.packages || [];
         this.scripts = conf.scripts || [];
-        this.scripts = conf.dependencies || [];
+        this.dependencies = conf.dependencies || [];
         this.isValid = true;
     }
 }
