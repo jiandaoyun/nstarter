@@ -9,7 +9,7 @@ import { ProjectModuleGroup } from './module.group';
 import { logger } from '../logger';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
-import { IDeployConf } from '../cli';
+import { IDeployConf } from '../types/cli';
 import { Utils } from '../utils';
 import { IModuleConf, IModuleGroupType, IProjectConf } from '../types/project';
 

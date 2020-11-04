@@ -2,7 +2,7 @@ import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
 import { logger } from './logger';
-import { DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_TAG } from './constants';
+import { DEFAULT_TEMPLATE_TAG } from './constants';
 
 interface IToolConf {
     template: {
@@ -108,14 +108,14 @@ export class ToolConfig {
      * 获取模板地址
      * @param tag - 模板标签
      */
-    public getTemplate(tag = DEFAULT_TEMPLATE_TAG): string {
-        const template = this._conf.template[tag];
-        if (template) {
-            logger.info(`using template "${ tag }" -> "${ template }"`);
-            return template;
-        } else {
-            logger.warn(`using default template "${ DEFAULT_TEMPLATE }"`);
-            return DEFAULT_TEMPLATE;
-        }
+    public getTemplate(tag = DEFAULT_TEMPLATE_TAG): string | null {
+        return this._conf.template[tag];
+    }
+
+    /**
+     * 获取模板
+     */
+    public listTemplateTags(): string[] {
+        return _.keys(this._conf.template);
     }
 }

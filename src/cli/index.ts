@@ -9,36 +9,47 @@ import { logger, LogLevel } from '../logger';
 import { Utils } from '../utils';
 import { DeployOperations } from './ops.deploy';
 import { ToolConfig } from '../config';
-import { IDeployConf } from '../types/cli';
-
-export {
-    IDeployConf
-};
+import { DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_TAG } from '../constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const pkg = require('../../package.json');
 
+/**
+ * 命令行调用入口
+ */
 class Cli {
     private readonly _name = 'nstarter';
-    private _config: ToolConfig;
+    private readonly _workDir: string;
+    private readonly _config: ToolConfig;
 
-    private readonly _homePath = process.env.USERPROFILE || process.env.HOME;
-
-    private get _workDir(): string {
-        if (this._homePath) {
-            return path.join(this._homePath, `.${ this._name }`);
+    /**
+     * @constructor
+     */
+    constructor() {
+        // 设定工作目录
+        const homePath = process.env.USERPROFILE || process.env.HOME;
+        if (homePath) {
+            this._workDir = path.join(homePath, `.${ this._name }`);
+        } else {
+            this._workDir = path.resolve('./');
         }
-        return path.resolve('./');
-    }
-
-    public initConfig() {
+        // 加载配置
         this._config = new ToolConfig(this._workDir);
     }
 
-    private get _templatePath(): string {
-        return path.join(this._workDir, 'templates');
+    /**
+     * 获取模板工程工作目录路径
+     * @param tag - 模板标签
+     * @private
+     */
+    private _templatePath(tag: string): string {
+        return path.join(this._workDir, `templates/${ tag }`);
     }
 
+    /**
+     * git 日志输出处理
+     * @private
+     */
     private get _gitHandler(): outputHandler {
         return (cmd, stdout, stderr) => {
             logger.debug(cmd);
@@ -47,67 +58,113 @@ class Cli {
         };
     }
 
-    public prepareTemplate(callback: Function) {
-        if (fs.pathExistsSync(this._templatePath) && !_.isEmpty(fs.readdirSync(this._templatePath))) {
+    /**
+     * 获取当前模板配置
+     */
+    public listTemplates() {
+        const tags = this._config.listTemplateTags();
+        if (_.isEmpty(tags)) {
+            logger.warn('No templates has been configured.');
+            return;
+        }
+        for (const tag of tags) {
+            const template = this._config.getTemplate(tag);
+            console.log(`${ tag } -> ${ template }`);
+        }
+    }
+
+    /**
+     * 初始化模板工程
+     * @param tag - 模板标签，默认值为 default
+     */
+    public async prepareTemplate(tag = DEFAULT_TEMPLATE_TAG) {
+        const templatePath = this._templatePath(tag);
+        if (fs.pathExistsSync(templatePath) && !_.isEmpty(fs.readdirSync(templatePath))) {
             logger.debug('using cached template');
-            return callback();
+            return;
         }
-        logger.info(`clone project template into "${ this._templatePath }"`);
+        // 使用 git 拉取模板工程到本地工作目录
+        logger.info(`clone project template into "${ templatePath }"`);
+        fs.ensureDirSync(this._workDir);
         const git = simpleGit().outputHandler(this._gitHandler);
-        async.auto({
-            clone: (callback) => {
-                fs.ensureDirSync(this._workDir);
-                git.clone(this._config.getTemplate(), this._templatePath)
-                    .then(() => callback());
-            }
-        }, (err) => callback(err));
-    }
-
-    public updateTemplate(callback: Function) {
-        if (!fs.pathExistsSync(this._templatePath) || _.isEmpty(fs.readdirSync(this._templatePath))) {
-            logger.error('could not find local template cache');
-            return callback();
+        // 选择模板
+        let template = this._config.getTemplate();
+        if (template) {
+            logger.info(`using template "${ tag }" -> "${ template }"`);
+        } else {
+            logger.warn(`using default template "${ DEFAULT_TEMPLATE }"`);
+            template = DEFAULT_TEMPLATE;
         }
-        logger.info(`update project template at "${ this._templatePath }"`);
-        const git = simpleGit(this._templatePath)
-            .outputHandler(this._gitHandler);
-        async.auto({
-            update: (callback) => {
-                git.pull().then(() => callback());
-            }
-        }, (err) => callback(err));
+        await git.clone(template, templatePath);
     }
 
-    public runCommand(callback: Callback) {
+    /**
+     * 更新模板工程
+     * @param tag - 模板标签，默认值为 default
+     */
+    public async updateTemplate(tag = DEFAULT_TEMPLATE_TAG) {
+        const templatePath = this._templatePath(tag);
+        if (!fs.pathExistsSync(templatePath) || _.isEmpty(fs.readdirSync(templatePath))) {
+            logger.error('could not find local template cache');
+            return;
+        }
+        logger.info(`update project template at "${ templatePath }"`);
+        const git = simpleGit(templatePath)
+            .outputHandler(this._gitHandler);
+        await git.pull();
+    }
+
+    /**
+     * 清空模板工程
+     * @param tag - 模板标签，默认值为 default
+     */
+    public clearTemplate(tag = DEFAULT_TEMPLATE_TAG) {
+        const templatePath = this._templatePath(tag);
+        if (!fs.pathExistsSync(templatePath)) {
+            return;
+        }
+        logger.info(`clear local template at "${ templatePath }"`);
+        fs.emptyDirSync(templatePath);
+        fs.rmdirSync(templatePath);
+    }
+
+    /**
+     * 命令执行入口
+     * @param callback
+     */
+    public run(callback: Callback) {
         const argv = yargs
-            // deploy
+            // 执行部署
             .command(
-                '$0 [target]',
+                '$0 <target>',
                 'CLI tools to deploy TypeScript project.',
                 (yargs) => yargs
                     .positional('target', {
-                        describe: 'Target deploy path.',
+                        describe: 'Target project deploy path.',
                         type: 'string'
                     })
                     .options({
                         name: {
+                            alias: 'n',
                             describe: 'Project name.',
                             type: 'string'
                         },
-                        verbose: {
-                            alias: 'v',
-                            describe: 'Show debug info.',
-                            type: 'boolean'
+                        template: {
+                            alias: 't',
+                            describe: 'Template to use.',
+                            default: DEFAULT_TEMPLATE_TAG,
+                            type: 'string'
                         }
-                    }), (argv) => {
-                async.auto({
-                    template: (callback) => this.prepareTemplate(callback),
-                    deploy: ['template', (results, callback) => {
-                        new DeployOperations(argv, this._templatePath)
-                            .deployWithNpm(callback);
-                    }]
-                }, (err) => callback(err));
-            })
+                    }),
+                (argv) => {
+                        async.auto({
+                            template: async () => this.prepareTemplate(),
+                            deploy: ['template', (results, callback) => {
+                                new DeployOperations(argv, this._templatePath(argv.template))
+                                    .deployWithNpm(callback);
+                            }]
+                        }, (err) => callback(err));
+                })
             // config
             .command(
                 'config set <key> <value>',
@@ -129,32 +186,50 @@ class Cli {
                     this._config.setConfig(argv.key, argv.value);
                     return callback();
                 })
-            // update template
             .command(
-                'update template',
-                'Update local template cache.',
+                ['list', 'ls'],
+                'List all templates configured.',
                 (yargs) => yargs,
-                (argv) => {
-                    this.updateTemplate(callback);
-                })
-            // clean
+                () => {
+                        this.listTemplates();
+                        return callback();
+                    }
+                )
+            // 更新本地模板缓存
             .command(
-                'clean <tag>',
+                'update <template>',
+                'Update local template cache.',
+                (yargs) => yargs
+                    .positional('template', {
+                        describe: 'Template to update.',
+                        default: DEFAULT_TEMPLATE_TAG,
+                        type: 'string'
+                    }),
+                async (argv) => {
+                    await this.updateTemplate(argv.template);
+                    return callback();
+                })
+            // 清理模板
+            .command(
+                'clean <template>',
                 'Clear local template cache.',
                 (yargs) => yargs
-                    .positional('tag', {
+                    .positional('template', {
                         describe: 'Template to clear. Use "all" to clear all templates.',
+                        default: 'all',
                         type: 'string'
                     }),
                 (argv) => {
-                    // todo argv
-                    if (!fs.pathExistsSync(this._templatePath)) {
-                        return callback();
-                    }
-                    logger.info(`clear local template at "${ this._templatePath }"`);
-                    fs.emptyDirSync(this._templatePath);
-                    fs.rmdir(this._templatePath, (err) => callback(err));
+                    this.clearTemplate(argv.template);
+                    return callback();
                 })
+            .options({
+                verbose: {
+                    alias: 'v',
+                    describe: 'Show debug info.',
+                    type: 'boolean'
+                }
+            })
             .scriptName(this._name)
             .version(pkg.version)
             .detectLocale(false)
@@ -162,11 +237,6 @@ class Cli {
         if (argv.v) {
             logger.setLevel(LogLevel.debug);
         }
-    }
-
-    public run(callback: Callback) {
-        this.initConfig();
-        this.runCommand((err) => callback(err));
     }
 }
 
