@@ -7,18 +7,20 @@ import yargs from 'yargs';
 
 import { logger, LogLevel } from '../logger';
 import { Utils } from '../utils';
-import { pkg } from '../pkg';
 import { DeployOperations } from './ops.deploy';
-import { Config } from '../config';
+import { ToolConfig } from '../toolConfig';
 import { IDeployConf } from '../types/cli';
 
 export {
     IDeployConf
 };
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+export const pkg = require('../package.json');
+
 class Cli {
     private readonly _name = 'nstarter';
-    private _config: Config;
+    private _config: ToolConfig;
 
     private readonly _homePath = process.env.USERPROFILE || process.env.HOME;
 
@@ -29,12 +31,12 @@ class Cli {
         return path.resolve('./');
     }
 
-    public initConfig(callback: Function) {
-        this._config = new Config(this._workDir, callback);
+    public initConfig() {
+        this._config = new ToolConfig(this._workDir);
     }
 
     private get _templatePath(): string {
-        return path.join(this._workDir, '_template');
+        return path.join(this._workDir, 'templates');
     }
 
     private get _gitHandler(): outputHandler {
@@ -76,10 +78,13 @@ class Cli {
         }, (err) => callback(err));
     }
 
-    public runCommand(callback: Function) {
+    public runCommand(callback: Callback) {
         const argv = yargs
             // deploy
-            .command('$0 [target]', 'CLI tools to deploy TypeScript project.', (yargs) => yargs
+            .command(
+                '$0 [target]',
+                'CLI tools to deploy TypeScript project.',
+                (yargs) => yargs
                     .positional('target', {
                         describe: 'Target deploy path.',
                         type: 'string'
@@ -104,7 +109,10 @@ class Cli {
                 }, (err) => callback(err));
             })
             // config
-            .command('config set <key> <value>', 'Config template starter options.', (yargs) => yargs
+            .command(
+                'config set <key> <value>',
+                'Config template starter options.',
+                (yargs) => yargs
                     .positional('key', {
                         describe: 'The key to set value at.',
                         type: 'string'
@@ -112,26 +120,41 @@ class Cli {
                     .positional('value', {
                         describe: 'The value to set.',
                         type: 'string'
-                    }), (argv) => {
-                // check command
-                if (!argv.set && _.get(argv, ['_', 0]) === 'config') {
-                    return;
-                }
-                this._config.setConfig(argv.key, argv.value, callback);
-            })
-            // update template
-            .command('update template', 'Update local template cache.', (yargs) => yargs, (argv) => {
-                this.updateTemplate(callback);
-            })
-            // clean
-            .command('clean', 'Clear local template cache.', (yargs) => yargs, (argv) => {
-                if (!fs.pathExistsSync(this._templatePath)) {
+                    }),
+                (argv) => {
+                    // check command
+                    if (!argv.set && _.get(argv, ['_', 0]) === 'config') {
+                        return;
+                    }
+                    this._config.setConfig(argv.key, argv.value);
                     return callback();
-                }
-                logger.info(`clear local template at "${ this._templatePath }"`);
-                fs.emptyDirSync(this._templatePath);
-                fs.rmdir(this._templatePath, (err) => callback(err));
-            })
+                })
+            // update template
+            .command(
+                'update template',
+                'Update local template cache.',
+                (yargs) => yargs,
+                (argv) => {
+                    this.updateTemplate(callback);
+                })
+            // clean
+            .command(
+                'clean <tag>',
+                'Clear local template cache.',
+                (yargs) => yargs
+                    .positional('tag', {
+                        describe: 'Template to clear. Use "all" to clear all templates.',
+                        type: 'string'
+                    }),
+                (argv) => {
+                    // todo argv
+                    if (!fs.pathExistsSync(this._templatePath)) {
+                        return callback();
+                    }
+                    logger.info(`clear local template at "${ this._templatePath }"`);
+                    fs.emptyDirSync(this._templatePath);
+                    fs.rmdir(this._templatePath, (err) => callback(err));
+                })
             .scriptName(this._name)
             .version(pkg.version)
             .detectLocale(false)
@@ -141,13 +164,9 @@ class Cli {
         }
     }
 
-    public run(callback: Function) {
-        async.auto({
-            config: (callback) => this.initConfig(callback),
-            runCommand: ['config', (results, callback) => {
-                this.runCommand(callback);
-            }]
-        }, (err) => callback(err));
+    public run(callback: Callback) {
+        this.initConfig();
+        this.runCommand((err) => callback(err));
     }
 }
 

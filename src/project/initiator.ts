@@ -257,6 +257,13 @@ export class ProjectInitiator {
         }, (err) => callback(err));
     }
 
+    /**
+     * 初始化
+     * @param file
+     * @param process
+     * @param callback
+     * @private
+     */
     private _deploySettings(file: string, process: (obj: any) => any, callback: Function) {
         let read: (callback: Function) => void,
             write: (obj: object, callback: Function) => void;
