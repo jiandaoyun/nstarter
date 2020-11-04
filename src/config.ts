@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { logger } from './logger';
 import { DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_TAG } from './constants';
 
-interface IStarterConf {
+interface IToolConf {
     template: {
         [key: string]: string | null
     };
@@ -19,7 +19,7 @@ type configValue = string | undefined;
 export class ToolConfig {
     private readonly _confName = 'config.json';
     private readonly _confFile: string;
-    private readonly _conf: IStarterConf = {
+    private readonly _conf: IToolConf = {
         template: {}
     };
 

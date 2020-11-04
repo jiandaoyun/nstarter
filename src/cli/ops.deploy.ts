@@ -20,22 +20,22 @@ export class DeployOperations {
         this._project = new DeployProject(template);
     }
 
-    public deploy(callback: Function) {
-        this._prompt(getDeployQuestions(this._args, this._project))
-            .then((answers: IDeployConf) => {
+    public async deploy() {
+        return this._prompt(getDeployQuestions(this._args, this._project))
+            .then(async (answers: IDeployConf) => {
                 const resultAnswers = _.defaults({
                     name: this._args.name,
                     workdir: this._args.target
                 }, answers);
                 this._deployConf = resultAnswers;
                 if (!resultAnswers.confirm) {
-                    return callback();
+                    return;
                 }
-                this._project.initialize(resultAnswers, callback);
+                await this._project.initialize(resultAnswers);
             });
     }
 
-    public npmInstall(callback: Function) {
+    public npmInstall(callback: Callback) {
         this._prompt(npmInstallQuestions)
             .then((answers: INpmInstallConf) => {
                 if (answers.npm === false) {
@@ -48,8 +48,8 @@ export class DeployOperations {
 
     public deployWithNpm(callback: Function) {
         async.auto({
-            deploy: (callback) => {
-                this.deploy(callback);
+            deploy: async () => {
+                await this.deploy();
             },
             npm: ['deploy', (results, callback) => {
                 if (!this._deployConf.confirm) {

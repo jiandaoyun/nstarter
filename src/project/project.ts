@@ -88,7 +88,7 @@ export class DeployProject {
         return this._moduleGroups;
     }
 
-    public initialize(options: IDeployConf, callback: Function) {
+    public async initialize(options: IDeployConf) {
         const selected = new Set(options.modules);
         const ignoredModules: ProjectModule[] = [],
             selectedModules: ProjectModule[] = [];
@@ -110,10 +110,10 @@ export class DeployProject {
             ignoredModules,
             ignoredFiles: this._options.ignore_files
         });
-        initiator.deploy(callback);
+        await initiator.deploy();
     }
 
-    public npmInitialize(options: IDeployConf, callback: Function) {
+    public npmInitialize(options: IDeployConf, callback: Callback) {
         logger.info('run npm install');
         const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
         const npmProc = spawn(npmCmd, ['install'], {

@@ -8,7 +8,7 @@ import yargs from 'yargs';
 import { logger, LogLevel } from '../logger';
 import { Utils } from '../utils';
 import { DeployOperations } from './ops.deploy';
-import { ToolConfig } from '../toolConfig';
+import { ToolConfig } from '../config';
 import { IDeployConf } from '../types/cli';
 
 export {
@@ -16,7 +16,7 @@ export {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-export const pkg = require('../package.json');
+export const pkg = require('../../package.json');
 
 class Cli {
     private readonly _name = 'nstarter';
