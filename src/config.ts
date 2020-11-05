@@ -2,21 +2,20 @@ import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
 import { logger } from './logger';
-import { DEFAULT_TEMPLATE_TAG } from './constants';
+import { CLI_NAME, DEFAULT_TEMPLATE_TAG } from './constants';
+import { configKey, configValue, IToolConf } from './types/config';
 
-interface IToolConf {
-    template: {
-        [key: string]: string | null
-    };
-}
-
-type configKey = string | undefined;
-type configValue = string | undefined;
+/**
+ * 判定模板标签是否合法
+ * @param tag - 模板标签
+ */
+const _isTemplateTagValid = (tag: string) => /[a-zA-Z][a-zA-Z0-9_]+/.test(tag);
 
 /**
  * 工具配置管理
  */
-export class ToolConfig {
+class ToolConfig {
+    private readonly _workDir: string;
     private readonly _confName = 'config.json';
     private readonly _confFile: string;
     private readonly _conf: IToolConf = {
@@ -24,14 +23,20 @@ export class ToolConfig {
     };
 
     /**
-     * @param confPath - 配置文件路径
      * @constructor
      */
-    constructor(confPath = './') {
-        fs.ensureDirSync(confPath);
-        this._confFile = path.join(confPath, this._confName);
+    constructor() {
+        // 设定工作目录
+        const homePath = process.env.USERPROFILE || process.env.HOME;
+        if (homePath) {
+            this._workDir = path.join(homePath, `.${ CLI_NAME }`);
+        } else {
+            this._workDir = path.resolve('./');
+        }
+        fs.ensureDirSync(this._workDir);
 
         // 初始化配置
+        this._confFile = path.join(this._workDir, this._confName);
         if (fs.pathExistsSync(this._confFile)) {
             // 加载配置文件
             const conf = fs.readJSONSync(this._confFile);
@@ -49,6 +54,13 @@ export class ToolConfig {
     }
 
     /**
+     * 获取工作目录
+     */
+    public get workDir() {
+        return this._workDir;
+    }
+
+    /**
      * 保存配置
      */
     public saveConfig() {
@@ -56,14 +68,6 @@ export class ToolConfig {
         fs.writeFileSync(this._confFile, conf);
     }
 
-    /**
-     * 判定模板标签是否合法
-     * @param tag - 模板标签
-     * @private
-     */
-    private _isTemplateTagValid(tag: string) {
-        return /[a-zA-Z][a-zA-Z0-9_]+/.test(tag);
-    }
 
     /**
      * 设定模板地址
@@ -77,7 +81,7 @@ export class ToolConfig {
             this._conf.template[tag] = null;
         } else {
             // 设置配置模板地址
-            if (!this._isTemplateTagValid(tag)) {
+            if (!_isTemplateTagValid(tag)) {
                 logger.warn(`${ tag } is not a valid template tag.`);
                 return;
             }
@@ -132,7 +136,7 @@ export class ToolConfig {
      * @param tag - 模板标签
      */
     public removeTemplate(tag: string) {
-        if (!this._isTemplateTagValid(tag)) {
+        if (!_isTemplateTagValid(tag)) {
             logger.warn(`${ tag } is not a valid template tag.`);
             return;
         }
@@ -140,4 +144,14 @@ export class ToolConfig {
         _.unset(this._conf.template, tag);
         this.saveConfig();
     }
+
+    /**
+     * 获取模板工程工作目录路径
+     * @param tag - 模板标签
+     */
+    public getTemplatePath(tag: string): string {
+        return path.join(this._workDir, `templates/${ tag }`);
+    }
 }
+
+export const config = new ToolConfig();

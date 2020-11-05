@@ -1,5 +1,5 @@
 import { ProjectModule } from './module.conf';
-import { IModuleGroupType } from '../types/project';
+import { IModuleGroupType } from '../types/installer';
 
 export class ProjectModuleGroup implements IModuleGroupType {
     public readonly isValid: boolean;

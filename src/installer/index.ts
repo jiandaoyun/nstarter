@@ -11,10 +11,12 @@ import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
 import { IDeployConf } from '../types/cli';
 import { Utils } from '../utils';
-import { IModuleConf, IModuleGroupType, IProjectConf } from '../types/project';
+import { IModuleConf, IModuleGroupType, IProjectConf } from '../types/installer';
 
-
-export class DeployProject {
+/**
+ * 目标工程安装器
+ */
+export class ProjectInstaller {
     public readonly isValid: boolean;
     private readonly _projectSrc: string;
     private readonly _options: IProjectConf;

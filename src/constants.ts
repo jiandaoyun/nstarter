@@ -1,3 +1,4 @@
+export const CLI_NAME = 'nstarter';
 
 export const ALL_TEMPLATE_TAG = 'all';
 

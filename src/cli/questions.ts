@@ -1,25 +1,25 @@
 import _ from 'lodash';
 import fs from 'fs-extra';
 import { Question, Separator, ChoiceType } from 'inquirer';
-import { DeployProject } from '../project';
+import { ProjectInstaller } from '../installer';
 import { IDeployArguments, IDeployConf } from '../types/cli';
 
 /**
- *
+ * 生成部署交互问题
  * @param args
  * @param project
  */
-export function getDeployQuestions(args: IDeployArguments, project: DeployProject): Question[] {
+export const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): Question[] => {
     const moduleChoices: ChoiceType[] = [];
     const moduleLabelMap: Record<string, string> = {};
     const moduleDependencyMap: Record<string, string[]> = {};
     _.forEach(project.moduleGroups, (group) => {
-        // Add separator
+        // 模块分隔符
         if (!_.isEmpty(group.modules)) {
             moduleChoices.push(new Separator(`- ${ group.label }`));
         }
         _.forEach(group.modules, (module) => {
-            // Add module choice
+            // 读取并增加模块选项
             moduleChoices.push({
                 name: module.label,
                 value: module.name,
@@ -71,6 +71,7 @@ export function getDeployQuestions(args: IDeployArguments, project: DeployProjec
         type: 'checkbox',
         name: 'modules',
         message: 'Select modules:',
+        when: _.size(moduleChoices) > 0,
         pageSize: _.size(moduleChoices),
         choices: moduleChoices,
         validate: (selected: string[]) => {
@@ -96,14 +97,13 @@ export function getDeployQuestions(args: IDeployArguments, project: DeployProjec
             });
             return check;
         }
-    },
-        {
-            type: 'confirm',
-            name: 'confirm',
-            message: 'Confirm initialized now?',
-            default: false
-        }];
-}
+    }, {
+        type: 'confirm',
+        name: 'confirm',
+        message: 'Confirm initialized now?',
+        default: false
+    }];
+};
 
 export const npmInstallQuestions = [{
     type: 'confirm',

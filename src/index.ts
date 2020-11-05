@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { cli } from './cli';
+import { runCli } from './cli';
 import { logger } from './logger';
 
 if (!module.parent) {
     try {
-        cli.run();
+        runCli();
     } catch (err) {
         if (err) {
             logger.error(err);

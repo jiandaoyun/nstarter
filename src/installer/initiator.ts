@@ -9,7 +9,7 @@ import simplegit from 'simple-git/promise';
 
 import { logger } from '../logger';
 import { Utils } from '../utils';
-import { IInitiatorConf } from '../types/project';
+import { IInitiatorConf } from '../types/installer';
 import { promisify } from 'util';
 
 /**

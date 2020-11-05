@@ -1,4 +1,4 @@
-import { IModuleConf } from '../types/project';
+import { IModuleConf } from '../types/installer';
 
 export class ProjectModule implements IModuleConf {
     public readonly isValid: boolean;

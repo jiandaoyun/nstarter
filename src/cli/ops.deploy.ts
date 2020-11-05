@@ -3,7 +3,7 @@ import async from 'async';
 import { createPromptModule, PromptModule } from 'inquirer';
 
 import { getDeployQuestions, npmInstallQuestions } from './questions';
-import { DeployProject } from '../project';
+import { ProjectInstaller } from '../installer';
 import { logger } from '../logger';
 import { IDeployArguments, IDeployConf, INpmInstallConf } from '../types/cli';
 
@@ -12,16 +12,16 @@ export class DeployOperations {
     private _prompt: PromptModule;
     private _deployConf: IDeployConf;
     private _args: IDeployArguments;
-    private _project: DeployProject;
+    private _project: ProjectInstaller;
 
     constructor (args: IDeployArguments, template: string) {
         this._prompt = createPromptModule();
         this._args = args;
-        this._project = new DeployProject(template);
+        this._project = new ProjectInstaller(template);
     }
 
     public async deploy() {
-        return this._prompt(getDeployQuestions(this._args, this._project))
+        await this._prompt(getDeployQuestions(this._args, this._project))
             .then(async (answers: IDeployConf) => {
                 const resultAnswers = _.defaults({
                     name: this._args.name,
