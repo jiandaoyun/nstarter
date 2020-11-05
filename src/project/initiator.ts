@@ -10,6 +10,7 @@ import simplegit from 'simple-git/promise';
 import { logger } from '../logger';
 import { Utils } from '../utils';
 import { IInitiatorConf } from '../types/project';
+import { promisify } from 'util';
 
 /**
  * 工程初始化
@@ -253,57 +254,49 @@ export class ProjectInitiator {
      */
     public async deployFiles() {
         const o = this._options;
-        await async.auto<{
-            search: string[],
-            deploy: void
-        }>({
-            // Search project files excluded by ignore pattern
-            search: (callback) => {
-                glob('**/*', {
-                    cwd: o.source,
-                    root: o.source,
-                    mark: true,
-                    dot: true,
-                    ignore: [
-                        'package.json',
-                        'conf.d/*',
-                        ...this._getIgnoredPathList()
-                    ]
-                }, callback);
-            },
-            deploy: ['search', async (results) => {
-                // 对工程内部文件分类
-                const group = _.groupBy(results.search, (path) => {
-                    if (path.match(/\/$/)) {
-                        return 'dir';
-                    } else if (path.match(/\.ts$/)) {
-                        return 'code';
-                    } else {
-                        return 'file';
-                    }
-                });
+        // 搜索文件
+        const search = await promisify(glob)('**/*', {
+            cwd: o.source,
+            root: o.source,
+            mark: true,
+            dot: true,
+            ignore: [
+                'package.json',
+                'conf.d/*',
+                ...this._getIgnoredPathList()
+            ]
+        });
 
-                // 基于模板生成目标工程目录结构
-                logger.info('create target directories');
-                await async.eachLimit(group.dir, this._concurrency, async (path) => {
-                    logger.debug(`mkdir: ${ path }`);
-                    fs.ensureDirSync(this._getTargetPath(path));
-                });
+        // 对工程内部文件分类
+        const group = _.groupBy(search, (path) => {
+            if (path.match(/\/$/)) {
+                return 'dir';
+            } else if (path.match(/\.ts$/)) {
+                return 'code';
+            } else {
+                return 'file';
+            }
+        });
 
-                // 复制普通文件
-                logger.info('copy project files');
-                await async.eachLimit(group.file, this._concurrency, async (path) => {
-                    logger.debug(`copy: ${ path }`);
-                    await this._copyFile(path);
-                });
+        // 基于模板生成目标工程目录结构
+        logger.info('create target directories');
+        await async.eachLimit(group.dir, this._concurrency, async (path) => {
+            logger.debug(`mkdir: ${ path }`);
+            fs.ensureDirSync(this._getTargetPath(path));
+        });
 
-                // 部署代码文件
-                logger.info('deploy code files');
-                await async.eachLimit(group.code, this._concurrency, async (path) => {
-                    logger.debug(`deploy: ${ path }`);
-                    await this._copyCode(path);
-                });
-            }]
+        // 复制普通文件
+        logger.info('copy project files');
+        await async.eachLimit(group.file, this._concurrency, async (path) => {
+            logger.debug(`copy: ${ path }`);
+            await this._copyFile(path);
+        });
+
+        // 部署代码文件
+        logger.info('deploy code files');
+        await async.eachLimit(group.code, this._concurrency, async (path) => {
+            logger.debug(`deploy: ${ path }`);
+            await this._copyCode(path);
         });
     }
 
@@ -368,32 +361,25 @@ export class ProjectInitiator {
         _.forEach(o.ignoredModules, (module) => {
             ignorePathList.push(module.files);
         });
-        await async.auto<{
-            search: string[],
-            deploy: void
-        }>({
-            search: (callback) => {
-                glob('conf.d/*', {
-                    cwd: o.source,
-                    root: o.source,
-                    mark: true,
-                    ignore: _.concat(
-                        ['conf.d/config.override.*'],
-                        ...ignorePathList
-                    )
-                }, callback);
-            },
-            deploy: ['search', async (results) => {
-                await async.eachLimit(results.search, this._concurrency, async (file) =>
-                    this._deployConfigs(file, (conf) => {
-                        _.forEach(ignoredConf, (confPath) => {
-                            _.unset(conf, confPath);
-                        });
-                        return conf;
-                    })
-                );
-            }]
+        // 搜索文件
+        const search = await promisify(glob)('conf.d/*', {
+            cwd: o.source,
+            root: o.source,
+            mark: true,
+            ignore: _.concat(
+                ['conf.d/config.override.*'],
+                ...ignorePathList
+            )
         });
+        // 部署配文件
+        await async.eachLimit(search, this._concurrency, async (file) =>
+            this._deployConfigs(file, (conf) => {
+                _.forEach(ignoredConf, (confPath) => {
+                    _.unset(conf, confPath);
+                });
+                return conf;
+            })
+        );
     }
 
     /**

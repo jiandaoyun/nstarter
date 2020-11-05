@@ -46,23 +46,16 @@ export class DeployOperations {
             });
     }
 
-    public deployWithNpm(callback: Function) {
-        async.auto({
-            deploy: async () => {
-                await this.deploy();
-            },
-            npm: ['deploy', (results, callback) => {
+    public async deployWithNpm() {
+        await this.deploy();
+        await async.auto({
+            npm: (callback) => {
                 if (!this._deployConf.confirm) {
                     return callback();
                 }
                 this.npmInstall(callback);
-            }]
-        }, (err) => {
-            if (err) {
-                return callback(err);
             }
-            logger.info('deploy job finished.');
-            return callback();
         });
+        logger.info('deploy job finished.');
     }
 }

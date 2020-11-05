@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import async from 'async';
 import simpleGit, { outputHandler } from 'simple-git/promise';
 import fs from 'fs-extra';
 import path from 'path';
@@ -9,7 +8,7 @@ import { logger, LogLevel } from '../logger';
 import { Utils } from '../utils';
 import { DeployOperations } from './ops.deploy';
 import { ToolConfig } from '../config';
-import { DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_TAG } from '../constants';
+import { ALL_TEMPLATE_TAG, DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_TAG } from '../constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const pkg = require('../../package.json');
@@ -115,24 +114,38 @@ class Cli {
     }
 
     /**
-     * 清空模板工程
-     * @param tag - 模板标签，默认值为 default
+     * 删除模板工程
+     * @param tag - 删除模板工程
      */
-    public clearTemplate(tag = DEFAULT_TEMPLATE_TAG) {
+    public removeTemplate(tag: string) {
+        this._config.removeTemplate(tag);
+        this.clearTemplate(tag);
+    }
+
+    /**
+     * 清空模板工程
+     * @param tag - 模板标签，默认值为 all
+     */
+    public clearTemplate(tag = ALL_TEMPLATE_TAG) {
+        if (tag === ALL_TEMPLATE_TAG) {
+            const templateDir = path.join(this._workDir, `templates/`);
+            logger.info(`Cleaning all templates cache.`);
+            fs.emptyDirSync(templateDir);
+            return;
+        }
         const templatePath = this._templatePath(tag);
         if (!fs.pathExistsSync(templatePath)) {
             return;
         }
-        logger.info(`clear local template at "${ templatePath }"`);
+        logger.info(`Cleaning local template at "${ templatePath }"`);
         fs.emptyDirSync(templatePath);
         fs.rmdirSync(templatePath);
     }
 
     /**
      * 命令执行入口
-     * @param callback
      */
-    public run(callback: Callback) {
+    public run() {
         const argv = yargs
             // 执行部署
             .command(
@@ -156,14 +169,10 @@ class Cli {
                             type: 'string'
                         }
                     }),
-                (argv) => {
-                        async.auto({
-                            template: async () => this.prepareTemplate(),
-                            deploy: ['template', (results, callback) => {
-                                new DeployOperations(argv, this._templatePath(argv.template))
-                                    .deployWithNpm(callback);
-                            }]
-                        }, (err) => callback(err));
+                async (argv) => {
+                    await this.prepareTemplate(argv.template);
+                    const templatePath = this._templatePath(argv.template);
+                    await new DeployOperations(argv, templatePath).deployWithNpm();
                 })
             // config
             .command(
@@ -184,7 +193,6 @@ class Cli {
                         return;
                     }
                     this._config.setConfig(argv.key, argv.value);
-                    return callback();
                 })
             .command(
                 ['list', 'ls'],
@@ -192,7 +200,6 @@ class Cli {
                 (yargs) => yargs,
                 () => {
                         this.listTemplates();
-                        return callback();
                     }
                 )
             // 更新本地模板缓存
@@ -207,21 +214,32 @@ class Cli {
                     }),
                 async (argv) => {
                     await this.updateTemplate(argv.template);
-                    return callback();
                 })
             // 清理模板
             .command(
-                'clean <template>',
+                'clean [template]',
                 'Clear local template cache.',
                 (yargs) => yargs
                     .positional('template', {
                         describe: 'Template to clear. Use "all" to clear all templates.',
-                        default: 'all',
+                        default: ALL_TEMPLATE_TAG,
                         type: 'string'
                     }),
                 (argv) => {
                     this.clearTemplate(argv.template);
-                    return callback();
+                })
+            // 删除模板
+            .command(
+                ['remove <template>', 'rm <template>'],
+                'Remove selected template.',
+                (yargs) => yargs
+                    .positional('template', {
+                        describe: 'Template to remove.',
+                        default: ALL_TEMPLATE_TAG,
+                        type: 'string'
+                    }),
+                (argv) => {
+                    this.removeTemplate(argv.template);
                 })
             .options({
                 verbose: {

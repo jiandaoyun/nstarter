@@ -57,6 +57,15 @@ export class ToolConfig {
     }
 
     /**
+     * 判定模板标签是否合法
+     * @param tag - 模板标签
+     * @private
+     */
+    private _isTemplateTagValid(tag: string) {
+        return /[a-zA-Z][a-zA-Z0-9_]+/.test(tag);
+    }
+
+    /**
      * 设定模板地址
      * @param tag - 模板标签
      * @param template - 模板地址
@@ -68,8 +77,7 @@ export class ToolConfig {
             this._conf.template[tag] = null;
         } else {
             // 设置配置模板地址
-            const isTagValid = /[a-zA-Z][a-zA-Z0-9_]+/.test(tag);
-            if (!isTagValid) {
+            if (!this._isTemplateTagValid(tag)) {
                 logger.warn(`${ tag } is not a valid template tag.`);
                 return;
             }
@@ -117,5 +125,19 @@ export class ToolConfig {
      */
     public listTemplateTags(): string[] {
         return _.keys(this._conf.template);
+    }
+
+    /**
+     * 删除制定标签模板
+     * @param tag - 模板标签
+     */
+    public removeTemplate(tag: string) {
+        if (!this._isTemplateTagValid(tag)) {
+            logger.warn(`${ tag } is not a valid template tag.`);
+            return;
+        }
+        logger.info(`Remove template "${ tag }".`);
+        _.unset(this._conf.template, tag);
+        this.saveConfig();
     }
 }
