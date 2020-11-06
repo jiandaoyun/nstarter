@@ -7,7 +7,7 @@ if (!module.parent) {
         runCli();
     } catch (err) {
         if (err) {
-            logger.error(err);
+            logger.error(err.message);
             process.exit(1);
         }
         process.exit(0);

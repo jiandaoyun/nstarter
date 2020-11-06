@@ -16,7 +16,7 @@ export const getTemplateQuestions = (args: IDeployArguments): Question[] =>
         type: 'list',
         message: 'Template to use:',
         default: DEFAULT_TEMPLATE_TAG,
-        when: !args.template,
+        when: !args.template || !config.isTemplateExisted(args.template),
         choices: config.listTemplateTags(),
         validate: (tag: string) => config.isTemplateExisted(tag)
     }];

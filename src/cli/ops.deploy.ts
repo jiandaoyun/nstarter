@@ -34,6 +34,10 @@ export class DeployOperations {
      */
     public async selectTemplate() {
         let templateTag = this._args.template;
+        if (templateTag && !config.isTemplateExisted(templateTag)) {
+            logger.warn(`Template "${ templateTag }" is not defined.`);
+            templateTag = undefined;
+        }
         if (!templateTag) {
             const answers = await this._prompt(getTemplateQuestions(this._args)) as ITemplateConf;
             templateTag = answers.template;
