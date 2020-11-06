@@ -77,11 +77,11 @@ export class DeployOperations {
      * 目标项目工程依赖安装
      */
     public async projectNpmInstall() {
-        if (!this._deployConf.confirm) {
-            // 未部署直接跳过操作
-            return;
-        }
         if (!this._args.yes) {
+            if (!this._deployConf.confirm) {
+                // 未部署直接跳过操作
+                return;
+            }
             // 确认是否需要安装 npm
             const answers = await this._prompt(npmInstallQuestions) as INpmInstallConf;
             if (answers.npm === false) {
