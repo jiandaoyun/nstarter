@@ -92,10 +92,10 @@ class Logger {
 
     private _log(level: string, msg: LogMessage, meta?: object) {
         if (typeof msg === 'string') {
-            // log string
+            // 字符串日志
             this._logger.log(level, msg, meta);
         } else {
-            // log error
+            // 错误日志
             this._logger.log(level, msg.message, { ...meta, error: msg });
         }
     }

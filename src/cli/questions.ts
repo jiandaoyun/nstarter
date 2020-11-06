@@ -22,6 +22,19 @@ export const getTemplateQuestions = (args: IDeployArguments): Question[] =>
     }];
 
 /**
+ * 获取模板更新确认交互问题
+ * @param args
+ */
+export const getTemplateUpdateQuestions = (args: IDeployArguments): Question[] =>
+    [{
+        type: 'confirm',
+        name: 'update',
+        message: 'Update template cache now?',
+        when: !args.yes,
+        default: false
+    }];
+
+/**
  * 生成部署交互问题
  * @param args
  * @param project

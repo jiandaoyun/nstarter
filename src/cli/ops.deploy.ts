@@ -2,11 +2,13 @@ import _ from 'lodash';
 import { promisify } from 'util';
 import { createPromptModule, PromptModule } from 'inquirer';
 
-import { getDeployQuestions, getTemplateQuestions, npmInstallQuestions } from './questions';
+import { getDeployQuestions, getTemplateQuestions, getTemplateUpdateQuestions, npmInstallQuestions } from './questions';
 import { ProjectInstaller } from '../installer';
 import { logger } from '../logger';
 import { IDeployArguments, IDeployConf, INpmInstallConf, ITemplateConf } from '../types/cli';
-import { prepareTemplate } from './ops.template';
+import { prepareTemplate, updateTemplate } from './ops.template';
+import { gitCheckTemplateVersion } from './ops.git';
+import { config } from '../config';
 
 
 /**
@@ -37,6 +39,17 @@ export class DeployOperations {
             templateTag = answers.template;
         }
         await prepareTemplate(templateTag);
+        // 检查是否需要更新
+        const rev = await gitCheckTemplateVersion(config.getTemplatePath(templateTag));
+        if (!rev) {
+            logger.warn(`Template "${ templateTag }" is not up-to-date.`);
+            const answers = await this._prompt(getTemplateUpdateQuestions(this._args));
+            if (answers.update) {
+                await updateTemplate(templateTag);
+            }
+        } else {
+            logger.debug(`Template "${ templateTag }" is up-to-date.`);
+        }
         this._project = new ProjectInstaller(templateTag);
     }
 
@@ -50,7 +63,7 @@ export class DeployOperations {
             workdir: this._args.target
         }, answers);
         this._deployConf = resultAnswers;
-        if (!(resultAnswers.confirm || this._args.yes)) {
+        if (!resultAnswers.confirm && !this._args.yes) {
             return;
         }
         await this._project.initializeProject(resultAnswers);
@@ -60,14 +73,17 @@ export class DeployOperations {
      * 目标项目工程依赖安装
      */
     public async projectNpmInstall() {
-        const answers = await this._prompt(npmInstallQuestions) as INpmInstallConf;
-        if (!(this._deployConf.confirm || this._args.yes)) {
-            // 直接安装，无需确认
+        if (!this._deployConf.confirm) {
+            // 未部署直接跳过操作
             return;
         }
-        if (answers.npm === false) {
-            logger.info('Skip npm install by user.');
-            return;
+        if (!this._args.yes) {
+            // 确认是否需要安装 npm
+            const answers = await this._prompt(npmInstallQuestions) as INpmInstallConf;
+            if (answers.npm === false) {
+                logger.info('Skip npm install by user.');
+                return;
+            }
         }
         await promisify(this._project.npmInitialize)(this._deployConf);
     }

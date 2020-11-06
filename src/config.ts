@@ -5,6 +5,9 @@ import { logger } from './logger';
 import { CLI_NAME, DEFAULT_TEMPLATE_TAG } from './constants';
 import { configKey, configValue, IToolConf } from './types/config';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+export const pkg = require('../package.json');
+
 /**
  * 判定模板标签是否合法
  * @param tag - 模板标签
@@ -21,6 +24,7 @@ class ToolConfig {
     private readonly _conf: IToolConf = {
         template: {}
     };
+    public readonly version = pkg.version;
 
     /**
      * @constructor

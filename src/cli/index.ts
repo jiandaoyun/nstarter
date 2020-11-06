@@ -7,9 +7,6 @@ import { config } from '../config';
 import { ALL_TEMPLATE_TAG, CLI_NAME } from '../constants';
 import { clearTemplate, listTemplates, removeTemplate, updateTemplate } from './ops.template';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const pkg = require('../../package.json');
-
 /**
  * 命令执行入口
  */
@@ -120,7 +117,7 @@ export const runCli = () => {
             }
         })
         .scriptName(CLI_NAME)
-        .version(pkg.version)
+        .version(config.version)
         .detectLocale(false)
         .argv;
     if (argv.v) {
