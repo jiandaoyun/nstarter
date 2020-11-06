@@ -3,6 +3,23 @@ import fs from 'fs-extra';
 import { Question, Separator, ChoiceType } from 'inquirer';
 import { ProjectInstaller } from '../installer';
 import { IDeployArguments, IDeployConf } from '../types/cli';
+import { config } from '../config';
+import { DEFAULT_TEMPLATE_TAG } from '../constants';
+
+/**
+ * 获取模板选择交互问题
+ * @param args
+ */
+export const getTemplateQuestions = (args: IDeployArguments): Question[] =>
+    [{
+        name: 'template',
+        type: 'list',
+        message: 'Template to use:',
+        default: DEFAULT_TEMPLATE_TAG,
+        when: !args.template,
+        choices: config.listTemplateTags(),
+        validate: (tag: string) => config.isTemplateExisted(tag)
+    }];
 
 /**
  * 生成部署交互问题
@@ -33,6 +50,7 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
     });
 
     return [{
+        // 设定项目名称
         type: 'input',
         name: 'name',
         message: 'Name of application:',
@@ -44,6 +62,7 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
             return true;
         }
     }, {
+        // 设定工程部署目录
         type: 'input',
         name: 'workdir',
         message: 'Project path:',
@@ -68,6 +87,7 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
             return true;
         }
     }, {
+        // 选择选装模块组件
         type: 'checkbox',
         name: 'modules',
         message: 'Select modules:',
@@ -75,6 +95,7 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
         pageSize: _.size(moduleChoices),
         choices: moduleChoices,
         validate: (selected: string[]) => {
+            // 模块依赖校验
             let check: boolean | string = true;
             if (_.isEmpty(moduleDependencyMap)) {
                 return check;
@@ -98,14 +119,20 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
             return check;
         }
     }, {
+        // 确认执行安装
         type: 'confirm',
         name: 'confirm',
         message: 'Confirm initialized now?',
+        when: !args.yes,
         default: false
     }];
 };
 
+/**
+ * npm 安装初始化提示选项
+ */
 export const npmInstallQuestions = [{
+    // 确认执行 npm 初始化
     type: 'confirm',
     name: 'npm',
     message: 'Install npm packages now?',

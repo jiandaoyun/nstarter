@@ -29,7 +29,7 @@ const levelConf = {
 
 const transports: Transport[] = [];
 
-// custom log formatter
+// 自定义日志格式化
 const formatter = format.printf((info) => {
     let output = `${ info.timestamp } - [${ info.level }] ${ info.message }`;
     if (info.error) {
@@ -43,7 +43,7 @@ const levelFormatter = winston.format((info) => {
     return info;
 });
 
-// console transport
+// 控制台日志输出
 const consoleTransport = new winston.transports.Console({
     level: LogLevel.info,
     stderrLevels: [LogLevel.error],
@@ -57,7 +57,7 @@ const consoleTransport = new winston.transports.Console({
 });
 transports.push(consoleTransport);
 
-// file transport
+// 文件日志输出
 const baseFileLogOptions: DailyRotateFileTransportOptions = {
     dirname: './log/',
     zippedArchive: true,
@@ -80,6 +80,9 @@ type LogMessage = string | Error;
 
 winston.addColors(levelConf.colors);
 
+/**
+ * 日志管理
+ */
 class Logger {
     private _logger = winston.createLogger({
         transports,

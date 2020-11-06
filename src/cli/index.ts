@@ -4,8 +4,8 @@ import yargs from 'yargs';
 import { logger, LogLevel } from '../logger';
 import { DeployOperations } from './ops.deploy';
 import { config } from '../config';
-import { ALL_TEMPLATE_TAG, CLI_NAME, DEFAULT_TEMPLATE_TAG } from '../constants';
-import { clearTemplate, listTemplates, prepareTemplate, removeTemplate, updateTemplate } from './ops.template';
+import { ALL_TEMPLATE_TAG, CLI_NAME } from '../constants';
+import { clearTemplate, listTemplates, removeTemplate, updateTemplate } from './ops.template';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 export const pkg = require('../../package.json');
@@ -17,7 +17,7 @@ export const runCli = () => {
     const argv = yargs
         // 执行部署
         .command(
-            '$0 <target>',
+            '$0 deploy [target]',
             'CLI tools to deploy TypeScript project.',
             (yargs) => yargs
                 .positional('target', {
@@ -33,19 +33,22 @@ export const runCli = () => {
                     template: {
                         alias: 't',
                         describe: 'Template to use.',
-                        default: DEFAULT_TEMPLATE_TAG,
                         type: 'string'
+                    },
+                    yes: {
+                        alias: 'y',
+                        describe: 'Proceed deploy without confirm.',
+                        default: false,
+                        type: 'boolean'
                     }
                 }),
             async (argv) => {
-                await prepareTemplate(argv.template);
-                const templatePath = config.getTemplatePath(argv.template);
-                await new DeployOperations(argv, templatePath).deployWithNpm();
+                await new DeployOperations(argv).deployProject();
             })
         // 修改配置
         .command(
             'config set <key> <value>',
-            'Config template starter options.',
+            `Config ${ CLI_NAME } options.`,
             (yargs) => yargs
                 .positional('key', {
                     describe: 'The key to set value at.',
@@ -73,12 +76,11 @@ export const runCli = () => {
             )
         // 更新本地模板缓存
         .command(
-            'update [template]',
+            ['update [template]', 'up [template]'],
             'Update local template cache.',
             (yargs) => yargs
                 .positional('template', {
                     describe: 'Template to update.',
-                    default: DEFAULT_TEMPLATE_TAG,
                     type: 'string'
                 }),
             async (argv) => {

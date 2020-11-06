@@ -1,6 +1,6 @@
 import simpleGit, { outputHandler, SimpleGit } from 'simple-git/promise';
 import { logger } from '../logger';
-import { Utils } from '../utils';
+import { formatStdOutput } from '../utils';
 
 /**
  * git 日志输出处理
@@ -8,8 +8,8 @@ import { Utils } from '../utils';
  */
 const _gitLogHandler: outputHandler = (cmd, stdout, stderr) => {
     logger.debug(cmd);
-    stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
-    stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+    stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
+    stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
 };
 
 /**

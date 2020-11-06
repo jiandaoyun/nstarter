@@ -1,5 +1,9 @@
 import { Arguments } from 'yargs';
 
+export interface ITemplateConf {
+    readonly template: string;
+}
+
 export interface IDeployConf {
     readonly name: string;
     readonly workdir: string;
@@ -13,6 +17,8 @@ export interface INpmInstallConf {
 
 export interface IDeployArguments extends Arguments<{
     name?: string,
+    template?: string,
     target?: string,
-    verbose?: boolean
+    verbose?: boolean,
+    yes?: boolean
 }> {}

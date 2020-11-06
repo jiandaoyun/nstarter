@@ -132,6 +132,14 @@ class ToolConfig {
     }
 
     /**
+     * 检查模板是否已配置
+     * @param tag - 模板标签
+     */
+    public isTemplateExisted(tag: string): boolean {
+        return !_.isEmpty(this._conf.template[tag]);
+    }
+
+    /**
      * 删除制定标签模板
      * @param tag - 模板标签
      */

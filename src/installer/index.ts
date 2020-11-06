@@ -10,8 +10,9 @@ import { logger } from '../logger';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
 import { IDeployConf } from '../types/cli';
-import { Utils } from '../utils';
+import { formatStdOutput } from '../utils';
 import { IModuleConf, IModuleGroupType, IProjectConf } from '../types/installer';
+import { config } from '../config';
 
 /**
  * 目标工程安装器
@@ -24,7 +25,12 @@ export class ProjectInstaller {
     private _moduleGroupMap: Record<string, ProjectModuleGroup> = {};
     private _moduleMap: Record<string, ProjectModule> = {};
 
-    constructor(src: string) {
+    /**
+     * @param tag - 模板标签
+     * @constructor
+     */
+    constructor(tag: string) {
+        const src = config.getTemplatePath(tag);
         this._projectSrc = path.join(src, './template/');
         const moduleConf = path.join(src, './module.conf.yml');
         if (!fs.pathExistsSync(moduleConf)) {
@@ -37,10 +43,14 @@ export class ProjectInstaller {
         this._loadModules();
     }
 
+    /**
+     * 加载模板工程模块分组定义
+     * @private
+     */
     private _loadModuleGroups() {
         const o = this._options;
         if (!o.module_types) {
-            logger.warn(`Module groups not found.`);
+            logger.debug(`Template module groups not defined.`);
             return;
         }
         const moduleGroups = _.concat(o.module_types, {
@@ -60,37 +70,48 @@ export class ProjectInstaller {
         });
     }
 
+    /**
+     * 加载模板工程模块定义
+     * @private
+     */
     private _loadModules() {
         const o = this._options;
         if (!o.module_types) {
-            logger.warn(`Project modules not found.`);
+            logger.debug(`Template modules is not defined.`);
             return;
         }
         _.forEach(o.modules, (moduleConf: IModuleConf) => {
             const module = new ProjectModule(moduleConf);
             if (module.isValid) {
                 if (this._moduleMap[module.name]) {
-                    logger.warn(`Project module "${ module.name }" already loaded.`);
+                    logger.warn(`Template module "${ module.name }" already loaded.`);
                     return;
                 }
                 this._moduleMap[module.name] = module;
-                // Load module for group
+                // 加载分组内模块
                 const moduleGroup = this._moduleGroupMap[module.type];
                 if (moduleGroup) {
                     moduleGroup.addModule(module);
                 } else {
-                    // Fallback to default group
+                    // 默认加载到默认分组
                     this._moduleGroupMap['default'].addModule(module);
                 }
             }
         });
     }
 
+    /**
+     * 获取模块分组
+     */
     public get moduleGroups() {
         return this._moduleGroups;
     }
 
-    public async initialize(options: IDeployConf) {
+    /**
+     * 初始化目标工程
+     * @param options
+     */
+    public async initializeProject(options: IDeployConf) {
         const selected = new Set(options.modules);
         const ignoredModules: ProjectModule[] = [],
             selectedModules: ProjectModule[] = [];
@@ -122,8 +143,8 @@ export class ProjectInstaller {
             cwd: options.workdir,
             stdio: 'pipe'
         });
-        npmProc.stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
-        npmProc.stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+        npmProc.stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
+        npmProc.stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
         npmProc.once('exit', (code) => {
             if (code !== 0) {
                 return callback(new Error('npm install failed'));

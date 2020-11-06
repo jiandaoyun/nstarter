@@ -8,7 +8,7 @@ import { safeLoad, safeDump } from 'js-yaml';
 import simplegit from 'simple-git/promise';
 
 import { logger } from '../logger';
-import { Utils } from '../utils';
+import { formatStdOutput } from '../utils';
 import { IInitiatorConf } from '../types/installer';
 import { promisify } from 'util';
 
@@ -390,8 +390,8 @@ export class ProjectInitiator {
         const git = simplegit(target)
             .outputHandler((cmd, stdout, stderr) => {
                 logger.debug(cmd);
-                stdout.on('data', (data) => logger.debug(Utils.formatStdOutput(data)));
-                stderr.on('data', (data) => logger.warn(Utils.formatStdOutput(data)));
+                stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
+                stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
             });
         logger.info(`git init at "${ target }"`);
         await git.init();
