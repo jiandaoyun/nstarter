@@ -36,7 +36,11 @@ export class RequestLogger {
             res.getHeader('content-length') || '-' } - ${ duration } ms`;
     }
 
-    private static _logRequest(req: Request, res: Response, startTime: number) {
+    private static _logRequest(
+        req: Request,
+        res: Response,
+        startTime: number
+    ): void {
         const duration = Date.now() - startTime;
         const { headers } = req;
         const baseMeta = {
@@ -48,8 +52,9 @@ export class RequestLogger {
             status: res.statusCode,
             method: req.method,
             user_agent: headers['user-agent'],
-            req_id: headers['request-id'] as string,
-            http_version: req.httpVersion
+            http_version: req.httpVersion,
+            req_id: req.reqId,
+            session_id: req.sessionID
         };
         const meta = metaFormatter(req, res, baseMeta);
         RequestLogger.log(RequestLogger._formatRequest(req, res, duration), meta);
