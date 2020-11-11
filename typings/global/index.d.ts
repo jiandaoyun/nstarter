@@ -7,3 +7,11 @@ interface Constructor<T = any> {
 interface Callback<T = any, E = Error> {
     (err?: E | null, result?: T): void;
 }
+
+namespace Express {
+    interface Request {
+        reqId: string;
+        originalPath: string | null;
+        getLocale: { (): string };
+    }
+}
