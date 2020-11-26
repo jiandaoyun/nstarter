@@ -165,7 +165,8 @@ export class RabbitMqConsumer<T> extends EventEmitter {
         // 不重试状态重试次数为 0
         const retryTimes = o.retryMethod === RetryMethod.none ? 0 : o.retryTimes;
         return retry(async (err, attempt) => {
-            if (attempt > 0) {
+            // 首次触发 attempt 为 1
+            if (attempt > 1) {
                 this.emit(ConsumerEvents.retry, err, message, attempt);
             }
             await this._run(message);
