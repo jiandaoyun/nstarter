@@ -1,0 +1,22 @@
+{
+  "name": "nstarter-entity",
+  "scripts": {
+    "compile": "tsc --build tsconfig.json",
+    "build": "rimraf dist && npm run compile",
+    "lint": "eslint --config .eslintrc.js --ext .ts --quiet ./src",
+    "test": "ts-node test/entity.test.ts",
+    "schema": "typescript-json-schema ./test/*.ts * --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors"
+  },
+  "dependencies": {
+    "ajv": "^6.12.6"
+  },
+  "devDependencies": {
+    "@types/node": "12.12.54",
+    "eslint": "7.6.0",
+    "eslint-config-nstarter": "1.0.6",
+    "nstarter-tsconfig": "0.2.0",
+    "ts-node": "8.10.2",
+    "typescript": "3.8.3",
+    "typescript-json-schema": "^0.43.0"
+  }
+}
