@@ -1,12 +1,14 @@
 import * as fs from 'fs';
 import Ajv, { ValidateFunction } from 'ajv';
 import { Definition } from 'typescript-json-schema';
-import { ISchemaFormats, ISchemaManagerConfig } from './types';
+import { ISchemaFormats } from './types';
 
 /**
  * 实例模型管理器
  */
-class EntitySchemaManager {
+export class SchemaManager {
+    private static instance: SchemaManager;
+
     private readonly _ajv: Ajv.Ajv;
     private readonly _schemaValidatorMap: {
         [key: string]: Ajv.ValidateFunction
@@ -14,38 +16,68 @@ class EntitySchemaManager {
     private readonly _schemaDefinitionMap: {
         [key: string]: Definition
     } = {};
-    private readonly _schemaCustomTypes: ISchemaFormats = {};
 
     /**
      * @constructor
-     * @param config - 配置
+     * @param definition - 配置
      */
-    constructor(config: ISchemaManagerConfig) {
+    constructor(definition: string) {
         // 加载结构定义
         try {
             const content = JSON.parse(
-                fs.readFileSync(config.definitions, {
+                fs.readFileSync(definition, {
                     encoding: 'utf-8'
                 })
             );
             this._schemaDefinitionMap = content.definitions || {};
         } catch (err) {
-            throw new Error(`Failed to load schema definition file "${ config.definitions }".`);
+            throw new Error(`Failed to load schema definition file "${ definition }".`);
         }
 
         // 初始化 Ajv 实例
-        this._schemaCustomTypes = config.formats || {};
         this._ajv = new Ajv({
             useDefaults: true,
             coerceTypes: true,
             removeAdditional: true,
             $data: true
         });
+    }
 
-        // 定义自定义格式
-        for (const format in this._schemaCustomTypes) {
-            if (this._schemaCustomTypes.hasOwnProperty(format)) {
-                const pattern = this._schemaCustomTypes[format];
+    /**
+     * 初始化实例
+     * @param definition
+     * @constructor
+     */
+    public static Initialize(definition: string) {
+        // 只能被初始化一次
+        if (SchemaManager.instance) {
+            throw new Error('EntitySchemaManager could only be initialized once.');
+        }
+        SchemaManager.instance = new SchemaManager(definition);
+        return SchemaManager.instance;
+    }
+
+
+    /**
+     * 获取实例
+     * @returns {SchemaManager} - 获取实例
+     * @static
+     */
+    public static getInstance() {
+        if (!SchemaManager.instance) {
+            throw new Error('EntitySchemaManager has not been initialized.');
+        }
+        return SchemaManager.instance;
+    }
+
+    /**
+     * 配置自定义数据格式
+     * @param formats
+     */
+    public setSchemaFormats(formats: ISchemaFormats) {
+        for (const format in formats) {
+            if (formats.hasOwnProperty(format)) {
+                const pattern = formats[format];
                 this._ajv.addFormat(format, pattern);
             }
         }
@@ -75,7 +107,3 @@ class EntitySchemaManager {
         return validator;
     }
 }
-
-export const schemaManager = new EntitySchemaManager({
-    definitions: './resources/schema.entities.json'
-});

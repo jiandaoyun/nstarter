@@ -1,4 +1,4 @@
-import { schemaManager } from './schema.manager';
+import { SchemaManager } from './schema.manager';
 import { Definition } from 'typescript-json-schema';
 import { ValidateFunction } from 'ajv';
 import { ValidationError } from './error';
@@ -18,8 +18,8 @@ export abstract class AbstractEntity {
     constructor(obj?: any) {
         // 加载 schema
         const name = this.constructor.name;
-        this._schema = schemaManager.getSchema(name);
-        this._validator = schemaManager.getValidator(name);
+        this._schema = SchemaManager.getInstance().getSchema(name);
+        this._validator = SchemaManager.getInstance().getValidator(name);
 
         // 初始化
         if (obj) {

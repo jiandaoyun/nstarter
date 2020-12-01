@@ -1,6 +1,7 @@
 {
   "name": "nstarter-entity",
   "version": "0.1.0",
+  "license": "MIT",
   "scripts": {
     "compile": "tsc --build tsconfig.json",
     "build": "rimraf dist && npm run compile",
@@ -8,6 +9,8 @@
     "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
     "schema": "typescript-json-schema ./test/entities/*.ts * --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors --noExtraProps"
   },
+  "main": "./dist",
+  "types": "./dist",
   "dependencies": {
     "ajv": "^6.12.6"
   },

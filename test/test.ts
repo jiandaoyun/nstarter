@@ -1,8 +1,52 @@
 import chai from 'chai';
 
 import { TestEntity } from './entities/test.entity';
+import { InvalidEntity } from './invalid/invalid.entity';
+import { SchemaManager } from '../src';
 
 const expect = chai.expect;
+
+describe('SchemaManager', async() => {
+    it('getInstance without initialize', async () => {
+        try {
+            SchemaManager.getInstance()
+        } catch (err) {
+            // 未初始化加载实例
+            expect(err).to.exist;
+        }
+    });
+
+    it('Wrong definition', async() => {
+        try {
+            const schemaManager = SchemaManager.Initialize('./resources/schema.invalid.json');
+            schemaManager.setSchemaFormats({
+                'oid': /^[0-9a-f]{24}$/
+            });
+        } catch (err) {
+            expect(err).to.exist;
+        }
+    });
+
+    it('Initialize', async() => {
+        try {
+            const schemaManager = SchemaManager.Initialize('./resources/schema.entities.json');
+            schemaManager.setSchemaFormats({
+                'oid': /^[0-9a-f]{24}$/
+            });
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+    });
+
+    it('Duplicate initialize', async() => {
+        try {
+            SchemaManager.Initialize('')
+        } catch (err) {
+            // 重复初始化
+            expect(err).to.exist;
+        }
+    });
+});
 
 describe('Schema Validation', async () => {
     it('Normal', async () => {
@@ -36,7 +80,7 @@ describe('Schema Validation', async () => {
 
     it('Invalid parameters', async () => {
         try {
-            const test = new TestEntity({
+            new TestEntity({
                 width: 1,
                 height: -2,
                 extra: 3
@@ -63,5 +107,15 @@ describe('Schema Validation', async () => {
             height: 2,
             meta: {}
         });
+    });
+});
+
+describe('Invalid Entity', async () => {
+    it('Invalid', async () => {
+        try {
+            new InvalidEntity();
+        } catch (err) {
+            expect(err).to.exist;
+        }
     });
 });
