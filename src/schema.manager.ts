@@ -115,6 +115,7 @@ export class SchemaManager {
                 // 类型引用定义
                 definitions: this._schemaDefinitionMap
             });
+            this._schemaValidatorMap[name] = validator;
         }
         return validator;
     }
