@@ -31,15 +31,11 @@ export abstract class AbstractEntity {
     }
 
     /**
-     * 基于 JSON 数据生成对象实例
-     * @param obj - JSON 对象
+     * 基于 JSON 数据直接赋值创建实例 (无结构校验)
+     * 用于已再最外层经过结构校验的场景，避免内层重复校验
+     * @param obj - 经过结构校验的安全 JSON 对象
      */
-    public fromJSON(obj: any) {
-        const isValid = this._validator(obj);
-        if (!isValid) {
-            throw new ValidationError(this, this._validator.errors, { obj });
-        }
-        // 递归实例化
+    public assignJSON(obj: any) {
         const result: any = {};
         for (const prop in obj) {
             if (!obj.hasOwnProperty(prop)) {
@@ -50,13 +46,13 @@ export abstract class AbstractEntity {
             if (Entity) {
                 // 基于 schema 可用性判定是否允许递归实例化
                 if (SchemaManager.getInstance().hasSchema(Entity.name)) {
-                    result[prop] = new Entity(val);
+                    result[prop] = new Entity().assignJSON(val);
                     continue;
                 } else if (Entity === Array) {
                     const Item: Constructor = Reflect.getMetadata(metaKey.itemConstructor, this, prop);
                     if (Array.isArray(val) && SchemaManager.getInstance().hasSchema(Item.name)) {
                         // 数组递归实例化
-                        result[prop] = val.map((itemObj) => new Item(itemObj));
+                        result[prop] = val.map((itemObj) => new Item().assignJSON(itemObj));
                         continue;
                     }
                 }
@@ -65,6 +61,19 @@ export abstract class AbstractEntity {
         }
         Object.assign(this, result);
         this._isValid = true;
+        return this;
+    }
+
+    /**
+     * 基于 JSON 数据生成对象实例
+     * @param obj - JSON 对象
+     */
+    public fromJSON(obj: any) {
+        const isValid = this._validator(obj);
+        if (!isValid) {
+            throw new ValidationError(this, this._validator.errors, { obj });
+        }
+        this.assignJSON(obj);
     };
 
     /**
