@@ -38,26 +38,25 @@ export abstract class AbstractEntity {
     public assignJSON(obj: any) {
         const result: any = {};
         for (const prop in obj) {
-            if (!obj.hasOwnProperty(prop)) {
-                continue;
-            }
-            const val = obj[prop];
-            const Entity: Constructor = Reflect.getMetadata(metaKey.constructor, this, prop);
-            if (Entity) {
-                // 基于 schema 可用性判定是否允许递归实例化
-                if (SchemaManager.getInstance().hasSchema(Entity.name)) {
-                    result[prop] = new Entity().assignJSON(val);
-                    continue;
-                } else if (Entity === Array) {
-                    const Item: Constructor = Reflect.getMetadata(metaKey.itemConstructor, this, prop);
-                    if (Array.isArray(val) && SchemaManager.getInstance().hasSchema(Item.name)) {
-                        // 数组递归实例化
-                        result[prop] = val.map((itemObj) => new Item().assignJSON(itemObj));
+            if (obj.hasOwnProperty(prop)) {
+                const val = obj[prop];
+                const Entity: Constructor = Reflect.getMetadata(metaKey.constructor, this, prop);
+                if (Entity) {
+                    // 基于 schema 可用性判定是否允许递归实例化
+                    if (SchemaManager.getInstance().hasSchema(Entity.name)) {
+                        result[prop] = new Entity().assignJSON(val);
                         continue;
+                    } else if (Entity === Array) {
+                        const Item: Constructor = Reflect.getMetadata(metaKey.itemConstructor, this, prop);
+                        if (Array.isArray(val) && SchemaManager.getInstance().hasSchema(Item.name)) {
+                            // 数组递归实例化
+                            result[prop] = val.map((itemObj) => new Item().assignJSON(itemObj));
+                            continue;
+                        }
                     }
                 }
+                result[prop] = val;
             }
-            result[prop] = val;
         }
         Object.assign(this, result);
         this._isValid = true;
