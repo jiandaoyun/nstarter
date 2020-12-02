@@ -4,6 +4,7 @@ import { TestEntity } from './entities/test.entity';
 import { InvalidEntity } from './invalid/invalid.entity';
 import { SchemaManager } from '../src';
 import { WrapperEntity } from './entities/wrapper.entity';
+import { GenericEntity } from './entities/generic.entity';
 
 const expect = chai.expect;
 
@@ -143,6 +144,27 @@ describe('Nested Entity', async () => {
                 height: 2,
                 meta: {}
             }]
+        });
+    });
+});
+
+describe('Generic Entity', async () => {
+    it('Generic', async () => {
+        let result;
+        try {
+            const test = new GenericEntity<TestEntity>({
+                item: {
+                    width: 1,
+                    height: -2
+                }
+            });
+            result = test.toJSON();
+        } catch (err) {
+            // 不支持泛型校验
+            expect(err).to.not.exist;
+        }
+        expect(result).to.deep.equal({
+            item: {}
         });
     });
 });
