@@ -96,13 +96,25 @@ export class SchemaManager {
     }
 
     /**
+     * 判定对象是否存在实体结构定义
+     * @param name - 实体类名
+     */
+    public hasSchema(name: string): boolean {
+        return !!this._schemaDefinitionMap[name];
+    }
+
+    /**
      * 获取结构校验方法
      * @param name - 实体类名
      */
     public getValidator(name: string): ValidateFunction {
         let validator = this._schemaValidatorMap[name];
         if (!validator) {
-            validator = this._ajv.compile(this.getSchema(name));
+            validator = this._ajv.compile({
+                ...this.getSchema(name),
+                // 类型引用定义
+                definitions: this._schemaDefinitionMap
+            });
         }
         return validator;
     }

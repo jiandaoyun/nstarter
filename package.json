@@ -1,6 +1,6 @@
 {
   "name": "nstarter-entity",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "scripts": {
     "compile": "tsc --build tsconfig.json",
@@ -12,7 +12,8 @@
   "main": "./dist",
   "types": "./dist",
   "dependencies": {
-    "ajv": "^6.12.6"
+    "ajv": "^6.12.6",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/chai": "^4.2.14",

@@ -3,10 +3,11 @@ import chai from 'chai';
 import { TestEntity } from './entities/test.entity';
 import { InvalidEntity } from './invalid/invalid.entity';
 import { SchemaManager } from '../src';
+import { WrapperEntity } from './entities/wrapper.entity';
 
 const expect = chai.expect;
 
-describe('SchemaManager', async() => {
+describe('SchemaManager', async () => {
     it('getInstance without initialize', async () => {
         try {
             SchemaManager.getInstance()
@@ -16,7 +17,7 @@ describe('SchemaManager', async() => {
         }
     });
 
-    it('Wrong definition', async() => {
+    it('Wrong definition', async () => {
         try {
             const schemaManager = SchemaManager.Initialize('./resources/schema.invalid.json');
             schemaManager.setSchemaFormats({
@@ -27,7 +28,7 @@ describe('SchemaManager', async() => {
         }
     });
 
-    it('Initialize', async() => {
+    it('Initialize', async () => {
         try {
             const schemaManager = SchemaManager.Initialize('./resources/schema.entities.json');
             schemaManager.setSchemaFormats({
@@ -38,7 +39,7 @@ describe('SchemaManager', async() => {
         }
     });
 
-    it('Duplicate initialize', async() => {
+    it('Duplicate initialize', async () => {
         try {
             SchemaManager.Initialize('')
         } catch (err) {
@@ -57,6 +58,7 @@ describe('Schema Validation', async () => {
                 height: 2
             });
             result = test.toJSON();
+            expect(test.ignore).to.equal('ignored');
         } catch (err) {
             expect(err).to.not.exist;
         }
@@ -106,6 +108,41 @@ describe('Schema Validation', async () => {
             width: 1,
             height: 2,
             meta: {}
+        });
+    });
+});
+
+describe('Nested Entity', async () => {
+    it('Normal', async () => {
+        let result;
+        try {
+            const test = new WrapperEntity({
+                items: [{
+                    width: 1,
+                    height: 2
+                }],
+                item: {
+                    width: 3,
+                    height: 4
+                },
+                arr: ['a', 'b']
+            });
+            result = test.toJSON();
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+        expect(result).to.deep.equal({
+            arr: ['a', 'b'],
+            item: {
+                width: 3,
+                height: 4,
+                meta: {}
+            },
+            items: [{
+                width: 1,
+                height: 2,
+                meta: {}
+            }]
         });
     });
 });

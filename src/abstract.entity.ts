@@ -1,7 +1,10 @@
+import 'reflect-metadata';
+import { ValidateFunction } from 'ajv';
+
 import { SchemaManager } from './schema.manager';
 import { Definition } from 'typescript-json-schema';
-import { ValidateFunction } from 'ajv';
 import { ValidationError } from './error';
+import { metaKey } from './enums';
 
 /**
  * 实体对象基类
@@ -36,7 +39,31 @@ export abstract class AbstractEntity {
         if (!isValid) {
             throw new ValidationError(this, this._validator.errors, { obj });
         }
-        Object.assign(this, obj);
+        // 递归实例化
+        const result: any = {};
+        for (const prop in obj) {
+            if (!obj.hasOwnProperty(prop)) {
+                continue;
+            }
+            const val = obj[prop];
+            const Entity: Constructor = Reflect.getMetadata(metaKey.constructor, this, prop);
+            if (Entity) {
+                // 基于 schema 可用性判定是否允许递归实例化
+                if (SchemaManager.getInstance().hasSchema(Entity.name)) {
+                    result[prop] = new Entity(val);
+                    continue;
+                } else if (Entity === Array) {
+                    const Item: Constructor = Reflect.getMetadata(metaKey.itemConstructor, this, prop);
+                    if (Array.isArray(val) && SchemaManager.getInstance().hasSchema(Item.name)) {
+                        // 数组递归实例化
+                        result[prop] = val.map((itemObj) => new Item(itemObj));
+                        continue;
+                    }
+                }
+            }
+            result[prop] = val;
+        }
+        Object.assign(this, result);
         this._isValid = true;
     };
 
@@ -52,7 +79,22 @@ export abstract class AbstractEntity {
         for (const prop in this) {
             // 仅选取 schema 定义选择的属性
             if (this._schema.properties?.hasOwnProperty(prop)) {
-                result[prop] = this[prop];
+                const val = this[prop];
+                if (val instanceof AbstractEntity) {
+                    // 递归实体
+                    result[prop] = val.toJSON();
+                } else if (Array.isArray(val)) {
+                    // 递归数组
+                    result[prop] = val.map((item) => {
+                        if (item instanceof AbstractEntity) {
+                            return item.toJSON();
+                        } else {
+                            return item;
+                        }
+                    });
+                } else {
+                    result[prop] = val;
+                }
             }
             // 类定义不支持扩展属性
             // 无需处理 patternProperties 与 additionalProperty
