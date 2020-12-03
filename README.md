@@ -376,7 +376,7 @@ schemaManager.setSchemaFormats({
 
   受限于 JavaScript 对象构造方法传递的层级限制，以及装饰器的使用层级限制，目前的装饰器实现下，对超过一层中间层的属性，不支持自动传递构造函数定义与创建的方法，相关属性无法被正确自动初始化，需要手动干预。
   
-  对于如下的实体对象数组映射表形式，无法提供支持自动实例化的支持。
+  对于如下的实体对象数组映射表形式，无法提供完整自动实例化的支持。
 
   ```typescript
   export class WrapperArrayMapEntity extends AbstractEntity {
@@ -384,6 +384,20 @@ schemaManager.setSchemaFormats({
       itemArrayMap?: {
           [key: string]: DemoEntity[]
       };
+  }
+  ```
+
+  同样，以下复杂结构对象，可以实现接口的安全结构校验初始化，但是无法自动完成实例化。
+
+  ```typescript
+  export class ComplexItemEntity extends AbstractEntity {
+      item: {
+          foo: DemoEntity,
+          bar: {
+              baz: string,
+              qux: DemoEntity
+          }
+      }
   }
   ```
 

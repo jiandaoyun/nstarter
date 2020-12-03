@@ -43,3 +43,13 @@ export class AnyItemEntity extends AbstractEntity {
         [key: string]: any
     };
 }
+
+export class ComplexItemEntity extends AbstractEntity {
+    item: {
+        foo: TestEntity,
+        bar: {
+            baz: string,
+            qux: TestEntity
+        }
+    }
+}

@@ -3,7 +3,7 @@ import chai from 'chai';
 import { TestEntity } from './entities/test.entity';
 import { InvalidEntity } from './invalid/invalid.entity';
 import { SchemaManager } from '../src';
-import { AnyItemEntity, WrapperArrayMapEntity, WrapperEntity } from './entities/wrapper.entity';
+import { AnyItemEntity, ComplexItemEntity, WrapperArrayMapEntity, WrapperEntity } from './entities/wrapper.entity';
 import { GenericEntity } from './entities/generic.entity';
 
 const expect = chai.expect;
@@ -219,6 +219,47 @@ describe('Nested Entity', async () => {
                     width: 3,
                     height: 4
                 }]
+            }
+        });
+    });
+
+    it('ComplexItem', async () => {
+        let result;
+        try {
+            const test = new ComplexItemEntity({
+                item: {
+                    foo: {
+                        width: 1,
+                        height: 2
+                    },
+                    bar: {
+                        baz: 'test',
+                        qux: {
+                            width: 3,
+                            height: 4
+                        }
+                    }
+                }
+            });
+            result = test.toJSON();
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+        expect(result).to.deep.equal({
+            item: {
+                foo: {
+                    width: 1,
+                    meta: {},
+                    height: 2
+                },
+                bar: {
+                    baz: 'test',
+                    qux: {
+                        width: 3,
+                        meta: {},
+                        height: 4
+                    }
+                }
             }
         });
     });
