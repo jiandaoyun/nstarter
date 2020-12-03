@@ -9,7 +9,7 @@ export const entityAttr = (itemCtor?: Constructor): PropertyDecorator =>
     (target, key) => {
         const ctor = Reflect.getMetadata('design:type', target, key);
         Reflect.defineMetadata(metaKey.constructor, ctor, target, key);
-        if (ctor === Array && itemCtor) {
+        if ((ctor === Array || ctor === Object) && itemCtor) {
             Reflect.defineMetadata(metaKey.itemConstructor, itemCtor, target, key);
         }
     };

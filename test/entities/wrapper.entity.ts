@@ -15,5 +15,20 @@ export class WrapperEntity extends AbstractEntity {
     @entityAttr()
     item: TestEntity;
 
+    @entityAttr(TestEntity)
+    itemMap?: {
+        [key: string]: TestEntity
+    };
+
     arr: string[];
+}
+
+/**
+ * 深层直接嵌套不被支持
+ */
+export class WrapperArrayMapEntity extends AbstractEntity {
+    @entityAttr(TestEntity)
+    itemArrayMap?: {
+        [key: string]: TestEntity[]
+    };
 }

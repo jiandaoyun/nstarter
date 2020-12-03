@@ -81,6 +81,11 @@ npm install -D typescript-json-schema
   
       @entityAttr()
       item: DemoEntity;
+  
+      @entityAttr(DemoEntity)
+      itemMap?: {
+          [key: string]: DemoEntity
+      };
   }
   ```
 
