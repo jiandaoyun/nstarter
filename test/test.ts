@@ -3,7 +3,7 @@ import chai from 'chai';
 import { TestEntity } from './entities/test.entity';
 import { InvalidEntity } from './invalid/invalid.entity';
 import { SchemaManager } from '../src';
-import { WrapperArrayMapEntity, WrapperEntity } from './entities/wrapper.entity';
+import { AnyItemEntity, WrapperArrayMapEntity, WrapperEntity } from './entities/wrapper.entity';
 import { GenericEntity } from './entities/generic.entity';
 
 const expect = chai.expect;
@@ -183,6 +183,41 @@ describe('Nested Entity', async () => {
                 x: [{
                     width: 1,
                     height: 2
+                }]
+            }
+        });
+    });
+
+    it('AnyItem', async () => {
+        let result;
+        try {
+            const test = new AnyItemEntity({
+                anyItem: [{
+                    width: 1,
+                    height: 2
+                }],
+                anyMap: {
+                    x: [{
+                        width: 3,
+                        height: 4
+                    }]
+                },
+                extra: 1
+            });
+            result = test.toJSON();
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+        // 不支持场景
+        expect(result).to.deep.equal({
+            anyItem: [{
+                width: 1,
+                height: 2
+            }],
+            anyMap: {
+                x: [{
+                    width: 3,
+                    height: 4
                 }]
             }
         });

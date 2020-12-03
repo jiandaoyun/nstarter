@@ -71,6 +71,8 @@ npm install -D typescript-json-schema
 
 * 嵌套实体结构
 
+  嵌套场景下，支持子属性实例类型，数组 / 对象子属性的实例类型嵌套。
+
   ```typescript
   export class WrapperEntity extends AbstractEntity {
       /**
@@ -88,6 +90,19 @@ npm install -D typescript-json-schema
       };
   }
   ```
+
+  另外，对于子属性的类型定义，也支持使用 `any` 类型，并且能够自动在结构校验过程保留相关属性。
+
+  ```typescript
+  export class AnyItemEntity extends AbstractEntity {
+      anyItem: any;
+  
+      anyMap?: {
+          [key: string]: any
+      };
+  }
+  ```
+
 
 > 💡 小技巧：
 >
@@ -352,6 +367,25 @@ schemaManager.setSchemaFormats({
        item: T
    }
    ```
+
+3. 嵌套接口定义内部实例层级限制
+
+  局限性：
+    - 结构校验: ✓
+    - 自动实例化: ✗
+
+  受限于 JavaScript 对象构造方法传递的层级限制，以及装饰器的使用层级限制，目前的装饰器实现下，对超过一层中间层的属性，不支持自动传递构造函数定义与创建的方法，相关属性无法被正确自动初始化，需要手动干预。
+  
+  对于如下的实体对象数组映射表形式，无法提供支持自动实例化的支持。
+
+  ```typescript
+  export class WrapperArrayMapEntity extends AbstractEntity {
+      @entityAttr(TestEntity)
+      itemArrayMap?: {
+          [key: string]: DemoEntity[]
+      };
+  }
+  ```
 
 ## License
 MIT

@@ -32,3 +32,14 @@ export class WrapperArrayMapEntity extends AbstractEntity {
         [key: string]: TestEntity[]
     };
 }
+
+/**
+ * 任意类型子属性
+ */
+export class AnyItemEntity extends AbstractEntity {
+    anyItem: any;
+
+    anyMap?: {
+        [key: string]: any
+    };
+}
