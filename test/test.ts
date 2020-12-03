@@ -21,6 +21,8 @@ describe('SchemaManager', async () => {
     it('Wrong definition', async () => {
         try {
             const schemaManager = SchemaManager.Initialize('./resources/schema.invalid.json');
+            // 允许加载多个结构定义文件
+            schemaManager.loadSchemaDefinition('./resources/schema.invalid.json');
             schemaManager.setSchemaFormats({
                 'oid': /^[0-9a-f]{24}$/
             });

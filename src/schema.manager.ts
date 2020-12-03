@@ -13,7 +13,7 @@ export class SchemaManager {
     private readonly _schemaValidatorMap: {
         [key: string]: Ajv.ValidateFunction
     } = {};
-    private readonly _schemaDefinitionMap: {
+    private _schemaDefinitionMap: {
         [key: string]: Definition
     } = {};
 
@@ -21,17 +21,9 @@ export class SchemaManager {
      * @constructor
      * @param definition - 配置
      */
-    constructor(definition: string) {
-        // 加载结构定义
-        try {
-            const content = JSON.parse(
-                fs.readFileSync(definition, {
-                    encoding: 'utf-8'
-                })
-            );
-            this._schemaDefinitionMap = content.definitions || {};
-        } catch (err) {
-            throw new Error(`Failed to load schema definition file "${ definition }".`);
+    constructor(definition?: string) {
+        if (definition) {
+            this.loadSchemaDefinition(definition);
         }
 
         // 初始化 Ajv 实例
@@ -41,6 +33,23 @@ export class SchemaManager {
             removeAdditional: true,
             $data: true
         });
+    }
+
+    /**
+     * 加载结构定义 (允许多次加载)
+     * @param definition
+     */
+    public loadSchemaDefinition(definition: string) {
+        try {
+            const content = JSON.parse(
+                fs.readFileSync(definition, {
+                    encoding: 'utf-8'
+                })
+            );
+            Object.assign(this._schemaDefinitionMap, content.definitions);
+        } catch (err) {
+            throw new Error(`Failed to load schema definition file "${ definition }".`);
+        }
     }
 
     /**
