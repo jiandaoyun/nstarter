@@ -162,6 +162,37 @@ describe('Nested Entity', async () => {
         });
     });
 
+    it('Item Instance', async () => {
+        let result;
+        try {
+            const item = new TestEntity({
+                width: 1,
+                height: 2
+            });
+            const test = new WrapperEntity({
+                items: [item],
+                item,
+                arr: [1, 2]
+            });
+            result = test.toJSON();
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+        expect(result).to.deep.equal({
+            item: {
+                width: 1,
+                height: 2,
+                meta: {}
+            },
+            items: [{
+                width: 1,
+                height: 2,
+                meta: {}
+            }],
+            arr: ['1', '2']
+        });
+    });
+
     it('ArrayMap', async () => {
         let result;
         try {

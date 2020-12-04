@@ -75,7 +75,14 @@ export abstract class AbstractEntity {
      * @param obj - 经过结构校验的安全对象
      */
     public assign(obj: any) {
-        Object.assign(this, this._generateEntity(obj));
+        let target;
+        if (obj instanceof this.constructor) {
+            // 对象实例直接赋值，跳过解析过程 （浅拷贝逻辑）
+            target = obj;
+        } else {
+            target = this._generateEntity(obj);
+        }
+        Object.assign(this, target);
         this._isValid = true;
         return this;
     }
@@ -85,9 +92,12 @@ export abstract class AbstractEntity {
      * @param obj - JSON 对象
      */
     public fromJSON(obj: any) {
-        const isValid = this._validator(obj);
-        if (!isValid) {
-            throw new ValidationError(this, this._validator.errors, { obj });
+        if (!(obj instanceof this.constructor)) {
+            // 仅校验非对象实例
+            const isValid = this._validator(obj);
+            if (!isValid) {
+                throw new ValidationError(this, this._validator.errors, { obj });
+            }
         }
         this.assign(obj);
     };
