@@ -8,8 +8,8 @@
     - [实体对象实例化](#实体对象实例化)
     - [生成 JSON Schema](#生成-json-schema)
     - [工程启动资源加载](#工程启动资源加载)
-- [API 说明](#api-说明)
     - [实体对象扩展](#实体对象扩展)
+- [API 说明](#api-说明)
 - [限制场景](#限制场景)
 - [License](#license)
 
@@ -299,6 +299,11 @@ schemaManager.setSchemaFormats({
 > 
 > 如果结构定义文件存在问题，会存在导致加载过程出现抛错的可能性，需要根据实际情况处理对应的错误信息。
 
+### 实体对象扩展
+
+在实体对象定义基于 `AbstractEntity` 实现了基本初始化、校验、序列化功能的基础上。在实际使用场景中，可以进一步对实体对象进行扩展，额外提供扩展的对象操作方法，或者覆盖实现默认的对象行为等。
+
+
 ## API 说明
 
 * `AbstractEntity` - 实体基类
@@ -326,10 +331,6 @@ schemaManager.setSchemaFormats({
   - `SchemaManager.prototype.loadSchemaDefinition(definition: string)` - 加载 JSON Schema 结构定义文件，允许多次加载不同文件。
 
   - `SchemaManager.prototype.setSchemaFormats(format: ISchemaFormats)` - 配置 AJV 的自定义类型校验格式。
-
-### 实体对象扩展
-
-在实体对象定义基于 `AbstractEntity` 实现了基本初始化、校验、序列化功能的基础上。在实际使用场景中，可以进一步对实体对象进行扩展，额外提供扩展的对象操作方法，或者覆盖实现默认的对象行为等。
 
 
 ## 限制场景
