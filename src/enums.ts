@@ -1,4 +1,4 @@
 export enum metaKey {
-    constructor = 'entity:constructor',
-    itemConstructor = 'entity:item_constructor'
+    constructor = 'ns_entity:constructor',
+    itemConstructor = 'ns_entity:item_constructor'
 }
