@@ -2,6 +2,7 @@
 /dist/
 /build/
 /lint/
+/test/
 
 /log/
 
@@ -12,4 +13,3 @@ coverage/
 
 .vscode/
 .idea/
-

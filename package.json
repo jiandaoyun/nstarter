@@ -1,20 +1,31 @@
 {
   "name": "nstarter-entity",
+  "version": "0.2.0",
+  "license": "MIT",
   "scripts": {
     "compile": "tsc --build tsconfig.json",
     "build": "rimraf dist && npm run compile",
     "lint": "eslint --config .eslintrc.js --ext .ts --quiet ./src",
-    "test": "ts-node test/entity.test.ts",
-    "schema": "typescript-json-schema ./test/*.ts * --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors"
+    "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
+    "schema": "typescript-json-schema ./test/entities/*.ts * --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors --noExtraProps"
   },
+  "main": "./dist",
+  "types": "./dist",
   "dependencies": {
-    "ajv": "^6.12.6"
+    "ajv": "^6.12.6",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.14",
+    "@types/mocha": "^7.0.2",
     "@types/node": "12.12.54",
+    "chai": "^4.2.0",
     "eslint": "7.6.0",
     "eslint-config-nstarter": "1.0.6",
+    "mocha": "^7.2.0",
     "nstarter-tsconfig": "0.2.0",
+    "nyc": "^15.0.1",
+    "rimraf": "^3.0.2",
     "ts-node": "8.10.2",
     "typescript": "3.8.3",
     "typescript-json-schema": "^0.43.0"
