@@ -258,6 +258,12 @@ https://github.com/YousefED/typescript-json-schema#command-line
                 "item": {
                     "$ref": "#/definitions/DemoEntity"
                 },
+                "itemMap": {
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DemoEntity"
+                    },
+                    "type": "object"
+                },
                 "items": {
                     "items": {
                         "$ref": "#/definitions/DemoEntity"
