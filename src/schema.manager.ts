@@ -57,7 +57,7 @@ export class SchemaManager {
      * @param definition
      * @constructor
      */
-    public static Initialize(definition: string) {
+    public static Initialize(definition?: string) {
         // 只能被初始化一次
         if (SchemaManager.instance) {
             throw new Error('EntitySchemaManager could only be initialized once.');
