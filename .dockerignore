@@ -1,0 +1,16 @@
+/node_modules/
+/dist/
+/build/
+/lint/
+
+/log/
+
+Dockerfile
+
+.nyc_output/
+coverage/
+
+resources/
+
+.vscode/
+.idea/

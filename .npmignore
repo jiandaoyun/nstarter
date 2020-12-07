@@ -9,6 +9,9 @@ node_modules/
 .gitkeep
 /.gitignore
 
+release/
+lint/
+
 coverage/
 .nyc_output/
 
@@ -19,6 +22,5 @@ test/
 
 jenkinsfile.gvy
 
-/lint/
 /.eslintignore
 /.eslintrc.js
