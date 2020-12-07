@@ -21,8 +21,9 @@ COPY --from=build /var/opt/build/lint ./lint
 
 # 发布
 FROM build as release
-ARG REGISTRY
+ARG TOKEN
 
-RUN npm config set registry ${REGISTRY} && \
+RUN npm config set registry "https://registry.npmjs.org" && \
+    echo //registry.npmjs.org/:_authToken=${TOKEN} >> ./.npmrc && \
     npm whoami && \
     npm publish
