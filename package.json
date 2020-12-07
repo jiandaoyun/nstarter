@@ -1,6 +1,14 @@
 {
   "name": "nstarter-entity",
-  "version": "0.2.0",
+  "description": "nstarter 标准传输对象实体化插件",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiandaoyun/nstarter-plugin-entity"
+  },
+  "keywords": [
+    "nstarter", "plugin"
+  ],
+  "version": "0.2.1",
   "license": "MIT",
   "scripts": {
     "compile": "tsc --build tsconfig.json",
