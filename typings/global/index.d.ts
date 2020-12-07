@@ -13,5 +13,6 @@ namespace Express {
         reqId: string;
         originalPath: string | null;
         getLocale: { (): string };
+        sessionID: string;
     }
 }
