@@ -1,6 +1,6 @@
 {
   "name": "nstarter-core",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "The core package for nstarter projects.",
   "license": "MIT",
   "repository": {
@@ -17,6 +17,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.12",
     "@types/express": "^4.17.2",
+    "@types/express-session": "^1.17.0",
     "@types/mocha": "^8.0.1",
     "@types/node": "^13.1.4",
     "chai": "^4.2.0",
