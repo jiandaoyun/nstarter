@@ -219,6 +219,24 @@ describe('Nested Entity', async () => {
         });
     });
 
+    it('OptionalMap', async () => {
+        let result;
+        try {
+            const test = new WrapperArrayMapEntity({
+                itemArray: undefined,
+                itemArrayMap: undefined
+            });
+            result = test.toJSON();
+        } catch (err) {
+            expect(err).to.not.exist;
+        }
+        // 不支持场景
+        expect(result).to.not.deep.equal({
+            itemArray: [],
+            itemArrayMap: {}
+        });
+    });
+
     it('AnyItem', async () => {
         let result;
         try {

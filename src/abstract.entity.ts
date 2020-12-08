@@ -133,7 +133,7 @@ export abstract class AbstractEntity {
                                 return item;
                             }
                         });
-                    } else if (Reflect.getMetadata(metaKey.itemConstructor, this, prop) && objSchema.properties) {
+                    } else if (val && Reflect.getMetadata(metaKey.itemConstructor, this, prop) && objSchema.properties) {
                         // 递归实体
                         result[prop] = this._generateJSON(val, objSchema.properties[prop] as Definition);
                     } else {
