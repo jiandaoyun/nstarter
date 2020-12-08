@@ -219,7 +219,7 @@ describe('Nested Entity', async () => {
         });
     });
 
-    it('OptionalMap', async () => {
+    it('OptionalAttribute', async () => {
         let result;
         try {
             const test = new WrapperArrayMapEntity({
@@ -230,7 +230,6 @@ describe('Nested Entity', async () => {
         } catch (err) {
             expect(err).to.not.exist;
         }
-        // 不支持场景
         expect(result).to.not.deep.equal({
             itemArray: [],
             itemArrayMap: {}
