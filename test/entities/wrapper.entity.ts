@@ -1,6 +1,6 @@
 import { AbstractEntity } from '../../src';
 import { TestEntity } from './test.entity';
-import { entityAttr } from '../../src/decorators';
+import { entityAttr } from '../../src';
 
 /**
  * 递归测试实体
@@ -31,6 +31,9 @@ export class WrapperArrayMapEntity extends AbstractEntity {
     itemArrayMap?: {
         [key: string]: TestEntity[]
     };
+
+    @entityAttr(TestEntity)
+    itemArray?: TestEntity[];
 }
 
 /**
