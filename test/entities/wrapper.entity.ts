@@ -1,7 +1,6 @@
 import { AbstractEntity } from '../../src';
 import { TestEntity } from './test.entity';
-import { entityAttr } from '../../src/decorators';
-import { Test } from 'mocha';
+import { entityAttr } from '../../src';
 
 /**
  * 递归测试实体
