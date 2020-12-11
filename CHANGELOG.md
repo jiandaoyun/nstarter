@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4
+
+* 支持实体对象使用 _isValid 属性
+* ajv 校验返回所有 schema 错误
+
 ## 0.2.3 
 
 * 修正 `undefined` 数组入参导致输出为 `{}` 的问题

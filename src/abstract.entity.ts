@@ -12,7 +12,10 @@ import { metaKey } from './enums';
 export abstract class AbstractEntity {
     private readonly _schema: Definition;
     private readonly _validator: ValidateFunction;
-    private _isValid = false;
+    /**
+     * @ignore
+     */
+    protected _isValid = false;
 
     /**
      * @constructor

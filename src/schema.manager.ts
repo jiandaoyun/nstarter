@@ -28,6 +28,7 @@ export class SchemaManager {
 
         // 初始化 Ajv 实例
         this._ajv = new Ajv({
+            allErrors: true,
             useDefaults: true,
             coerceTypes: true,
             removeAdditional: true,
