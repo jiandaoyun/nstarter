@@ -129,16 +129,16 @@ export class ProjectInitiator {
             }
             const isModuleConf = moduleStart || moduleEnd || altStart || altEnd;
             if (isModuleConf) {
-                return;
+                continue;
             }
             if (isAlt) {
                 if (isIgnored) {
                     result = _.replace(line, /\/{2}#\s+/, '');
                 } else {
-                    return;
+                    continue;
                 }
             } else if (isIgnored) {
-                return;
+                continue;
             }
 
             // 写入到目标工程文件
