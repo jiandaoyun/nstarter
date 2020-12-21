@@ -62,7 +62,8 @@ export class ProjectInitiator {
     private async _copyFile(path: string) {
         const o = this._options;
         const isCodeFile = path.match(/(\.[tj]s|\.sh|makefile)$/i);
-        if (_.isEmpty(o.params) || isCodeFile) {
+        const isBinaryFile = path.match(/\.(jpg|png|webp|zip)$/i);
+        if (_.isEmpty(o.params) || isCodeFile || isBinaryFile) {
             // 不替换代码文件中的模板参数
             fs.copyFileSync(
                 this._getSourcePath(path),
