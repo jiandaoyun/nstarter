@@ -23,7 +23,7 @@ export function transaction(options?: TransactionOptions, connection = defaultCo
             await session.withTransaction(async (session: ClientSession) => {
                 const sessionIdx = Reflect.getMetadata(SESSION_IDX, target);
                 if (sessionIdx >= 0) {
-                    args[sessionIdx] ||= session;
+                    args[sessionIdx] = args[sessionIdx] || session;
                 } else {
                     session.endSession();
                     throw new Error('No session configured for transaction.');
@@ -48,5 +48,5 @@ export function transaction(options?: TransactionOptions, connection = defaultCo
  * @param parameterIndex
  */
 export function repoSession(target: any, propertyKey: string, parameterIndex: number) {
-    Reflect.defineMetadata(SESSION_IDX, parameterIndex, target);
+    Reflect.defineMetadata(`${ SESSION_IDX }:${ propertyKey }`, parameterIndex, target);
 }
