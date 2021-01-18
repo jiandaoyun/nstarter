@@ -4,6 +4,10 @@ import { defaultConnection } from './connector';
 
 const SESSION_IDX = 'mongodb:sess_idx';
 
+/**
+ * get repoSession index metadata key.
+ * @param propertyKey - function name.
+ */
 function getMetadataKey(propertyKey: string) {
     return `${ SESSION_IDX }:${ propertyKey }`;
 }
