@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import grpc, { Client } from 'grpc';
-import { load } from '@grpc/proto-loader';
+import { loadSync } from '@grpc/proto-loader';
 import { IPackageLoadOptions } from '../types';
 import { DEFAULT_PKG } from '../constants';
 
@@ -10,7 +10,7 @@ export const protoRegistry: Record<string, typeof Client> = {};
  * 加载 protobuf 配置
  * @param options
  */
-export const loadProtoPackage = async (options: IPackageLoadOptions) => {
+export const loadProtoPackage = (options: IPackageLoadOptions) => {
     const o = {
         protoPath: options.protoPath || '',
         package: options.package || DEFAULT_PKG,
@@ -23,7 +23,7 @@ export const loadProtoPackage = async (options: IPackageLoadOptions) => {
             ...options.loader
         }
     };
-    const pack = await load(o.protoPath, o.loader);
+    const pack = loadSync(o.protoPath, o.loader);
     protoRegistry[o.package] = grpc.loadPackageDefinition(pack)[o.package] as typeof Client;
 };
 

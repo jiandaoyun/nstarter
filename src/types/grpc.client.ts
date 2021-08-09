@@ -1,4 +1,4 @@
-import { ServerReadableStream } from 'grpc';
+import { ClientReadableStream } from 'grpc';
 
 export interface IClientConfig {
     readonly package: string;
@@ -13,8 +13,6 @@ export interface UnaryCallback<R> {
 }
 
 /**
- * 流式请求回调
+ * 流式结果
  */
-export interface StreamingCallback<R> {
-    (err: Error | null | undefined, call: ServerReadableStream<R>): any;
-}
+export type StreamResult<R> = ClientReadableStream<R> | null;
