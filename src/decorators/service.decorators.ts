@@ -65,7 +65,7 @@ export function grpcUnaryMethod<T, R>() {
 /**
  * gRPC 流式请求服务处理方法装饰器
  */
-export function grcpStreamingMethod<T, R>() {
+export function grpcStreamingMethod<T, R>() {
     return (
         target: any,
         key: string,

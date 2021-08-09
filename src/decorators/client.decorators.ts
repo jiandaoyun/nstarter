@@ -1,9 +1,10 @@
+import _ from 'lodash';
 import 'reflect-metadata';
-
-import { StreamingCallback, UnaryCallback } from '../types';
-import { getRpcName, upperFirst } from '../utils';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
+
+import { UnaryCallback } from '../types';
+import { getRpcName, upperFirst } from '../utils';
 
 /**
  * gRPC 客户端类装饰器
@@ -31,9 +32,14 @@ export function grpcClient<T extends Function>(pkg?: string, service?: string) {
 const _callMethodFactory = <T, C>(target: any, key: string) =>
     (conf: T, callback: C) => {
         const path = upperFirst(key);
-        const { client } = Reflect.getMetadata(CLIENT_META, target);
-        if (client.hasOwnProperty(path)) {
-            client[path].apply(null, [conf, callback]);
+        const { client } = Reflect.getMetadata(CLIENT_META, target.constructor);
+        const method = _.get(client, ['__proto__', path]);
+        if (method) {
+            if (callback) {
+                method.apply(client, [conf, callback]);
+            } else {
+               return method.apply(client, [conf]);
+            }
         }
         return;
     };
@@ -60,6 +66,6 @@ export function grpcStreamingCall<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = _callMethodFactory<T, StreamingCallback<R>>(target, key);
+        descriptor.value = _callMethodFactory<T, null>(target, key);
     };
 }
