@@ -54,7 +54,8 @@ export class RequestLogger {
             user_agent: headers['user-agent'],
             http_version: req.httpVersion,
             req_id: req.reqId,
-            session_id: req.sessionID
+            session_id: req.sessionID,
+            start_time: startTime
         };
         const meta = metaFormatter(req, res, baseMeta);
         RequestLogger.log(RequestLogger._formatRequest(req, res, duration), meta);
