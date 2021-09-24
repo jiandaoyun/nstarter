@@ -3,6 +3,7 @@ import { ClientReadableStream } from 'grpc';
 export interface IClientConfig {
     readonly package: string;
     readonly address: string;
+    readonly useSsl: boolean;
 }
 
 /**
