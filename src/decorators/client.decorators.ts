@@ -1,9 +1,8 @@
+import { Client } from 'grpc';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
-
-import { UnaryCallback } from '../types';
 import { getRpcName, upperFirst } from '../utils';
 
 /**
@@ -14,46 +13,11 @@ import { getRpcName, upperFirst } from '../utils';
 export function grpcClient<T extends Function>(pkg?: string, service?: string) {
     return (constructor: T) => {
         const rpcPkg = pkg || DEFAULT_PKG;
-        const target = constructor;
         const serviceName = service || getRpcName(constructor.name);
-        // gRPC 客户端注册
         Reflect.defineMetadata(CLIENT_META, {
-            client: getGrpcServiceClient(rpcPkg, serviceName)
-        }, target);
-    };
-}
-
-/**
- * 调用方法生成工具方法
- * @param target
- * @param key
- * @private
- */
-const _callMethodFactory = <T, C>(target: any, key: string) =>
-    (conf: T, callback: C) => {
-        const path = upperFirst(key);
-        const { client } = Reflect.getMetadata(CLIENT_META, target.constructor);
-        const method = _.get(client, ['__proto__', path]);
-        if (method) {
-            if (callback) {
-                method.apply(client, [conf, callback]);
-            } else {
-               return method.apply(client, [conf]);
-            }
-        }
-        return;
-    };
-
-/**
- * 单参数 gRPC 调用方法装饰器
- */
-export function grpcUnaryCall<T, R>() {
-    return (
-        target: any,
-        key: string,
-        descriptor: PropertyDescriptor
-    ) => {
-        descriptor.value = _callMethodFactory<T, UnaryCallback<R>>(target, key);
+            rpcPkg,
+            serviceName
+        }, constructor);
     };
 }
 
@@ -66,6 +30,30 @@ export function grpcStreamingCall<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = _callMethodFactory<T, null>(target, key);
+        descriptor.value = async (...args: any[]) => {
+            const client = await _getClient(target);
+            const path = upperFirst(key);
+            const method = _.get(client, ['__proto__', path]);
+            if (method) {
+                return method.apply(client, args);
+            } else {
+                throw new Error(`Grpc service method '${ path }' not found.`);
+            }
+        };
     };
 }
+
+/**
+ * 获取gRPC Client实例
+ */
+const _getClient = async (target: any): Promise<Client> => {
+    const constructor = target.constructor;
+    const { rpcPkg, serviceName, client } = Reflect.getMetadata(CLIENT_META, constructor);
+    if (!client) {
+        const newClient = await getGrpcServiceClient(rpcPkg, serviceName);
+        Reflect.defineMetadata(CLIENT_META, { client: newClient }, constructor);
+        return newClient;
+    } else {
+        return client;
+    }
+};

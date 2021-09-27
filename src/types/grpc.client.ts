@@ -4,6 +4,7 @@ export interface IClientConfig {
     readonly package: string;
     readonly address: string;
     readonly useSsl: boolean;
+    readonly servername?: string;
 }
 
 /**
