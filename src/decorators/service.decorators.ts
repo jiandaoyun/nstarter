@@ -47,23 +47,6 @@ export function grpcService<T extends Function>(pkg?: string, service?: string) 
 }
 
 /**
- * gRPC 单参数请求服务处理方法装饰器
- */
-export function grpcUnaryMethodCallbackify<T, R>() {
-    return (
-        target: any,
-        key: string,
-        descriptor: PropertyDescriptor
-    ) => {
-        const method: GrpcHandler<T, R> = descriptor.value;
-        const run: handleUnaryCall<T, R> = (call, callback) => {
-            method.apply(null, [call.request, callback]);
-        };
-        messageHandler(run)(target, key, descriptor);
-    };
-}
-
-/**
  * gRPC 单参数请求服务处理方法装饰（Promise）
  */
 export function grpcUnaryMethod<T, R>() {

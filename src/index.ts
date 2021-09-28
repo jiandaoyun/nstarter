@@ -13,6 +13,5 @@ export {
 
     grpcService,
     grpcUnaryMethod,
-    grpcUnaryMethodCallbackify,
     grpcStreamingMethod
 } from './decorators';
