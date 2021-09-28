@@ -47,7 +47,7 @@ export function grpcService<T extends Function>(pkg?: string, service?: string) 
 }
 
 /**
- * gRPC 单参数请求服务处理方法装饰（Promise）
+ * gRPC 单参数请求服务处理方法装饰器
  */
 export function grpcUnaryMethod<T, R>() {
     return (
@@ -57,12 +57,15 @@ export function grpcUnaryMethod<T, R>() {
     ) => {
         const method: GrpcHandler<T, R> = descriptor.value;
         const run: handleUnaryCall<T, R> = (call, callback) => {
-            method
-                .apply(null, [call.request])
-                .then(
+            const promise: PromiseLike<R> = method.apply(null, [call.request]);
+            if (promise?.then) {
+                promise.then(
                     (unaryData: R) => callback(null, unaryData),
                     (err: Error) => callback(err, null)
                 );
+            } else {
+                callback(new Error('Grpc service support promise-like method only.'), null);
+            }
         };
         messageHandler(run)(target, key, descriptor);
     };
