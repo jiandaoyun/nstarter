@@ -1,11 +1,7 @@
 import 'reflect-metadata';
 import {
-    handleUnaryCall,
-    handleServerStreamingCall,
-    handleCall,
-    sendUnaryData
+    handleCall, handleServerStreamingCall, handleUnaryCall
 } from 'grpc';
-
 import { server } from '../lib';
 import { GrpcHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
@@ -57,15 +53,11 @@ export function grpcUnaryMethod<T, R>() {
     ) => {
         const method: GrpcHandler<T, R> = descriptor.value;
         const run: handleUnaryCall<T, R> = (call, callback) => {
-            const promise: PromiseLike<R> = method.apply(null, [call.request]);
-            if (promise?.then) {
-                promise.then(
+            method.apply(null, [call.request])
+                .then(
                     (unaryData: R) => callback(null, unaryData),
                     (err: Error) => callback(err, null)
                 );
-            } else {
-                callback(new Error('Grpc service support promise-like method only.'), null);
-            }
         };
         messageHandler(run)(target, key, descriptor);
     };

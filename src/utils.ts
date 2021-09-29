@@ -20,4 +20,3 @@ export const getRpcName = (ctorName: string) => {
     }
     return upperFirst(ctorName.replace(/(service|client)$/i, ''));
 };
-

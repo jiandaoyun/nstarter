@@ -9,14 +9,14 @@ export interface IServerConfig {
  * server unary call handler type
  */
 export interface UnaryHandler<T, R> {
-    (conf: T, callback?: UnaryCallback<R>): void;
+    (conf: T): Promise<R>;
 }
 
 /**
  * server server-streaming call handler type
  */
 export interface ServerStreamingHandler<T, R> {
-    (conf: T, call: ServerWriteableStream<R>): void;
+    (conf: T, call: ServerWriteableStream<R>): Promise<void>;
 }
 
 /**
