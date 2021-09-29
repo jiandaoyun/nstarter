@@ -9,6 +9,7 @@ export {
 export {
     grpcClient,
     grpcStreamingCall,
+    grpcUnaryCall,
 
     grpcService,
     grpcUnaryMethod,

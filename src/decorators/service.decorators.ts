@@ -1,10 +1,7 @@
 import 'reflect-metadata';
 import {
-    handleUnaryCall,
-    handleServerStreamingCall,
-    handleCall
+    handleCall, handleServerStreamingCall, handleUnaryCall
 } from 'grpc';
-
 import { server } from '../lib';
 import { GrpcHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
@@ -56,7 +53,11 @@ export function grpcUnaryMethod<T, R>() {
     ) => {
         const method: GrpcHandler<T, R> = descriptor.value;
         const run: handleUnaryCall<T, R> = (call, callback) => {
-            method.apply(null, [call.request, callback]);
+            method.apply(null, [call.request])
+                .then(
+                    (unaryData: R) => callback(null, unaryData),
+                    (err: Error) => callback(err, null)
+                );
         };
         messageHandler(run)(target, key, descriptor);
     };

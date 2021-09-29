@@ -1,4 +1,4 @@
-import { Client } from 'grpc';
+import { Client, handleUnaryCall } from 'grpc';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
@@ -36,6 +36,36 @@ export function grpcStreamingCall<T, R>() {
             const method = _.get(client, ['__proto__', path]);
             if (method) {
                 return method.apply(client, args);
+            } else {
+                throw new Error(`Grpc service method '${ path }' not found.`);
+            }
+        };
+    };
+}
+
+/**
+ * 单参数 gRPC 调用方法装饰器
+ */
+export function grpcUnaryCall<T, R>() {
+    return (
+        target: any,
+        key: string,
+        descriptor: PropertyDescriptor
+    ) => {
+        descriptor.value = async (conf: T) => {
+            const client = await _getClient(target);
+            const path = upperFirst(key);
+            const method: handleUnaryCall<T, R> | undefined = _.get(client, ['__proto__', path]);
+            if (method) {
+                return new Promise((resolve, reject) => {
+                    method.apply(client, [conf, (err: Error, value: R | null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(value);
+                        }
+                    }]);
+                });
             } else {
                 throw new Error(`Grpc service method '${ path }' not found.`);
             }
