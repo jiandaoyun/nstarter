@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import grpc, { Client } from 'grpc';
+import { Client, loadPackageDefinition } from '@grpc/grpc-js';
 import { loadSync } from '@grpc/proto-loader';
 import { IPackageLoadOptions } from '../types';
 import { DEFAULT_PKG } from '../constants';
@@ -24,7 +24,7 @@ export const loadProtoPackage = (options: IPackageLoadOptions) => {
         }
     };
     const pack = loadSync(o.protoPath, o.loader);
-    protoRegistry[o.package] = grpc.loadPackageDefinition(pack)[o.package] as typeof Client;
+    protoRegistry[o.package] = loadPackageDefinition(pack)[o.package] as typeof Client;
 };
 
 export const getProtoServiceClient = (pkg: string, service: string) =>
