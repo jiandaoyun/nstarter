@@ -1,4 +1,4 @@
-import { ClientReadableStream } from 'grpc';
+import { ClientReadableStream } from '@grpc/grpc-js';
 
 export interface IClientConfig {
     readonly package: string;

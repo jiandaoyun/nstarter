@@ -1,4 +1,4 @@
-import { Client, handleUnaryCall } from 'grpc';
+import { Client, handleUnaryCall } from '@grpc/grpc-js';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';

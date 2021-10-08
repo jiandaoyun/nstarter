@@ -1,7 +1,6 @@
 import 'reflect-metadata';
-import {
-    handleCall, handleServerStreamingCall, handleUnaryCall
-} from 'grpc';
+import { handleServerStreamingCall, handleUnaryCall, UntypedHandleCall } from '@grpc/grpc-js';
+import { HandleCall } from '@grpc/grpc-js/build/src/server-call';
 import { server } from '../lib';
 import { GrpcHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
@@ -11,7 +10,7 @@ import { getProtoServiceName } from '../lib/proto';
 /**
  * @param run - rpc 调用执行方法
  */
-function messageHandler<T, R>(run: handleCall<T, R>) {
+function messageHandler<T, R>(run: HandleCall<T, R>) {
     return (
         target: any,
         key: string,
@@ -31,7 +30,7 @@ export function grpcService<T extends Function>(pkg?: string, service?: string) 
     return (constructor: T) => {
         const rpcPkg = pkg || DEFAULT_PKG;
         const target = constructor.prototype;
-        const serviceMethods: Record<string, Function> = {};
+        const serviceMethods: Record<string, UntypedHandleCall> = {};
         Reflect.getMetadataKeys(target).forEach((key) => {
             const { name, method } = Reflect.getMetadata(key, target);
             serviceMethods[name] = method;

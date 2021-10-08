@@ -1,7 +1,6 @@
-import grpc, { Client } from 'grpc';
+import { Client, credentials } from '@grpc/grpc-js';
 import https, { Agent } from 'https';
 import { TLSSocket } from 'tls';
-
 import { IClientConfig } from '../types';
 import { getProtoServiceClient } from './proto';
 
@@ -29,12 +28,12 @@ export const getGrpcServiceClient = async (pkg: string, service: string): Promis
             // 泛域名证书
             if (clientConfig.servername) {
                 const buffer = await getCertificateBuffer(clientConfig.address, clientConfig.servername!);
-                return new GrpcClient(clientConfig.address, grpc.credentials.createSsl(buffer), { 'grpc.ssl_target_name_override': clientConfig.servername! });
+                return new GrpcClient(clientConfig.address, credentials.createSsl(buffer), { 'grpc.ssl_target_name_override': clientConfig.servername! });
             } else {
-                return new GrpcClient(clientConfig.address, grpc.credentials.createSsl());
+                return new GrpcClient(clientConfig.address, credentials.createSsl());
             }
         } else {
-            return new GrpcClient(clientConfig.address, grpc.credentials.createInsecure());
+            return new GrpcClient(clientConfig.address, credentials.createInsecure());
         }
     } else {
         // 客户端未定义

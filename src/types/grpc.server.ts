@@ -1,5 +1,4 @@
-import { ServerWriteableStream } from 'grpc';
-import { UnaryCallback } from './grpc.client';
+import { ServerWritableStream } from '@grpc/grpc-js';
 
 export interface IServerConfig {
     port: number;
@@ -16,7 +15,7 @@ export interface UnaryHandler<T, R> {
  * server server-streaming call handler type
  */
 export interface ServerStreamingHandler<T, R> {
-    (conf: T, call: ServerWriteableStream<R>): Promise<void>;
+    (conf: T, call: ServerWritableStream<T, R>): Promise<void>;
 }
 
 /**
