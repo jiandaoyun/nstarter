@@ -1,5 +1,6 @@
-import { handleServerStreamingCall, handleUnaryCall, Metadata, UntypedHandleCall } from '@grpc/grpc-js';
+import { handleServerStreamingCall, handleUnaryCall, Metadata, ServiceError, UntypedHandleCall } from '@grpc/grpc-js';
 import { HandleCall } from '@grpc/grpc-js/build/src/server-call';
+import _ from 'lodash';
 import 'reflect-metadata';
 import { DEFAULT_PKG, METHOD_PREFIX } from '../constants';
 import { server } from '../lib';
@@ -57,6 +58,7 @@ export function grpcUnaryMethod<T, R>() {
                     (unaryData: R) => callback(null, unaryData),
                     (err: Error & { code?: number }) => {
                         if (err.code) {
+                            // 错误信息序列化
                             const meta = new Metadata();
                             meta.set('errcode', `${ err.code }`);
                             callback(err, null, meta);
@@ -81,6 +83,24 @@ export function grpcStreamingMethod<T, R>() {
     ) => {
         const method: GrpcHandler<T, R> = descriptor.value;
         const run: handleServerStreamingCall<T, R> = (call) => {
+            const oriFunc = call.emit;
+            call.emit = function emit(event: string | symbol, ...args: any[]) {
+                if (event === 'error' && _.get(args, ['0', 'code'])) {
+                    // 错误信息序列化
+                    const err: Error & { code?: number } | undefined = args[0];
+                    if (err?.code) {
+                        const metadata = new Metadata();
+                        metadata.set('errcode', `${ _.get(args, ['0', 'code']) }`);
+                        _.extend(err, {
+                            metadata
+                        });
+                        return oriFunc.apply(this, [event, err]);
+                    }
+                } else {
+                    // 正常执行
+                    return oriFunc.apply(this, [event, ...args]);
+                }
+            };
             method.apply(null, [call.request, call]);
         };
         messageHandler(run)(target, key, descriptor);

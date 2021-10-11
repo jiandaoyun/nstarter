@@ -1,9 +1,11 @@
-import { Client, handleUnaryCall, Metadata, ServiceError } from '@grpc/grpc-js';
+import { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
+import { NsError } from 'nstarter-core';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
-import { getRpcName, upperFirst } from '../utils';
+import { StreamResult } from '../types';
+import { deserializeError, getRpcName, upperFirst } from '../utils';
 
 /**
  * gRPC 客户端类装饰器
@@ -33,9 +35,23 @@ export function grpcStreamingCall<T, R>() {
         descriptor.value = async (...args: any[]) => {
             const client = await _getClient(target);
             const path = upperFirst(key);
-            const method = _.get(client, ['__proto__', path]);
+            const method: handleClientStreamingCall<T, R> = _.get(client, ['__proto__', path]);
             if (method) {
-                return method.apply(client, args);
+                const stream: StreamResult<R> = method.apply(client, args);
+                if (stream) {
+                    const oriFunc = stream.on;
+                    stream.on = function on(event: string | symbol, listener: (...args: any[]) => void) {
+                        if (event === 'error') {
+                            oriFunc.apply(this, [event, (err: ServiceError) => {
+                                listener(deserializeError(err));
+                            }]);
+                        } else {
+                            oriFunc.apply(this, [event, listener]);
+                        }
+                        return this;
+                    };
+                }
+                return stream;
             } else {
                 throw new Error(`Grpc service method '${ path }' not found.`);
             }
@@ -60,16 +76,7 @@ export function grpcUnaryCall<T, R>() {
                 return new Promise((resolve, reject) => {
                     method.apply(client, [conf, (err: ServiceError, value: R | null) => {
                         if (err) {
-                            const meta = err.metadata?.getMap();
-                            if (meta) {
-                                // 注入额外错误 meta 信息
-                                _.extend(err, {
-                                    ...meta,
-                                    errcode: _.toNumber(meta.errcode),
-                                    errmsg: err.details
-                                });
-                            }
-                            reject(err);
+                            reject(deserializeError(err));
                         } else {
                             resolve(value);
                         }
