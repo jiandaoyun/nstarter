@@ -1,11 +1,11 @@
-import 'reflect-metadata';
-import { handleServerStreamingCall, handleUnaryCall, UntypedHandleCall } from '@grpc/grpc-js';
+import { handleServerStreamingCall, handleUnaryCall, Metadata, UntypedHandleCall } from '@grpc/grpc-js';
 import { HandleCall } from '@grpc/grpc-js/build/src/server-call';
+import 'reflect-metadata';
+import { DEFAULT_PKG, METHOD_PREFIX } from '../constants';
 import { server } from '../lib';
+import { getProtoServiceName } from '../lib/proto';
 import { GrpcHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
-import { DEFAULT_PKG, METHOD_PREFIX } from '../constants';
-import { getProtoServiceName } from '../lib/proto';
 
 /**
  * @param run - rpc 调用执行方法
@@ -55,7 +55,15 @@ export function grpcUnaryMethod<T, R>() {
             method.apply(null, [call.request])
                 .then(
                     (unaryData: R) => callback(null, unaryData),
-                    (err: Error) => callback(err, null)
+                    (err: Error & { code?: number }) => {
+                        if (err.code) {
+                            const meta = new Metadata();
+                            meta.set('errcode', `${ err.code }`);
+                            callback(err, null, meta);
+                        } else {
+                            callback(err, null);
+                        }
+                    }
                 );
         };
         messageHandler(run)(target, key, descriptor);

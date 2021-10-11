@@ -1,4 +1,4 @@
-import { Client, handleUnaryCall } from '@grpc/grpc-js';
+import { Client, handleUnaryCall, Metadata, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
@@ -58,8 +58,17 @@ export function grpcUnaryCall<T, R>() {
             const method: handleUnaryCall<T, R> | undefined = _.get(client, ['__proto__', path]);
             if (method) {
                 return new Promise((resolve, reject) => {
-                    method.apply(client, [conf, (err: Error, value: R | null) => {
+                    method.apply(client, [conf, (err: ServiceError, value: R | null) => {
                         if (err) {
+                            const meta = err.metadata?.getMap();
+                            if (meta) {
+                                // 注入额外错误 meta 信息
+                                _.extend(err, {
+                                    ...meta,
+                                    errcode: _.toNumber(meta.errcode),
+                                    errmsg: err.details
+                                });
+                            }
                             reject(err);
                         } else {
                             resolve(value);
