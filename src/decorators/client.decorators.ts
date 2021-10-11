@@ -1,5 +1,6 @@
-import { Client, handleUnaryCall, Metadata, ServiceError } from '@grpc/grpc-js';
+import { Client, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
+import { NsError } from 'nstarter-core';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
@@ -58,17 +59,17 @@ export function grpcUnaryCall<T, R>() {
             const method: handleUnaryCall<T, R> | undefined = _.get(client, ['__proto__', path]);
             if (method) {
                 return new Promise((resolve, reject) => {
-                    method.apply(client, [conf, (err: ServiceError, value: R | null) => {
-                        if (err) {
-                            const meta = err.metadata?.getMap();
-                            if (meta) {
-                                // 注入额外错误 meta 信息
-                                _.extend(err, {
-                                    ...meta,
-                                    errcode: _.toNumber(meta.errcode),
-                                    errmsg: err.details
-                                });
-                            }
+                    method.apply(client, [conf, (originErr: ServiceError, value: R | null) => {
+                        if (originErr) {
+                            const meta = originErr.metadata?.getMap();
+                            const err = meta?.errcode
+                                ? new NsError('Grpc', _.toNumber(meta.errcode))
+                                : new NsError('Grpc', 5);
+                            _.extend(err, {
+                                ...meta,
+                                errcode: _.toNumber(meta.errcode),
+                                errmsg: originErr.details
+                            });
                             reject(err);
                         } else {
                             resolve(value);
