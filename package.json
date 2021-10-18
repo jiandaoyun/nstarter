@@ -1,7 +1,7 @@
 {
   "name": "nstarter-circular",
   "description": "Circular dependency check tool for nstarter projects",
-  "version": "0.1.2-beta",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/jiandaoyun/nstarter-circular"
@@ -21,8 +21,8 @@
     "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "escape-string-regexp": "^2.0.0",
-    "lodash": "^4.17.11",
-    "madge": "^3.4.4",
-    "ora": "^3.4.0"
+    "lodash": "^4.17.21",
+    "madge": "^5.0.1",
+    "ora": "^5.4.1"
   }
 }
