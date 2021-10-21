@@ -10,9 +10,8 @@ interface Callback<T = any, E = Error> {
 
 namespace Express {
     interface Request {
-        reqId: string;
+        requestId: string;
+        userAgent: string;
         originalPath: string | null;
-        getLocale: { (): string };
-        sessionID: string;
     }
 }
