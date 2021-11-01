@@ -53,7 +53,7 @@ export class RequestLogger {
             method: req.method,
             user_agent: headers['user-agent'],
             http_version: req.httpVersion,
-            req_id: req.reqId,
+            req_id: req.requestId,
             session_id: req.sessionID,
             start_time: startTime
         };
