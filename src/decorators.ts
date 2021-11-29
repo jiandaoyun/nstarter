@@ -5,6 +5,14 @@ import { defaultConnection } from './connector';
 const SESSION_IDX = 'mongodb:sess_idx';
 
 /**
+ * get repoSession index metadata key.
+ * @param propertyKey - function name.
+ */
+function getMetadataKey(propertyKey: string) {
+    return `${ SESSION_IDX }:${ propertyKey }`;
+}
+
+/**
  *
  * @param options
  * @param connection
@@ -21,9 +29,9 @@ export function transaction(options?: TransactionOptions, connection = defaultCo
             // @see http://mongodb.github.io/node-mongodb-native/3.3/api/ClientSession.html#withTransaction
             // @see https://github.com/mongodb/node-mongodb-native/blob/dc70c2de7d3dae2617708c45a1ea695d131e15f3/test/examples/transactions.js
             await session.withTransaction(async (session: ClientSession) => {
-                const sessionIdx = Reflect.getMetadata(SESSION_IDX, target);
+                const sessionIdx = Reflect.getMetadata(getMetadataKey(propertyKey), target);
                 if (sessionIdx >= 0) {
-                    args[sessionIdx] = session;
+                    args[sessionIdx] = args[sessionIdx] || session;
                 } else {
                     session.endSession();
                     throw new Error('No session configured for transaction.');
@@ -48,5 +56,5 @@ export function transaction(options?: TransactionOptions, connection = defaultCo
  * @param parameterIndex
  */
 export function repoSession(target: any, propertyKey: string, parameterIndex: number) {
-    Reflect.defineMetadata(SESSION_IDX, parameterIndex, target);
+    Reflect.defineMetadata(getMetadataKey(propertyKey), parameterIndex, target);
 }
