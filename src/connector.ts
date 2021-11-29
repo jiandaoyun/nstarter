@@ -3,6 +3,8 @@ import querystring from 'querystring';
 import { Logger } from 'nstarter-core';
 import mongoose, { Connection, ConnectionOptions, Promise } from 'mongoose';
 import { IMongodbConfig, IMongodbQueryParams } from './types';
+import { promisify } from 'util';
+import { RECONNECT_DELAY } from './constants';
 
 const _isObjectEmpty = (obj: {}) => !Object.keys(obj).length;
 
@@ -24,7 +26,7 @@ export class MongodbConnector {
     /**
      * 数据库连接入口方法
      */
-    public connect(): Promise<Connection | void> {
+    public connect() {
         return this._connectDatabase().then(() => {
             this.connection.on('disconnected', () => {
                 Logger.error(`${ this._tag } 数据库连接已断开`);
@@ -44,6 +46,7 @@ export class MongodbConnector {
             await this.connection.openUri(this.mongoUri, this.connectionConf);
         } catch (err) {
             Logger.error(`${ this._tag } 数据库连接建立失败，重试连接`, { error: err });
+            await promisify(setTimeout)(RECONNECT_DELAY);
             await this._connectDatabase();
         }
     }
