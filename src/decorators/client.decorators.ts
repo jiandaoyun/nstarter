@@ -1,6 +1,5 @@
 import { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
-import { NsError } from 'nstarter-core';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';

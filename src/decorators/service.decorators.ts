@@ -1,4 +1,4 @@
-import { handleServerStreamingCall, handleUnaryCall, Metadata, ServiceError, UntypedHandleCall } from '@grpc/grpc-js';
+import { handleServerStreamingCall, handleUnaryCall, Metadata, UntypedHandleCall } from '@grpc/grpc-js';
 import { HandleCall } from '@grpc/grpc-js/build/src/server-call';
 import _ from 'lodash';
 import 'reflect-metadata';
