@@ -1,6 +1,6 @@
 {
   "name": "nstarter-grpc",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "nstarter grpc 通信插件",
   "license": "MIT",
   "repository": {
@@ -21,14 +21,14 @@
     "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
-    "nstarter-core": "^0.4.6"
+    "nstarter-core": "^0.5.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.177",
     "@types/node": "^14.14.31",
     "eslint": "^7.32.0",
     "eslint-config-nstarter": "^2.1.2",
-    "nstarter-core": "^0.4.6",
+    "nstarter-core": "^0.5.0",
     "nstarter-tsconfig": "^0.2.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.4.4"

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.6
+
+* 升级 nstarter-core -> 0.5.x
+
 ## v0.3.4
 
 * 升级依赖包
