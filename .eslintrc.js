@@ -3,8 +3,8 @@ module.exports = {
         "nstarter",
         "nstarter/typescript",
     ],
-    rules: {
-        "no-inner-declarations": "off",
-        "@typescript-eslint/no-namespace": "off"
+    rules: {},
+    globals: {
+        Constructor: "readable"
     }
 };
