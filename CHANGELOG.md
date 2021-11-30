@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.2
+
+* 调整 mongoose 作为 peer dependency 依赖
+
 ## v0.2.1
 
 * 移除 mongoose 类型定义依赖
