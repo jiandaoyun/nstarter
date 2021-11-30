@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.3
+
+* 升级 nstarter-core -> 0.5.x
+
 ## v0.2.2
 
 * 调整 mongoose 作为 peer dependency 依赖
