@@ -13,25 +13,14 @@ const queueConsumerRegistry: RabbitMqConsumer<any>[] = [];
  * 消费事件
  */
 export declare interface RabbitMqConsumer<T> {
-    /**
-     * 任务开始执行
-     */
-    on(event: ConsumerEvents.run, listener: (message: IQueueMessage<T>) => void): this;
-
-    /**
-     * 任务重试 (retry 或 republish 取决于具体重试策略)
-     */
-    on(event: ConsumerEvents.retry, listener: (err: Error, message: IQueueMessage<T>, attempt: number) => void): this;
-
-    /**
-     * 任务执行错误
-     */
-    on(event: ConsumerEvents.error, listener: (err: Error, message: IQueueMessage<T>) => void): this;
-
-    /**
-     * 任务执行完成
-     */
-    on(event: ConsumerEvents.finish, listener: (message: IQueueMessage<T>) => void): this;
+    on: // 任务开始执行
+        ((event: ConsumerEvents.run, listener: (message: IQueueMessage<T>) => void) => this) &
+        // 任务重试 (retry 或 republish 取决于具体重试策略)
+        ((event: ConsumerEvents.retry, listener: (err: Error, message: IQueueMessage<T>, attempt: number) => void) => this) &
+        // 任务执行错误
+        ((event: ConsumerEvents.error, listener: (err: Error, message: IQueueMessage<T>) => void) => this) &
+        // 任务执行完成
+        ((event: ConsumerEvents.finish, listener: (message: IQueueMessage<T>) => void) => this);
 }
 
 /**
@@ -122,7 +111,7 @@ export class RabbitMqConsumer<T> extends EventEmitter {
                     await this._handleWithRepublish(message);
                 } else {
                     // 默认执行本地 retry
-                    await this._handleWithRetry(message)
+                    await this._handleWithRetry(message);
                 }
             } catch (err) {
                 this._error(err, message);
@@ -253,4 +242,4 @@ export const stopQueueConsumers = async(): Promise<void> => {
     await Promise.all(
         queueConsumerRegistry.map((consumer) => consumer.stop())
     );
-}
+};

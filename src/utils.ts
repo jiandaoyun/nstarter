@@ -1,3 +1,4 @@
+import { promisify } from 'util';
 
 export const sleep = async (timeMs: number) =>
-    new Promise((r) => setTimeout(r, timeMs));
+    promisify(setTimeout)(timeMs);

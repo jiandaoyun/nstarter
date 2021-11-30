@@ -1,9 +1,10 @@
 module.exports = {
     extends: [
-        "nstarter/node",
+        "nstarter",
         "nstarter/typescript",
     ],
-    rules: {
-        '@typescript-eslint/unified-signatures': 0
+    rules: {},
+    globals: {
+        Callback: 'readable'
     }
 };

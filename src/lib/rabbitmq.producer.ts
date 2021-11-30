@@ -10,7 +10,7 @@ import { RabbitMqQueue } from './rabbitmq.queue';
  * 生产事件
  */
 export declare interface RabbitMqProducer<T> {
-    on(event: ProducerEvents.publish, listener: (content: IQueuePayload<T>) => void): this;
+    on: (event: ProducerEvents.publish, listener: (content: IQueuePayload<T>) => void) => this;
 }
 
 /**
@@ -48,7 +48,7 @@ export class RabbitMqProducer<T> extends EventEmitter {
 
     /**
      * 格式化消息生产配置
-     * @param {IProducerConfig<T>} options - 配置参数
+     * @param {IProducerConfig} options - 配置参数
      * @return {Options.Publish}
      * @private
      */
@@ -82,7 +82,7 @@ export class RabbitMqProducer<T> extends EventEmitter {
 
     /**
      * 发送队列消息
-     * @param {IQueuePayload<T>} content - 内容
+     * @param {IQueuePayload} content - 内容
      * @return {Promise<void>}
      */
     public async publish(content: IQueuePayload<T>): Promise<void> {

@@ -31,12 +31,10 @@ export class RabbitMqQueue<T> {
 
     constructor(rabbitMq: AmqpConnectionManager, options: IQueueConfig) {
         this._options = {
-            prefetch: DefaultConfig.prefetch,
-            maxLength: undefined,
             overflowMethod: OverflowMethod.reject_publish,
             isDelay: false,
             ...options
-        }
+        };
         this._rabbitMq = rabbitMq;
         this._initChannelWrapper();
     }
