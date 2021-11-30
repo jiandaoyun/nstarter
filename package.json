@@ -1,7 +1,7 @@
 {
     "name": "nstarter-tsconfig",
     "description": "tsconfig template for nstarter projects",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/jiandaoyun/nstarter-tsconfig"
