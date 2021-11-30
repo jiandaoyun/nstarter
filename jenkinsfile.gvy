@@ -1,13 +1,13 @@
 pipeline {
     agent {
-        node { label 'develop' }
+        node { label 'default' }
     }
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
     }
     environment {
-        NODE_VERSION = 'v12.16.2'
+        NODE_VERSION = 'v14.18.1'
         NODE_MIRROR = 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/'
     }
     stages {

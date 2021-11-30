@@ -1,7 +1,7 @@
 import { Metric } from 'prom-client';
 import { monitorRegistry } from '../registry';
 
-export abstract class BaseMetric<T extends Metric> {
+export abstract class BaseMetric<T extends Metric<any>> {
     protected abstract _metric: T;
     protected _registry = monitorRegistry;
 

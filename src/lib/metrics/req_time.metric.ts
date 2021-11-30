@@ -2,7 +2,7 @@ import { Counter } from 'prom-client';
 import { BaseMetric } from '../index';
 import { IReqLabels } from '../../types';
 
-class ReqTimeMetric extends BaseMetric<Counter> {
+class ReqTimeMetric extends BaseMetric<Counter<string>> {
     protected _metric =  new Counter({
         name: 'req_time_sum',
         help: 'Total Request Time',
