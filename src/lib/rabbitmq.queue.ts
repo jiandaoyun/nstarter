@@ -1,11 +1,12 @@
 import { AmqpConnectionManager, ChannelWrapper, SetupFunc } from 'amqp-connection-manager';
 import { ConfirmChannel, ConsumeMessage, Options } from 'amqplib';
 import { DefaultConfig, ExchangeType, OverflowMethod, RabbitProps } from '../constants';
-import { IMessageHandler, IQueueMessage, IQueuePayload } from '../types';
+import { IMessageHandler, IQueueContext, IQueueMessage, IQueuePayload, IWrappedPayload } from '../types';
 import AssertExchange = Options.AssertExchange;
 import AssertQueue = Options.AssertQueue;
 import Publish = Options.Publish;
 import Consume = Options.Consume;
+import { BaseContext, ContextProvider } from 'nstarter-core';
 
 export interface IQueueConfig {
     name: string;
@@ -19,7 +20,7 @@ export interface IQueueConfig {
  * RabbitMQ 队列
  * @class
  */
-export class RabbitMqQueue<T> {
+export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
     protected _options: IQueueConfig;
 
     protected queue: string;
@@ -115,16 +116,25 @@ export class RabbitMqQueue<T> {
      * 序列化 RabbitMQ 消息
      * @public
      */
-    protected async _serializePayload<T>(content: T): Promise<Buffer> {
-        return Buffer.from(JSON.stringify(content));
+    protected _serializePayload(content: IQueuePayload<T>, context?: IQueueContext<C>): Buffer {
+        let payload: IWrappedPayload<T, C> | IQueuePayload<T> = content;
+        // 在需要 context 的场景下，对 payload 进行包装处理
+        if (context) {
+            payload = {
+                wrapped: true,
+                _content: payload,
+                _context: context.toJSON(),
+            };
+        }
+        return Buffer.from(JSON.stringify(payload));
     }
 
     /**
      * 反序列化 RabbitMQ 消息
      * @public
      */
-    protected async _deserializePayload<T>(content: Buffer): Promise<IQueuePayload<T>> {
-        let result: IQueuePayload<T>;
+    protected _deserializePayload(content: Buffer): IWrappedPayload<T, C> | IQueuePayload<T> {
+        let result: IWrappedPayload<T, C> | IQueuePayload<T>;
         try {
             result = JSON.parse(Buffer.from(content).toString());
         } catch (e) {
@@ -144,14 +154,28 @@ export class RabbitMqQueue<T> {
         this._setupFunc = async (channel: ConfirmChannel) => {
             const { consumerTag } = await channel.consume(
                 this.queue,
-                async (message: ConsumeMessage | null) => {
+                (message: ConsumeMessage | null) => {
                     if (!message) {
                         return;
                     }
-                    const payload: IQueueMessage<T> = {
-                        ...message,
-                        content: await this._deserializePayload(message.content)
-                    };
+                    let payload: IQueueMessage<T>;
+                    const deserialized = this._deserializePayload(message.content);
+                    if ((deserialized as IWrappedPayload<T, C>)?.wrapped) {
+                        // 存在上下文的包装消息处理
+                        const wrappedPayload = deserialized as IWrappedPayload<T, C>;
+                        payload = {
+                            ...message,
+                            content: wrappedPayload._content,
+                        };
+                        // 注入上下文
+                        ContextProvider.startContext(wrappedPayload._context);
+                    } else {
+                        // 未包装队列消息传递
+                        payload = {
+                            ...message,
+                            content: deserialized as IQueuePayload<T>
+                        };
+                    }
                     process.nextTick(() => messageHandler(payload));
                 },
                 options
@@ -179,11 +203,12 @@ export class RabbitMqQueue<T> {
 
     /**
      * 队列任务创建方法
-     * @param content
-     * @param options
+     * @param content - 队列消息内容
+     * @param context - 队列任务上下文
+     * @param options - 任务发布参数
      */
-    public async publish(content: IQueuePayload<T>, options: Publish) {
-        const payload = await this._serializePayload(content);
+    public async publish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Publish) {
+        const payload = this._serializePayload(content);
         return this._channelWrapper.publish(this.exchange, DefaultConfig.routingKey, payload, options);
     }
 

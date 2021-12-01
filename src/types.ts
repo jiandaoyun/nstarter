@@ -5,6 +5,7 @@ import {
     Options
 } from 'amqplib';
 import { Priority, RetryMethod } from './constants';
+import { BaseContext, ContextItem } from 'nstarter-core';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
@@ -23,6 +24,14 @@ export interface RabbitMQConfig {
 }
 
 export type IQueuePayload<T> = T;
+
+export type IQueueContext<T extends BaseContext> = T;
+
+export interface IWrappedPayload<T, C extends BaseContext> {
+    wrapped: true;
+    _content: IQueuePayload<T>;
+    _context: ContextItem;
+}
 
 export interface IProduceHeaders extends MessagePropertyHeaders {
     'x-retry-times'?: number;

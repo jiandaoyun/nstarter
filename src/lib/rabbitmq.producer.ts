@@ -3,14 +3,15 @@ import retry from 'async-retry';
 import { Options } from 'amqplib';
 
 import { CustomProps, DefaultConfig, Priority, ProducerEvents, RabbitProps } from '../constants';
-import { IProduceHeaders, IProducerConfig, IQueuePayload } from '../types';
+import { IProduceHeaders, IProducerConfig, IQueueContext, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
+import { BaseContext } from 'nstarter-core';
 
 /**
  * 生产事件
  */
-export declare interface RabbitMqProducer<T> {
-    on: (event: ProducerEvents.publish, listener: (content: IQueuePayload<T>) => void) => this;
+export declare interface RabbitMqProducer<T, C extends BaseContext> {
+    on: (event: ProducerEvents.publish, listener: (content: IQueuePayload<T>, context?: IQueueContext<C>) => void) => this;
 }
 
 /**
@@ -23,7 +24,7 @@ export declare interface RabbitMqProducer<T> {
  * @property _options.expiration - 消息投递超时时长，超过时间未被消费，会被删除
  * @property _options.priority - 消息投递优先级
  */
-export class RabbitMqProducer<T> extends EventEmitter {
+export class RabbitMqProducer<T, C extends BaseContext = BaseContext> extends EventEmitter {
     protected readonly _options: IProducerConfig;
     protected readonly _queue: RabbitMqQueue<T>;
 
@@ -82,14 +83,14 @@ export class RabbitMqProducer<T> extends EventEmitter {
 
     /**
      * 发送队列消息
-     * @param {IQueuePayload} content - 内容
-     * @return {Promise<void>}
+     * @param content - 内容
+     * @param context - 上下文
      */
-    public async publish(content: IQueuePayload<T>): Promise<void> {
+    public async publish(content: IQueuePayload<T>, context?: IQueueContext<C>): Promise<void> {
         const o = this._options;
         return retry(async () => {
-            this.emit(ProducerEvents.publish, content);
-            await this._queue.publish(content, this._getProduceOptions({}));
+            this.emit(ProducerEvents.publish, content, context);
+            await this._queue.publish(content, context, this._getProduceOptions({}));
         }, {
             retries: o.pushRetryTimes,
             minTimeout: o.pushRetryDelay,

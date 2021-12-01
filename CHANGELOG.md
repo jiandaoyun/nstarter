@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+* 引入 nstarter-core 的 ContextProvider，支持队列任务上下文传递能力
+
 ## 0.3.0
 
 * 升级 amqplib -> 0.8.0
