@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.1
+## v0.5.2
 
 * fix: 修正替换 URL legacy API 后的 baseURL 参数依赖问题 
 
