@@ -3,9 +3,10 @@ import retry from 'async-retry';
 import { Options } from 'amqplib';
 
 import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RabbitProps, RetryMethod } from '../constants';
-import { IConsumerConfig, IQueueMessage, IQueuePayload } from '../types';
+import { IConsumerConfig, IQueueContext, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 import { sleep } from '../utils';
+import { BaseContext, ContextProvider } from 'nstarter-core';
 
 const queueConsumerRegistry: RabbitMqConsumer<any>[] = [];
 
@@ -26,7 +27,7 @@ export declare interface RabbitMqConsumer<T> {
 /**
  * 队列消费者
  */
-export class RabbitMqConsumer<T> extends EventEmitter {
+export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends EventEmitter {
     protected readonly _options: IConsumerConfig<T>;
     protected readonly _queue: RabbitMqQueue<T>;
 
@@ -81,12 +82,13 @@ export class RabbitMqConsumer<T> extends EventEmitter {
 
     /**
      * 重新插入队列
-     * @param content
-     * @param options
+     * @param content - 队列消息内容
+     * @param context - 队列任务上下文
+     * @param options - 任务发布参数
      * @private
      */
-    private async _republish(content: IQueuePayload<T>, options: Options.Publish): Promise<void> {
-        await this._queue.publish(content, options);
+    private async _republish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Options.Publish): Promise<void> {
+        await this._queue.publish(content, context, options);
     }
 
     /**
@@ -204,7 +206,8 @@ export class RabbitMqConsumer<T> extends EventEmitter {
                         headers[RabbitProps.messageDelay] = pushDelay;
                     }
                     this.emit(ConsumerEvents.retry, err, message, retryTimes);
-                    await this._republish(message.content, {
+                    const context = ContextProvider.getContext<C>();
+                    await this._republish(message.content, context, {
                         mandatory: true,
                         persistent: true,
                         deliveryMode: true,
