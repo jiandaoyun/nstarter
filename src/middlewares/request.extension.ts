@@ -19,4 +19,6 @@ export const requestExtensionMiddleware: RequestHandler = (req, res, next) => {
     const userAgent = req.headers['user-agent'] || '';
     req.userAgent = userAgent;
     res.locals.userAgent = userAgent;
+
+    return next();
 };
