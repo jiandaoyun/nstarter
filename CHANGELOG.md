@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.4 
+
+* 新增支持 context 对象传递转化能力
+
 ## v0.5.3
 
 * fix: 修正替换 URL legacy API 后的 baseURL 参数依赖问题 

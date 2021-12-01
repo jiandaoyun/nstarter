@@ -2,6 +2,7 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AsyncLocalStorage } from 'async_hooks';
 
 import { BaseContext } from './base.context';
+import { ContextItem } from './types';
 
 
 /**
@@ -42,8 +43,8 @@ export class ContextProvider<T extends BaseContext> {
      *
      * @private
      */
-    private startContext() {
-        return this._localStorage.enterWith(new this._Context());
+    private startContext(context?: ContextItem) {
+        return this._localStorage.enterWith(new this._Context(context));
     }
 
     /**
@@ -80,8 +81,8 @@ export class ContextProvider<T extends BaseContext> {
      * @note 用于非请求类上下文场景初始化。存在同步逻辑下污染的局限性，避免在静态/全局方法中使用。
      * @see https://nodejs.org/api/async_context.html#asynclocalstorageenterwithstore
      */
-    public static startContext<T extends BaseContext>(): void {
-        ContextProvider.getInstance<T>().startContext();
+    public static startContext<T extends BaseContext>(context?: ContextItem): void {
+        ContextProvider.getInstance<T>().startContext(context);
     }
 
     /**
