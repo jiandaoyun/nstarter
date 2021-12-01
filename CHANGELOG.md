@@ -1,3 +1,8 @@
+# Changelog
+
+## v0.5.1
+
+* fix: 修正替换 URL legacy API 后的 baseURL 参数依赖问题 
 
 ## v0.5.0
 
@@ -15,7 +20,7 @@
 
 ### 注意事项
 
-* node.js 版本要求 > 12.17.x
+* node.js 版本要求 > 14.18.x
 
 
 ## v0.4.0
