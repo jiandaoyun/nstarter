@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+* fix: 补充 metricsView 请求路由的 promise 处理
+
 ## 0.2.0
 
 * 升级 prom-client -> 14.0.x

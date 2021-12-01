@@ -8,7 +8,7 @@ import { monitorRegistry } from './lib';
  * @param res
  * @param next
  */
-export const metricsView: RequestHandler = (req, res, next) => {
+export const metricsView: RequestHandler = async (req, res, next) => {
     res.set('Content-Type', monitorRegistry.contentType);
-    return res.end(monitorRegistry.metrics());
+    return res.end(await monitorRegistry.metrics());
 };
