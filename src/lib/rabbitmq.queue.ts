@@ -208,7 +208,7 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * @param options - 任务发布参数
      */
     public async publish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Publish) {
-        const payload = this._serializePayload(content);
+        const payload = this._serializePayload(content, context);
         return this._channelWrapper.publish(this.exchange, DefaultConfig.routingKey, payload, options);
     }
 

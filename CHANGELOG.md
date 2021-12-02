@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+* 修复上下文可能未被正确传递的问题
+
 ## 0.4.0
 
 * 引入 nstarter-core 的 ContextProvider，支持队列任务上下文传递能力
