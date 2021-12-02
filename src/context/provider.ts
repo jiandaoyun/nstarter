@@ -89,6 +89,10 @@ export class ContextProvider<T extends BaseContext> {
      * 获取上下文对象
      */
     public static getContext<T extends BaseContext>(): T | undefined {
-        return ContextProvider.getInstance<T>().context;
+        try {
+            return ContextProvider.getInstance<T>().context;
+        } catch (err) {
+            return;
+        }
     }
 }

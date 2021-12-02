@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.5
+
+* 提升 ContextProvider 在未初始化时的安全性
+
 ## v0.5.4 
 
 * 新增支持 context 对象传递转化能力
