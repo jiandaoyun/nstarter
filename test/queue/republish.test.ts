@@ -10,6 +10,7 @@ import {
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { sleep } from '../../src/utils';
+import { BaseContext, ContextProvider } from 'nstarter-core';
 
 const expect = chai.expect;
 
@@ -21,6 +22,7 @@ describe('test: republish', () => {
 
         before(async () => {
             producer = queueProducerFactory(queue);
+            ContextProvider.initialize(BaseContext);
             await producer.setup();
         });
 

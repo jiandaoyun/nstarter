@@ -21,7 +21,7 @@
     "async-retry": "^1.3.3"
   },
   "peerDependencies": {
-    "nstarter-core": "^0.5.3"
+    "nstarter-core": "^0.5.5"
   },
   "devDependencies": {
     "@types/amqplib": "^0.8.2",
@@ -32,7 +32,7 @@
     "eslint": "^7.32.0",
     "eslint-config-nstarter": "^2.1.2",
     "mocha": "^9.1.3",
-    "nstarter-core": "^0.5.4",
+    "nstarter-core": "^0.5.5",
     "nstarter-tsconfig": "^0.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
