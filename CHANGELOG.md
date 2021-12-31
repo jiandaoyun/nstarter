@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2
+
+* 提供 AmqpConnectionManager 类型定义，用于扩展实现
+* 提供 amqplib 类型定义默认依赖
+
 ## 0.4.1
 
 * 修复上下文可能未被正确传递的问题

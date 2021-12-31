@@ -1,3 +1,5 @@
+export { AmqpConnectionManager } from 'amqp-connection-manager';
+
 export { AmqpConnector } from './lib/connector';
 export { IQueueConfig, RabbitMqQueue, queueFactory } from './lib/rabbitmq.queue';
 export { RabbitMqProducer, queueProducerFactory } from './lib/rabbitmq.producer';
