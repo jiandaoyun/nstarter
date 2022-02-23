@@ -5,6 +5,6 @@ docker-release:
 	docker build --target=release .
 
 clean:
-	rm -rf report/
+	rm -rf .npmrc report/
 
 .PHONY: clean
