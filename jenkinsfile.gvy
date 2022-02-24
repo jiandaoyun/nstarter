@@ -35,9 +35,7 @@ pipeline {
     }
     post {
         always {
-            script {
-                sh(script: 'make clean')
-            }
+            sh 'make clean'
         }
     }
 }
