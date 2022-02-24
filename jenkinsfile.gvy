@@ -7,21 +7,14 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
     }
     environment {
-        NODE_VERSION = 'v14.18.1'
-        NODE_MIRROR = 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/'
+        DOCKER_BUILDKIT = "1"
     }
     stages {
-        stage('Publish') {
+        stage('Release') {
             steps {
-                nvm(
-                    version: env.NODE_VERSION,
-                    nvmNodeJsOrgMirror: env.NODE_MIRROR
-                ) {
-                    withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
-                        sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
-                        sh(script: "npm whoami")
-                        sh(script: "npm publish", label: "publish")
-                    }
+                withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
+                    sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
+                    sh(script: 'docker build .')
                 }
             }
         }
