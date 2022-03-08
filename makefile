@@ -1,10 +1,12 @@
+TOKEN ?=
+
 docker-build:
 	docker build --target=test-report -o report .
 
 docker-release:
-	docker build --target=release .
+	docker build --target=release --build-arg TOKEN="${TOKEN}" .
 
 clean:
-	rm -rf .npmrc report/
+	rm -rf report/
 
 .PHONY: clean
