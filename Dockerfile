@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:12.16.2-alpine
+ARG NODE_IMAGE=node:14.18.1-alpine
 
 # 基础构建环境
 FROM ${NODE_IMAGE} as build-env
