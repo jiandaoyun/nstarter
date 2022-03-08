@@ -26,9 +26,8 @@ pipeline {
         }
         stage('Release') {
             steps {
-                withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
-                    sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
-                    sh(script: 'make docker-release')
+                withCredentials([string(credentialsId: 'npm_release_token', variable: 'TOKEN')]) {
+                    sh(script: "make docker-release TOKEN=${env.TOKEN}")
                 }
             }
         }
