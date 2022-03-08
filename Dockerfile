@@ -19,4 +19,7 @@ COPY --from=compile /var/opt/build/lint/ /lint
 
 # 发布
 FROM compile as release
-RUN npm publish
+ARG TOKEN
+
+RUN echo //registry.npmjs.org/:_authToken=${TOKEN} >> ./.npmrc \
+    && npm publish
