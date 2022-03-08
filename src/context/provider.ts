@@ -1,9 +1,13 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AsyncLocalStorage } from 'async_hooks';
+import { v4 as uuidv4 } from 'uuid';
 
 import { BaseContext } from './base.context';
-import { ContextItem } from './types';
+import { IRequestContextIdGenerator, ContextItem, IContextMiddlewareOptions } from './types';
 
+export const defaultIdGenerator: IRequestContextIdGenerator = (req) => {
+    return uuidv4();
+};
 
 /**
  * 上下文管理器
@@ -20,13 +24,19 @@ export class ContextProvider<T extends BaseContext> {
 
     /**
      * 生成上下文生成中间件
+     * @param options - 上下文中间件初始化配置
      */
-    private get middleware(): RequestHandler {
+    private getMiddleware(options: IContextMiddlewareOptions): RequestHandler {
+        const opts: IContextMiddlewareOptions = {
+            idGenerator: defaultIdGenerator,
+            ...options
+        };
         return (req: Request, res: Response, next: NextFunction) =>
             this._localStorage.run(new this._Context(), () => {
                 const context = this.context;
-                if (context) {
-                    context.setByRequest(req);
+                const traceId = opts.idGenerator?.(req);
+                if (context && traceId) {
+                    context.setTraceId(traceId);
                 }
                 return next();
             });
@@ -71,8 +81,8 @@ export class ContextProvider<T extends BaseContext> {
     /**
      * 获取上下文请求处理中间件
      */
-    public static getMiddleware<T extends BaseContext>(): RequestHandler {
-        return ContextProvider.getInstance<T>().middleware;
+    public static getMiddleware<T extends BaseContext>(options: IContextMiddlewareOptions): RequestHandler {
+        return ContextProvider.getInstance<T>().getMiddleware(options);
     }
 
     /**
