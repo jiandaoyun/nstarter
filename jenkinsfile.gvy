@@ -12,17 +12,9 @@ pipeline {
     stages {
         stage('Release') {
             steps {
-                withCredentials([string(credentialsId: 'npm_release_token', variable: 'token')]) {
-                    sh(script: "echo //registry.npmjs.org/:_authToken=${env.token} >> .npmrc")
-                    sh(script: 'docker build .')
+                withCredentials([string(credentialsId: 'npm_release_token', variable: 'TOKEN')]) {
+                    sh(script: "docker build --build-arg TOKEN=${env.TOKEN} .")
                 }
-            }
-        }
-    }
-    post {
-        always {
-            script {
-                sh(script: "rm .npmrc", label: "clear token")
             }
         }
     }
