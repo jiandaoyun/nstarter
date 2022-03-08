@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { ContextItem } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,14 +19,12 @@ export class BaseContext {
         }
     }
 
-
     /**
-     * 根据请求初始化上下文
-     * @param req - 请求对象
+     * 设置上下文跟踪 id
+     * @param traceId - 上下文跟踪 id
      */
-    public setByRequest(req: Request) {
-        // 使用请求 Id 跟踪上下文
-        this.traceId = req.requestId;
+    public setTraceId(traceId: string) {
+        this.traceId = traceId;
     }
 
     /**

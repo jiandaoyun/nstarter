@@ -18,7 +18,6 @@ export interface IRequestMeta {
     status: number;
     method: string;
     user_agent?: string;
-    req_id?: string;
     http_version: string;
 }
 
@@ -53,8 +52,6 @@ export class RequestLogger {
             method: req.method,
             user_agent: headers['user-agent'],
             http_version: req.httpVersion,
-            req_id: req.requestId,
-            session_id: req.sessionID,
             start_time: startTime
         };
         const meta = metaFormatter(req, res, baseMeta);
@@ -81,7 +78,7 @@ export class RequestLogger {
         });
     }
 
-    public static get middleware(): RequestHandler {
+    public static getMiddleware(): RequestHandler {
         return (req, res, next) => {
             const startTime = Date.now();
             const reqLogger = once(() => RequestLogger._logRequest(req, res, startTime));

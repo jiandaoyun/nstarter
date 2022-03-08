@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.6
+
+* 新增 requestId 中间件，用用于统一初始化注入请求 id
+* ContextProvider 中间件初始化支持传入 idGenerator
+
+### Breaking
+* Context 与 Logger 不在依赖 requestId 初始化
+* RequestLogger 默认不再直接跟踪 requestId ，改由业务工程自行扩展元数据管理
+* RequestLogger 中间件获取方法变更
+
 ## v0.5.5
 
 * 提升 ContextProvider 在未初始化时的安全性

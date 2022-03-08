@@ -11,7 +11,5 @@ interface Callback<T = any, E = Error> {
 namespace Express {
     interface Request {
         requestId: string;
-        userAgent: string;
-        originalPath: string | null;
     }
 }
