@@ -1,1 +1,1 @@
-export { requestExtensionMiddleware } from './request.extension';
+export { initRequestId } from './request_id';
