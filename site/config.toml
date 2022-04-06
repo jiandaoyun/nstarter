@@ -1,0 +1,3 @@
+baseURL = 'http://example.org/'
+languageCode = 'zh-cn'
+title = 'nstarter 框架'

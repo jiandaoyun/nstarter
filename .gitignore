@@ -1,4 +1,6 @@
 .vscode/
 .idea/
 
+.hugo_build.lock
+
 *.code-workspace
