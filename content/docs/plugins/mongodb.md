@@ -1,3 +1,7 @@
+---
+title: "nstarter-mongodb"
+---
+
 # nstarter-mongodb
 
 nstarter-mongodb 用于对 nstarter 项目的 mongodb 数据库连接进行关联，包含连接操作的封装，维持策略，数据库连接的配置结构定义，工具装饰器等内容。

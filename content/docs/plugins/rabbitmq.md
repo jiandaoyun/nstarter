@@ -1,3 +1,7 @@
+---
+title: "nstarter-rabbitmq"
+---
+
 # RabbitMQ 队列
 
 ## 使用说明

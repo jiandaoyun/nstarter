@@ -1,3 +1,11 @@
 baseURL = 'http://example.org/'
 languageCode = 'zh-cn'
+contentDir = '../content'
 title = 'nstarter 框架'
+
+[params]
+  BookTheme = 'light'
+  BookToC = true
+
+[markup.goldmark.renderer]
+  unsafe = true
