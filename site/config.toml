@@ -6,6 +6,7 @@ title = 'nstarter 框架'
 [params]
   BookTheme = 'light'
   BookToC = true
+  BookSearch = true
 
 [markup.goldmark.renderer]
   unsafe = true

@@ -1,4 +1,4 @@
 ---
-title: "工具扩展"
+title: "扩展"
 bookFlatSection: false
 ---
