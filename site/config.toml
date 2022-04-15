@@ -2,6 +2,7 @@ baseURL = 'http://example.org/'
 languageCode = 'zh-cn'
 contentDir = '../content'
 title = 'nstarter 框架'
+theme = 'hugo-book'
 
 [params]
   BookTheme = 'light'

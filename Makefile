@@ -3,10 +3,12 @@ DOCKER_IMG=nstarter-docs
 DOCKER_REGISTRY=
 
 preview:
-	hugo server --minify --theme hugo-book --source ./site
+	hugo server --minify --source ./site
 
 docker-build:
-	docker build ./ -t ${DOCKER_IMG}:${VERSION}
+	docker build ./ -t ${DOCKER_IMG}:${VERSION} \
+		--build-arg HUGO_DIR=/src/site \
+		--build-arg HUGO_ENV_ARG=production
 
 docker-push:
 	docker tag ${DOCKER_IMG}:${VERSION} ${DOCKER_REGISTRY}/${DOCKER_IMG}:${VERSION}
