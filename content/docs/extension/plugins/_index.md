@@ -1,4 +1,4 @@
 ---
 title: "插件"
-weight: 99
+weight: 80
 ---

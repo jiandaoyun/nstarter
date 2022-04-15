@@ -1,5 +1,5 @@
 ---
-title: "数据迁移框架"
+title: "数据迁移框架 (Migrator)"
 weight: 20
 ---
 

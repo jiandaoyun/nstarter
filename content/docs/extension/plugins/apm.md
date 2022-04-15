@@ -118,10 +118,10 @@ export class SpanFunc {
    }
    ```
   
-   - 'type' - 业务类型标记，任意字符串
-   - 'subtype' - 子类型标记
-   - 'action' - 行为分类标记
-   - 'labels' - 额外标签信息
+   - `type` - 业务类型标记，任意字符串
+   - `subtype` - 子类型标记
+   - `action` - 行为分类标记
+   - `labels` - 额外标签信息
 
 ### 环境变量
 
