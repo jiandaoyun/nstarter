@@ -52,9 +52,6 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
     public initialize() {
         const o = this._options;
         nconf.use('memory');
-        if (o.useEnv) {
-            nconf.env();
-        }
         try {
             this.loadConfig();
         } catch (err) {
@@ -77,9 +74,12 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
      * 加载配置内容
      */
     public loadConfig() {
+        const o = this._options;
         nconf.reset();
-        nconf.env();
-
+        // 加载环境变量
+        if (o.useEnv) {
+            nconf.env();
+        }
         // 加载配置文件
         _.forEach(this._configFiles, (configPath, idx) => {
             this._loadConfFile(configPath, `config_${ idx }`);
