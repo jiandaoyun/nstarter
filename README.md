@@ -17,7 +17,7 @@ import { ConfigLoader, IConfig, ConfigLoadEvents } from 'nstarter-config';
 /**
  * 示例配置对象
  */
-class DemoConfig implements IConfig {
+class Config implements IConfig {
     system: {
         locale: string,
         timezone: string
@@ -32,7 +32,7 @@ class DemoConfig implements IConfig {
 /**
  * 生成配置单例
  */
-const loader = new ConfigLoader<DemoConfig>(DemoConfig, {
+const loader = new ConfigLoader(Config, {
     files: [
         './conf.d/config.override.yaml',
         './conf.d/config.base'
