@@ -8,18 +8,23 @@ COPY . .
 RUN npm install
 
 # 编译
-FROM build-env as compile
+FROM build-env as build
 
-RUN npm run eslint:html \
-    && npm run build
+ENV NODE_ENV=test
+RUN npm run lint:html && \
+    npm run test &&  \
+    npm run build
 
 # 输出报告
-FROM scratch as test-report
-COPY --from=compile /var/opt/build/lint/ /lint
+FROM scratch as report
+COPY --from=build /var/opt/build/coverage ./coverage
+COPY --from=build /var/opt/build/lint/ ./lint
 
 # 发布
-FROM compile as release
+FROM build as release
 ARG TOKEN
 
-RUN echo //registry.npmjs.org/:_authToken=${TOKEN} >> ./.npmrc \
-    && npm publish
+RUN npm config set registry "https://registry.npmjs.org" && \
+    echo //registry.npmjs.org/:_authToken=${TOKEN} >> ./.npmrc && \
+    npm whoami && \
+    npm publish

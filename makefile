@@ -1,12 +1,14 @@
+.PHONY: build
+build:
+	docker build \
+		--target=report \
+		--progress=plain \
+		--output type=local,dest=./ \
+		.
+
 TOKEN ?=
-
-docker-build:
-	docker build --target=test-report -o report .
-
-docker-release:
-	docker build --target=release --build-arg TOKEN="${TOKEN}" .
-
-clean:
-	rm -rf report/
-
-.PHONY: clean
+.PHONY: release
+release:
+	docker build --target=release --progress=plain \
+		--build-arg TOKEN='${TOKEN}' \
+		.
