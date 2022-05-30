@@ -27,6 +27,8 @@ export interface IConfigLoaderOptions {
     // 配置文件列表
     files: string[];
 
+    // 是否加载环境变量
+    useEnv?: boolean;
     // 是否支持热更新
     useHotReload?: boolean;
     // 是否支持配置引用

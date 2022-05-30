@@ -37,6 +37,7 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
         this._conf = new Config();
         this._options = _.defaults(options, {
             files: [],
+            useEnv: false,
             useHotReload: false,
             useIncludes: false,
             extra: {}
@@ -51,6 +52,9 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
     public initialize() {
         const o = this._options;
         nconf.use('memory');
+        if (o.useEnv) {
+            nconf.env();
+        }
         try {
             this.loadConfig();
         } catch (err) {

@@ -8,9 +8,10 @@ const expect = chai.expect;
 describe('ConfigLoader Test', () => {
     it('load', async () => {
         const loader = new ConfigLoader(DemoConfig, {
-            files: ['./test/conf.d/config.base']
-        }).initialize();
-        const config = loader.getConfig();
+            files: ['./test/conf.d/config.base'],
+            useEnv: true,
+        });
+        const config = loader.initialize().getConfig();
         expect(config.system?.locale).to.equal('en_us');
     });
 
@@ -18,8 +19,8 @@ describe('ConfigLoader Test', () => {
         const loader = new ConfigLoader(DemoConfig, {
             files: ['./test/conf.d/config.base'],
             useIncludes: true
-        }).initialize();
-        const config = loader.getConfig();
+        });
+        const config = loader.initialize().getConfig();
         expect(config.system?.locale).to.equal('zh_cn');
     });
 
@@ -27,8 +28,8 @@ describe('ConfigLoader Test', () => {
         const loader = new ConfigLoader(DemoConfig, {
             files: ['./test/conf.d/config.base'],
             useHotReload: true
-        }).initialize();
-        const config = loader.getConfig();
+        });
+        const config = loader.initialize().getConfig();
         expect(config.system?.locale).to.equal('en_us');
     });
 
@@ -40,6 +41,6 @@ describe('ConfigLoader Test', () => {
             expect(err).to.exist;
             return done();
         });
-        loader.initialize();
+        const config = loader.initialize().getConfig();
     });
 });

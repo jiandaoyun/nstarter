@@ -37,6 +37,7 @@ const loader = new ConfigLoader(Config, {
         './conf.d/config.override.yaml',
         './conf.d/config.base'
     ],
+    useEnv: true,
     useHotReload: true,
     useIncludes: true, 
     extra: {
@@ -59,6 +60,7 @@ const config = loader.getConfig();
 
 * 参数说明：
   - `files` - 默认配置文件列表
+  - `useEnv` - 是否加载环境变量参数，默认 `false`
   - `useHotReload` - 是否启用配置热加载，默认 `false`
   - `useIncludes` - 是否启用配置引用注入，默认 `false`
   - `extra` - 额外静态配置项
