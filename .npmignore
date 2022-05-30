@@ -17,7 +17,7 @@ coverage/
 
 test/
 
-jenkinsfile.gvy
+Jenkinsfile
 
 /lint/
 /.eslintignore
