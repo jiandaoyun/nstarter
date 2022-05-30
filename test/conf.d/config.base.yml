@@ -1,0 +1,6 @@
+system:
+  locale: en_us
+  timezone: UTC
+
+includes:
+  - ./test/conf.d/config.includes.yml

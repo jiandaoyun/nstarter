@@ -3,9 +3,9 @@ dist/
 build/
 lint/
 
-package-lock.json
-
 .vscode/
 .idea/
-
 *.code-workspace
+
+coverage/
+.nyc_output/

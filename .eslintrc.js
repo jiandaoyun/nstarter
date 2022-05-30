@@ -4,5 +4,7 @@ module.exports = {
         "nstarter/typescript",
     ],
     rules: {},
-    globals: {}
+    globals: {
+        Constructor: "readable"
+    }
 };
