@@ -4,7 +4,7 @@ import fs from 'fs';
 import { EventEmitter } from 'events';
 import { watch } from 'chokidar';
 
-import { IConfig, IConfigLoaderOptions } from './types';
+import { ConfigLoadEvents, IConfig, IConfigLoaderOptions } from './types';
 import { Logger } from './logger';
 import { configFormats } from './config_formats';
 
@@ -12,8 +12,8 @@ import { configFormats } from './config_formats';
 /**
  * 事件定义
  */
-export declare interface ConfigLoader<T extends IConfig> {
-    on: ((event: 'reload', listener: (config: T) => void) => this);
+export declare interface ConfigLoader<T> {
+    on: ((event: ConfigLoadEvents, listener: (...args: any[]) => void) => this);
 }
 
 /**
@@ -43,8 +43,21 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
         });
         const o = this._options;
         this._configFiles = _.uniq(o.files);
+    }
+
+    /**
+     * 执行配置加载初始化
+     */
+    public initialize() {
+        const o = this._options;
         nconf.use('memory');
-        this.loadConfig();
+        try {
+            this.loadConfig();
+        } catch (err) {
+            this.emit(ConfigLoadEvents.init_failed, [err]);
+            // 异常后中断加载过程
+            return this;
+        }
         // 检查并加载配置引用
         if (o.useIncludes) {
             this.loadIncludeFiles();
@@ -53,6 +66,7 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
         if (o.useHotReload) {
             this.watchConfigChange();
         }
+        return this;
     }
 
     /**
@@ -88,7 +102,11 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
             Logger.log(`Include config files found, reloading.`);
             this._configFiles = _.union(_.uniq(this._conf.includes), this._configFiles);
             // 按照新的覆盖顺序重新加载
-            this.loadConfig();
+            try {
+                this.loadConfig();
+            } catch (err) {
+                this.emit(ConfigLoadEvents.reload_failed, [err]);
+            }
         }
     }
 
@@ -103,10 +121,9 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
                 try {
                     this.loadConfig();
                     // 成功加载后，触发加载完成事件
-                    this.emit('reload', [this.getConfig()]);
+                    this.emit(ConfigLoadEvents.reload, [this.getConfig()]);
                 } catch (err) {
-                    Logger.error('Config file reload failed, please check.');
-                    Logger.error(err.message);
+                    this.emit(ConfigLoadEvents.reload_failed, [err]);
                 }
             });
         });

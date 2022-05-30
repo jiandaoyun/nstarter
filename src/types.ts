@@ -1,3 +1,11 @@
+/**
+ * 配置加载时间
+ */
+export enum ConfigLoadEvents {
+    reload = 'reload',
+    init_failed = 'init_failed',
+    reload_failed = 'reload_failed'
+}
 
 export interface IConfig {
     /**

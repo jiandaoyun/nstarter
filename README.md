@@ -12,7 +12,7 @@ nstarter 配置装载管理器
 ## 使用说明
 
 ```typescript
-import { ConfigLoader, IConfig } from 'nstarter-config'
+import { ConfigLoader, IConfig, ConfigLoadEvents } from 'nstarter-config';
 
 /**
  * 示例配置对象
@@ -32,7 +32,7 @@ class DemoConfig implements IConfig {
 /**
  * 生成配置单例
  */
-const config = new ConfigLoader<DemoConfig>(DemoConfig, {
+const loader = new ConfigLoader<DemoConfig>(DemoConfig, {
     files: [
         './conf.d/config.override.yaml',
         './conf.d/config.base'
@@ -42,7 +42,13 @@ const config = new ConfigLoader<DemoConfig>(DemoConfig, {
     extra: {
         env: 'test'
     }
-}).getConfig();
+});
+loader.on(ConfigLoadEvents.init_failed, (err) => {
+    process.exit(1);
+});
+
+loader.initialize();
+const config = loader.getConfig();
 ```
 
 * 用法说明：
@@ -56,3 +62,8 @@ const config = new ConfigLoader<DemoConfig>(DemoConfig, {
   - `useHotReload` - 是否启用配置热加载，默认 `false`
   - `useIncludes` - 是否启用配置引用注入，默认 `false`
   - `extra` - 额外静态配置项
+
+* 事件定义
+  - `ConfigLoadEvents.init_failed` - 配置初始化失败，参数 `err: Error`
+  - `ConfigLoadEvents.reload_failed` - 配置重载失败，参数 `err: Error`
+  - `ConfigLoadEvents.reload` - 配置重新初始化完成，参数 `config`
