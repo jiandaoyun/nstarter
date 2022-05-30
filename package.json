@@ -17,9 +17,9 @@
   "types": "./dist",
   "dependencies": {
     "chokidar": "^3.5.3",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "4.1.0",
     "lodash": "^4.17.21",
-    "nconf": "^0.12.0"
+    "nconf": "0.12.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",
