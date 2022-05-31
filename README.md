@@ -34,7 +34,9 @@ class Config implements IConfig {
  */
 const loader = new ConfigLoader(Config, {
     files: [
+        // 直接指定文件类型
         './conf.d/config.override.yaml',
+        // 支持自动按照 json/yaml 格式发现目标目录下的文件执行加载
         './conf.d/config.base'
     ],
     useEnv: true,
