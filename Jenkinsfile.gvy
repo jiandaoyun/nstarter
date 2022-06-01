@@ -28,7 +28,7 @@ pipeline {
                 digest = sh(script: "grep -Po '(?<=sha256:)[0-9a-z]+' digest.txt", returnStdout: true)
             }
             steps {
-                sh(script: "argocd app set nstarter-docs -p services.nstarter-docs.image.repository=${env.REGISTRY}/nstarter-docs@sha256 -p services.nstarter-docs.image.tag=$digest")
+                sh(script: "argocd app set nstarter-docs --kustomize-image ${env.REGISTRY}/nstarter-docs@sha256:$digest")
                 sh(script: "argocd app sync nstarter-docs --prune")
             }
         }
