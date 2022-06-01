@@ -14,4 +14,4 @@ docker-push:
 	docker tag ${DOCKER_IMG}:${VERSION} ${DOCKER_REGISTRY}/${DOCKER_IMG}:${VERSION}
 	docker tag ${DOCKER_IMG}:${VERSION} ${DOCKER_REGISTRY}/${DOCKER_IMG}:latest
 	docker push ${DOCKER_REGISTRY}/${DOCKER_IMG}:${VERSION}
-	docker push ${DOCKER_REGISTRY}/${DOCKER_IMG}:latest
+	docker push ${DOCKER_REGISTRY}/${DOCKER_IMG}:latest > digest.txt
