@@ -2,6 +2,7 @@
 title: "配置管理 (Config)"
 weight: 104
 ---
+# 配置管理
 
 nstarter 框架提供了统一的配置管理组件 `nstarter-config`，通过安装相关包可以提供标准化的配置管理能力。
 
