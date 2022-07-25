@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.4
+
+* 适配 Azure Mongodb 连接协议
+
 ## v0.2.3
 
 * 升级 nstarter-core -> 0.5.x

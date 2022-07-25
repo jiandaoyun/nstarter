@@ -81,6 +81,16 @@ export const mongodbConfigSchema = {
             "type": [
                 "integer"
             ]
+        },
+        "ssl": {
+            "type": [
+                "boolean"
+            ]
+        },
+        "retryWrites": {
+            "type": [
+                "boolean"
+            ]
         }
     }
 };
