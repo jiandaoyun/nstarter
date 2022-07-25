@@ -23,4 +23,6 @@ export interface IMongodbConfig {
     readonly x509?: IX509Config;
     readonly timeoutMs?: number;
     readonly db: string;
+    readonly ssl?: boolean;
+    readonly retryWrites?: boolean;
 }
