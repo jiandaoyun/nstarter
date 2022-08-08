@@ -36,7 +36,7 @@ export const prepareTemplate = async (tag = DEFAULT_TEMPLATE_TAG) => {
     logger.info(`Cloning project template into "${ templatePath }"`);
     fs.ensureDirSync(config.workDir);
     // 选择模板
-    let template = config.getTemplate();
+    let template = config.getTemplate(tag);
     if (template) {
         logger.info(`Using template "${ tag }" -> "${ template }"`);
     } else {

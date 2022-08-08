@@ -1,4 +1,4 @@
-import simpleGit, { outputHandler, SimpleGit } from 'simple-git/promise';
+import simpleGit, { outputHandler, SimpleGit } from 'simple-git';
 import { logger } from '../logger';
 import { formatStdOutput } from '../utils';
 

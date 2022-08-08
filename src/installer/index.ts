@@ -38,7 +38,7 @@ export class ProjectInstaller {
             this.isValid = false;
             return;
         }
-        this._options = safeLoad(fs.readFileSync(moduleConf, 'utf-8'));
+        this._options = safeLoad(fs.readFileSync(moduleConf, 'utf-8')) as IProjectConf;
         this._loadModuleGroups();
         this._loadModules();
     }

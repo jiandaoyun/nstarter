@@ -1,6 +1,6 @@
 module.exports = {
     extends: [
-        "nstarter/node",
+        "nstarter",
         "nstarter/typescript",
     ],
     rules: {

@@ -119,7 +119,7 @@ export const runCli = () => {
         .scriptName(CLI_NAME)
         .version(config.version)
         .detectLocale(false)
-        .argv;
+        .argv as any;
     if (argv.v) {
         logger.setLevel(LogLevel.debug);
     }

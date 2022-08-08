@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
 import { safeLoad, safeDump } from 'js-yaml';
-import simplegit from 'simple-git/promise';
+import simplegit from 'simple-git';
 
 import { logger } from '../logger';
 import { formatStdOutput } from '../utils';
