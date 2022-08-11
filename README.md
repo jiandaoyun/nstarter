@@ -22,12 +22,12 @@ npm install -s nstarter-redis
 import { BaseComponent, component } from 'nstarter-core';
 import { config } from '../config';
 import { LuaScripts } from '../lua';
-import { MyRedis } from './lib/database/myredis';
-import { RedisConnector } from './lib/database/redis.connection';
+import { RedisAdapter } from './lib/database/redis.adapter';
+import { RedisConnector } from 'nstarter-redis';
 
 @component()
 export class RedisComponent extends BaseComponent {
-    private readonly _redis: RedisConnector<MyRedis>;
+    private readonly _redis: RedisConnector<RedisAdapter>;
 
     constructor() {
         super();
@@ -54,7 +54,7 @@ export class RedisComponent extends BaseComponent {
 
 ### 配置结构
 
-nstarter-redis 提供了以下的配置参数，可用于配置服务器连接方式，支持 Standalone, Sentinels, Cluster 三种不同的服务器拓扑架构。
+nstarter-redis 提供了以下的配置参数，可用于配置服务器连接方式，支持 Standalone, Sentinels, Cluster 三种不同的服务器拓扑架构。支持ssl，密码/无密码模式认证。
 
 ```yaml
 redis:
