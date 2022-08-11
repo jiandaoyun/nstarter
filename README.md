@@ -52,6 +52,98 @@ export class RedisComponent extends BaseComponent {
 }
 ```
 
+### 扩展redis方法
+
+
+```typescript
+/**
+ * Copyright (c) 2015-2022, FineX, All Rights Reserved.
+ * @author Zed
+ * @date 2022/8/8
+ */
+import IORedis from 'ioredis';
+
+export interface RedisAdapter extends IORedis.Redis {
+    /**
+     * 查询成员组织架构缓存
+     * @param {string} cacheKey - 缓存key
+     * @param {number} timestamp - 时间戳
+     * @param {string[]} args - 查询参数
+     */
+    queryMemberCache: (cacheKey: string, timestamp: number, ...args: string[]) => Promise<string>;
+    /**
+     * 增量缓存成员组织架构
+     * @param {string} cacheKey - 缓存key
+     * @param {number} timestamp - 时间戳
+     * @param {string[]} args - 查询参数
+     */
+    storeMemberCache: (cacheKey: string, timestamp: number, ...args: string[]) => Promise<void>;
+    del: (...keys: any[]) => Promise<number>;
+    /**
+     * 读写锁加锁
+     * @param {string[]} lockArgs - 加锁 key
+     * @param {Callback} callback - 回调函数
+     * @example redis.readWriteLock(['aaa', 'X', 'bbb', 'IX', 'ccc', 'S', 'ddd', 'IS'], _.noop)
+     */
+    readWriteLock: (lockArgs: string[], callback: Callback) => void;
+    /**
+     * 读写锁解锁
+     * @param {string[]} lockArgs - 解锁 key 列表
+     * @param {Callback} callback - 回调函数
+     * @example redis.readWriteUnlock(['aaa', ':X:1', 'bbb', ':IX:2', 'ccc', ':S:3', 'ddd', ':IS:4'], _.noop)
+     */
+    readWriteUnlock: (lockArgs: string[], callback: Callback) => void;
+    /**
+     * 生成一个新实例
+     */
+    duplicate: () => IORedis.Redis;
+    /**
+     * 并发限制器中并发执行个数加 1
+     * @param key - 键
+     * @param limit - 并发限制个数
+     * @param identifier - UUID
+     * @param lockTimeout - 锁超时时长
+     * @param currentTimestamp - 当前时间戳
+     */
+    increaseConcurrencyCount: (
+        key: string,
+        limit: number,
+        identifier: string,
+        lockTimeout: number,
+        currentTimestamp: number
+    ) => Promise<string>;
+    /**
+     * 安排超过并发数的任务的下次重试时间（时间片方式）
+     * @param maxTimeSliceKey - 排队的最大时间片的键
+     * @param scheduleCountKey - 当前时间片上已安排的任务个数的键
+     * @param nextTimeSlice - 下一个时间片的起始时间戳（单位：秒）
+     * @param timeSliceDuration - 一个时间片的时长（单位：秒）
+     * @param maxScheduleCount - 一个时间片上允许安排的最大任务个数
+     */
+    scheduleConcurrencyExceedJob: (
+        maxTimeSliceKey: string,
+        scheduleCountKey: string,
+        nextTimeSlice: number,
+        timeSliceDuration: number,
+        maxScheduleCount: number
+    ) => Promise<string[]>;
+    /**
+     * 可重入锁加锁
+     * @param key
+     * @param value
+     * @param ttl
+     */
+    reentrantLock: (key: string, value: string, ttl: number) => Promise<string>;
+    /**
+     * 可重入锁解锁
+     * @param key
+     * @param value
+     */
+    unlockReentrantLock: (key: string, value: string) => Promise<string>;
+}
+
+```
+
 ### 配置结构
 
 nstarter-redis 提供了以下的配置参数，可用于配置服务器连接方式，支持 Standalone, Sentinels, Cluster 三种不同的服务器拓扑架构。支持ssl，密码/无密码模式认证。
