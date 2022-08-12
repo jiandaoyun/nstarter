@@ -52,7 +52,11 @@ export class MongodbConnector {
     }
 
     private get mongoUri(): string {
-        const { db, servers, replicaSet } = this._options;
+        const { db, servers, replicaSet, srv, user, password } = this._options;
+        // srv连接协议
+        if (srv) {
+            return `mongodb+srv://${ user }:${ password }@${ servers[0].host }/${ db }`;
+        }
         const server = servers.map((server) =>
             `${ server.host }:${ server.port }`
         ).join(',');
@@ -73,7 +77,7 @@ export class MongodbConnector {
      * 获取数据库连接配置
      */
     private get connectionConf(): ConnectionOptions {
-        const { user, password, db, x509, timeoutMs, ssl, retryWrites } = this._options;
+        const { user, password, db, x509, timeoutMs, ssl, retryWrites, authSource, authMechanism } = this._options;
         const baseConf: any = {
             user,
             serverSelectionTimeoutMS: timeoutMs || 10000,
@@ -115,7 +119,8 @@ export class MongodbConnector {
             // 用户名密码认证
             return {
                 ...baseConf,
-                authSource: db,
+                authMechanism,
+                authSource: authSource ?? db,
                 pass: password
             };
         }
