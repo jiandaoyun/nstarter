@@ -52,15 +52,17 @@ export class MongodbConnector {
     }
 
     private get mongoUri(): string {
-        const { db, servers, replicaSet, srv, user, password } = this._options;
+        const { db, servers, replicaSet, srv } = this._options;
+        let uri;
         // srv连接协议
         if (srv) {
-            return `mongodb+srv://${ user }:${ password }@${ servers[0].host }/${ db }`;
+            uri = `mongodb+srv://${ servers[0].host }/${ db }`;
+        } else {
+            const server = servers.map((server) =>
+                `${ server.host }:${ server.port }`
+            ).join(',');
+            uri = `mongodb://${ server }/${ db }`;
         }
-        const server = servers.map((server) =>
-            `${ server.host }:${ server.port }`
-        ).join(',');
-        let uri = `mongodb://${ server }/${ db }`;
         // 扩展参数配置
         const queryParams: IMongodbQueryParams = {};
         if (replicaSet) {
