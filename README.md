@@ -61,9 +61,9 @@ export class RedisComponent extends BaseComponent {
  * @author Zed
  * @date 2022/8/8
  */
-import IORedis from 'ioredis';
+import { IRedis } from 'nstarter-redis';
 
-export interface RedisAdapter extends IORedis.Redis {
+export interface RedisAdapter extends IRedis {
     /**
      * 查询成员组织架构缓存
      * @param {string} cacheKey - 缓存key
@@ -93,10 +93,7 @@ export interface RedisAdapter extends IORedis.Redis {
      * @example redis.readWriteUnlock(['aaa', ':X:1', 'bbb', ':IX:2', 'ccc', ':S:3', 'ddd', ':IS:4'], _.noop)
      */
     readWriteUnlock: (lockArgs: string[], callback: Callback) => void;
-    /**
-     * 生成一个新实例
-     */
-    duplicate: () => IORedis.Redis;
+
     /**
      * 并发限制器中并发执行个数加 1
      * @param key - 键

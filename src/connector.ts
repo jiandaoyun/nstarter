@@ -1,12 +1,17 @@
-import IORedis, { Redis } from 'ioredis';
+import IORedis from 'ioredis';
 import _ from 'lodash';
 import { Logger } from 'nstarter-core';
 import { ILuaScriptConfig, IRedisConfig } from './types';
 
 /**
+ * redis实例代理
+ */
+export interface IRedis extends IORedis.Redis {}
+
+/**
  * redis 连接实现
  */
-export class RedisConnector<T extends Redis> {
+export class RedisConnector<T extends IRedis> {
     private readonly _client: T;
     private readonly _options: IORedis.RedisOptions;
     private readonly _name: string = '';
