@@ -6,7 +6,10 @@ import { ILuaScriptConfig, IRedisConfig } from './types';
 /**
  * redis实例代理
  */
-export interface IRedis extends IORedis.Redis {}
+export interface IRedis extends IORedis.Redis {
+
+    duplicate(): IRedis;
+}
 
 /**
  * redis 连接实现
