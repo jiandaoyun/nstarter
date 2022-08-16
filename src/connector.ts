@@ -8,7 +8,8 @@ import { ILuaScriptConfig, IRedisConfig } from './types';
  */
 export interface IRedis extends IORedis.Redis {
 
-    duplicate(): IRedis;
+    duplicate: () => IRedis;
+
 }
 
 /**
