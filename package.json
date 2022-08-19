@@ -1,7 +1,7 @@
 {
   "name": "nstarter-utils",
-  "version": "0.0.0",
-  "description": "nstarter Package",
+  "version": "0.1.0",
+  "description": "nstarter utilities",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,7 +16,6 @@
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
   "dependencies": {},
-  "peerDependencies": {},
   "devDependencies": {
     "@types/chai": "^4.2.12",
     "@types/mocha": "^9.0.0",
