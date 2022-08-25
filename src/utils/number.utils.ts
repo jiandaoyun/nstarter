@@ -6,7 +6,7 @@
  * 转化为数字类型
  * @param value
  */
-const parseNumber = (value: any) => {
+export const parseNumber = (value: any) => {
     const number = parseFloat(value);
     if (!isNaN(number) && isFinite(number)) {
         return number;
