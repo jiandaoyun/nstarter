@@ -76,8 +76,3 @@ export const getEnum = <T>(
     value: unknown,
     defaultValue?: T
 ): T => (value || defaultValue) as unknown as T;
-
-/**
- * 生成组件ID
- */
-export const genWidgetId = () => `_widget_${ Date.now() }`;
