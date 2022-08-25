@@ -66,13 +66,3 @@ export const getPagination = (params: {
     limit = Math.max(Math.min(maxCount, limit), 1);
     return { skip, limit };
 };
-
-/**
- * 获取枚举
- * @param value - 值
- * @param defaultValue - 默认值
- */
-export const getEnum = <T>(
-    value: unknown,
-    defaultValue?: T
-): T => (value || defaultValue) as unknown as T;
