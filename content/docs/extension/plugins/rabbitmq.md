@@ -73,16 +73,15 @@ producer
 
 ### 消费者，向队列订阅消息
 ```typescript
-import { queueConsumerFactory, RetryMethod, IConsumerConfig, startQueueConsumers } from 'nstarter-rabbitmq';
+import { IConsumerConfig, queueConsumerFactory, RetryMethod, startQueueConsumers } from 'nstarter-rabbitmq';
 import { demo_queue, IDemoMessage } from './queue';
 
 const consumerConfig: IConsumerConfig<IDemoMessage> = {
     retryMethod: RetryMethod.republish,
     timeout: 10000, // 10s
-    run: (message): Promise<void> => {
+    run: async (message): Promise<void> => {
         const demoMessage: IDemoMessage = message.content;
         console.log(demoMessage);
-        return Promise.resolve();
     }
 };
 
