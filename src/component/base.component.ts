@@ -5,7 +5,7 @@ import { Logger } from '../loggers';
 import { ComponentEvents, ComponentState } from './types';
 
 @injectable()
-export class BaseComponent extends EventEmitter {
+export class BaseComponent extends injectable()(EventEmitter) {
     protected _name: string;
     protected _state: ComponentState = ComponentState.inactive;
 
@@ -14,7 +14,6 @@ export class BaseComponent extends EventEmitter {
      */
     public async init() {
         this.setReady(true);
-        this.emit(ComponentEvents.ready);
     }
 
     /**
@@ -22,7 +21,6 @@ export class BaseComponent extends EventEmitter {
      */
     public async shutdown() {
         this.setReady(false);
-        this.emit(ComponentEvents.down);
     }
 
     /**
@@ -39,9 +37,11 @@ export class BaseComponent extends EventEmitter {
     public setReady(isReady: boolean) {
         if (isReady) {
             this._state = ComponentState.active;
+            this.emit(ComponentEvents.ready);
             Logger.info(`init ${ this._name } ... ok`);
         } else {
             this._state = ComponentState.inactive;
+            this.emit(ComponentEvents.down);
             Logger.info(`shutdown ${ this._name } ... ok`);
         }
     }

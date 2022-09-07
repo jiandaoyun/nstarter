@@ -3,6 +3,9 @@ import 'reflect-metadata';
 
 export const componentContainer = new Container({
     defaultScope: 'Singleton',
+    // Component 扩展 EventEmitter，但 EventEmitter 的可选构造参数无需被继承
+    // @see https://github.com/inversify/InversifyJS/issues/522
+    skipBaseClassChecks: true,
     autoBindInjectable: false
 });
 
