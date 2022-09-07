@@ -1,26 +1,27 @@
-import AmqpConnectManager, { AmqpConnectionManager } from 'amqp-connection-manager';
+import { AmqpConnectionManager, AmqpConnectionManagerClass } from 'amqp-connection-manager';
 import { RabbitMQConfig } from '../types';
 
+/**
+ * Rabbitmq 连接管理器
+ */
 export class AmqpConnector {
     public connection: AmqpConnectionManager;
     private readonly _config: RabbitMQConfig;
 
-    constructor(config: RabbitMQConfig, errorHandler?: Callback) {
+    constructor(config: RabbitMQConfig) {
         this._config = config;
         const { heartbeatInterval, reconnectInterval } = this._config;
-        this.connection = AmqpConnectManager.connect(this.amqpUrls, {
+        this.connection = new AmqpConnectionManagerClass(this.amqpUrls, {
             heartbeatIntervalInSeconds: heartbeatInterval,
             reconnectTimeInSeconds: reconnectInterval
         });
-        this.connection.once('connect', () => {
-            this.connection.on('disconnect', (err?: Error) => {
-                if (err && errorHandler) {
-                    errorHandler(err);
-                } else {
-                    console.error('Rabbitmq disconnect unhandled.');
-                }
-            });
-        });
+    }
+
+    /**
+     * 建立连接
+     */
+    public async connect() {
+        return await this.connection.connect();
     }
 
     private get amqpUrls(): string[] {

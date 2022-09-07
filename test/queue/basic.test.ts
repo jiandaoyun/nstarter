@@ -1,3 +1,4 @@
+import { sleep } from 'nstarter-utils';
 import {
     ConsumerEvents,
     IQueueMessage,
@@ -9,7 +10,7 @@ import {
     stopQueueConsumers
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
-import { sleep } from '../../src/utils';
+import { before } from 'mocha';
 
 describe('test: basic', () => {
     const queue = queueFactory(amqp.connection, normalQueueConf);
@@ -26,6 +27,10 @@ describe('test: basic', () => {
     });
     consumer.on(ConsumerEvents.finish, (message) => {
         console.log(`${ consumer.queue.name } finished.`);
+    });
+
+    before(async () => {
+        await amqp.connect();
     });
 
     it('consumer.register', async () => {

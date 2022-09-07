@@ -1,12 +1,9 @@
-import { AmqpConnectionManager, ChannelWrapper, SetupFunc } from 'amqp-connection-manager';
-import { ConfirmChannel, ConsumeMessage, Options } from 'amqplib';
+import { BaseContext, ContextProvider } from 'nstarter-core';
+import { AmqpConnectionManager, ChannelWrapper, Options, SetupFunc, Channel } from 'amqp-connection-manager';
+import { ConsumeMessage } from 'amqplib';
 import { DefaultConfig, ExchangeType, OverflowMethod, RabbitProps } from '../constants';
 import { IMessageHandler, IQueueContext, IQueueMessage, IQueuePayload, IWrappedPayload } from '../types';
-import AssertExchange = Options.AssertExchange;
-import AssertQueue = Options.AssertQueue;
-import Publish = Options.Publish;
-import Consume = Options.Consume;
-import { BaseContext, ContextProvider } from 'nstarter-core';
+
 
 export interface IQueueConfig {
     name: string;
@@ -51,8 +48,8 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * 生成队列配置
      * @private
      */
-    private _getQueueOptions(): AssertQueue {
-        const options: AssertQueue = {
+    private _getQueueOptions(): Options.AssertQueue {
+        const options: Options.AssertQueue = {
             durable: true,
             autoDelete: false,
             exclusive: false
@@ -71,8 +68,8 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * 生成 exchange 配置
      * @private
      */
-    private _getExchangeOptions(): AssertExchange {
-        const options: AssertExchange = {
+    private _getExchangeOptions(): Options.AssertExchange {
+        const options: Options.AssertExchange = {
             durable: true,
             autoDelete: false,
             internal: false
@@ -96,7 +93,7 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
             json: false,
             // 启动、重连加载逻辑
             // 注册到 rabbitMQ 内部的 setups 队列中，启动或重连时调用
-            setup: async (channel: ConfirmChannel): Promise<any> => {
+            setup: async (channel: Channel): Promise<any> => {
                 const { queue } = await channel.assertQueue(o.name, this._getQueueOptions());
                 this.queue = queue;
                 if (o.prefetch) {
@@ -148,10 +145,10 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      */
     public async subscribe(
         messageHandler: IMessageHandler<T>,
-        options: Consume
+        options: Options.Consume
     ): Promise<void> {
         await this.waitForSetup();
-        this._setupFunc = async (channel: ConfirmChannel) => {
+        this._setupFunc = async (channel: Channel) => {
             const { consumerTag } = await channel.consume(
                 this.queue,
                 (message: ConsumeMessage | null) => {
@@ -189,7 +186,7 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * 取消任务订阅
      */
     public async unsubscribe(): Promise<void> {
-        return this._channelWrapper.removeSetup(this._setupFunc, async (channel: ConfirmChannel) => {
+        return this._channelWrapper.removeSetup(this._setupFunc, async (channel: Channel) => {
             await channel.cancel(this._consumerTag);
         });
     }
@@ -207,7 +204,7 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * @param context - 队列任务上下文
      * @param options - 任务发布参数
      */
-    public async publish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Publish) {
+    public async publish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Options.Publish) {
         const payload = this._serializePayload(content, context);
         return this._channelWrapper.publish(this.exchange, DefaultConfig.routingKey, payload, options);
     }
@@ -221,7 +218,6 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
 
     /**
      * 等待队列初始化完成
-     * @return {Promise<void>}
      */
     public async waitForSetup(): Promise<void> {
         return this._channelWrapper.waitForConnect();
@@ -229,7 +225,6 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
 
     /**
      * 关闭链接
-     * @return {Promise<void>}
      */
     public async close(): Promise<void> {
         return this._channelWrapper.close();
