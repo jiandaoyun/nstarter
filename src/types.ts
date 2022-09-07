@@ -6,7 +6,7 @@ export interface IMongodbQueryParams extends ParsedUrlQueryInput {
 
 interface IMongodbServer {
     readonly host: string;
-    readonly port: number;
+    readonly port?: number;
 }
 
 interface IX509Config {
@@ -23,4 +23,9 @@ export interface IMongodbConfig {
     readonly x509?: IX509Config;
     readonly timeoutMs?: number;
     readonly db: string;
+    readonly authSource?: string;
+    readonly authMechanism?: string;
+    readonly ssl?: boolean;
+    readonly retryWrites?: boolean;
+    readonly srv?: boolean;
 }

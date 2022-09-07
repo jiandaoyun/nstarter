@@ -54,11 +54,17 @@ export class MongodbConnector {
     }
 
     private get mongoUri(): string {
-        const { db, servers, replicaSet } = this._options;
-        const server = servers.map((server) =>
-            `${ server.host }:${ server.port }`
-        ).join(',');
-        let uri = `mongodb://${ server }/${ db }`;
+        const { db, servers, replicaSet, srv } = this._options;
+        let uri;
+        // srv连接协议
+        if (srv) {
+            uri = `mongodb+srv://${ servers[0].host }/${ db }`;
+        } else {
+            const server = servers.map((server) =>
+                `${ server.host }:${ server.port }`
+            ).join(',');
+            uri = `mongodb://${ server }/${ db }`;
+        }
         // 扩展参数配置
         const queryParams: IMongodbQueryParams = {};
         if (replicaSet) {
@@ -75,8 +81,8 @@ export class MongodbConnector {
      * 获取数据库连接配置
      */
     private get connectionConf(): ConnectionOptions {
-        const { user, password, db, x509, timeoutMs } = this._options;
-        const baseConf = {
+        const { user, password, db, x509, timeoutMs, ssl, retryWrites, authSource, authMechanism } = this._options;
+        const baseConf: any = {
             user,
             serverSelectionTimeoutMS: timeoutMs || 10000,
             keepAlive: true,
@@ -86,6 +92,19 @@ export class MongodbConnector {
             useNewUrlParser: true,
             useUnifiedTopology: true
         };
+        /**
+         * Azure cosmosDB必须开启ssl
+         */
+        if (ssl) {
+            baseConf.ssl = true;
+        }
+        /**
+         * Azure cosmosDB必须将retryWrites设置成false，否则insert操作将失败
+         * @see https://github.com/microsoft/vscode-cosmosdb/issues/1343
+         */
+        if (retryWrites !== undefined) {
+            baseConf.retryWrites = retryWrites;
+        }
         if (x509 && !_isObjectEmpty(x509)) {
             // x509 认证方式
             return {
@@ -104,7 +123,8 @@ export class MongodbConnector {
             // 用户名密码认证
             return {
                 ...baseConf,
-                authSource: db,
+                authMechanism,
+                authSource: authSource ?? db,
                 pass: password
             };
         }

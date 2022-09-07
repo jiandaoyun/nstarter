@@ -90,6 +90,8 @@ mongodb:
     key: ./conf.d/mongodb.key
   timeoutMs: 10000
   db: database
+  ssl: true
+  retryWrites: true
 ```
 
 针对标准化的配置校验，nstarter-mongodb 提供了标准的 json schema 结构定义，可以按需应用，对相关配置进行校验，以保证服务连接启动的安全性。
