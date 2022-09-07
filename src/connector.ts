@@ -2,6 +2,7 @@ import fs from 'fs';
 import querystring from 'querystring';
 import { Logger } from 'nstarter-core';
 import mongoose, { Connection, ConnectionOptions, Promise } from 'mongoose';
+import mongooseAsyncHooks from '@mongoosejs/async-hooks';
 import { IMongodbConfig, IMongodbQueryParams } from './types';
 import { promisify } from 'util';
 import { RECONNECT_DELAY } from './constants';
@@ -21,6 +22,7 @@ export class MongodbConnector {
             this._name = name;
         }
         this.connection = mongoose.createConnection();
+        this.connection.plugin(mongooseAsyncHooks);
     }
 
     /**

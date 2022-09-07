@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.4
+
+* 注册 `@mongoosejs/async-hooks` 插件，避免 async-hook 丢失问题
+
 ## v0.2.3
 
 * 升级 nstarter-core -> 0.5.x
