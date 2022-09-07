@@ -1,6 +1,6 @@
 {
   "name": "nstarter-mongodb",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "nstarter Mongodb 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -20,6 +20,7 @@
     "nstarter-core": "^0.5.0"
   },
   "devDependencies": {
+    "@mongoosejs/async-hooks": "0.0.4",
     "@types/node": "^14.14.31",
     "eslint": "^7.32.0",
     "eslint-config-nstarter": "^2.1.2",

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.6
+
+* 注册 `@mongoosejs/async-hooks` 插件，避免 async-hook 丢失问题
+
 ## v0.2.5
 
 * 适配 Mongodb Atlas 连接协议
