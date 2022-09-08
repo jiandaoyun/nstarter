@@ -1,8 +1,8 @@
 import { AmqpConnector } from '../../src';
 
 describe('test: connector', () => {
-    it('alternative config', async() => {
-        const conf = {
+    it('alternative config', async () => {
+        const connector = new AmqpConnector({
             user: 'user',
             password: '89KfbL1Wa7bq7H9FbA4Xx3aR',
             brokers: [{
@@ -11,7 +11,6 @@ describe('test: connector', () => {
             protocol: 'amqp',
             heartbeatInterval: 120,
             reconnectInterval: 1
-        };
-        new AmqpConnector(conf);
+        });
     });
 });

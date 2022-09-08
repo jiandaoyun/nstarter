@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events';
-import retry from 'async-retry';
-import { Options } from 'amqplib';
+import { BaseContext, ContextProvider } from 'nstarter-core';
+import NsUtils from 'nstarter-utils';
+import { Options } from 'amqp-connection-manager';
 
+import retry from 'async-retry';
 import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RabbitProps, RetryMethod } from '../constants';
 import { IConsumerConfig, IQueueContext, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
-import { sleep } from '../utils';
-import { BaseContext, ContextProvider } from 'nstarter-core';
+
 
 const queueConsumerRegistry: RabbitMqConsumer<any>[] = [];
 
@@ -140,7 +141,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
         const waitStart = Date.now();
         // 队列中存在未消费完任务 且 等待未超时
         while (this._queue.length() > 0 && Date.now() - waitStart < timeoutMs) {
-            await sleep(1000);
+            await NsUtils.sleep(1000);
         }
         return this._queue.close();
     }

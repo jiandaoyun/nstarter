@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+* 升级 `amqplib`, `amqp-connection-manager` ，移除 `bluebird` 依赖，避免 async-hooks 传递影响
+* 提供 `AmqpConnector.connect()` 方法，用于同步建立 rabbitMq 连接
+
+* Breaking Changes: 
+  - `AmqpConnector` 连接对象创建后，不在自动建立连接，需要调用 connect 方法管理连接建立
+
 ## 0.4.2
 
 * 提供 AmqpConnectionManager 类型定义，用于扩展实现

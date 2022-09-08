@@ -1,8 +1,8 @@
 import chai from 'chai';
 
 import { AmqpConnector, queueFactory, } from '../../src';
-import { sleep } from '../../src/utils';
 import { rabbitmqConf } from '../config';
+import { sleep } from 'nstarter-utils';
 
 const expect = chai.expect;
 
@@ -13,19 +13,23 @@ describe('test: disconnect', () => {
         maxLength: 0
     };
 
-    it('disconnect', (done) => {
-        const amqp = new AmqpConnector(rabbitmqConf, (err) => {
+    it('disconnect', async () => {
+        const connector = new AmqpConnector(rabbitmqConf);
+        try {
+            await connector.connect();
+        } catch (err) {
             expect(err).to.exist;
-            amqp.connection.close();
-            return done();
-        });
-        queueFactory(amqp.connection, queueOptions);
+            await connector.connection.close();
+        }
+        queueFactory(connector.connection, queueOptions);
     });
 
     it('disconnect unhandle', async () => {
-        const amqp = new AmqpConnector(rabbitmqConf);
-        queueFactory(amqp.connection, queueOptions);
+        const connector = new AmqpConnector(rabbitmqConf);
+        await connector.connect();
+        const { connection } = connector;
+        queueFactory(connection, queueOptions);
         await sleep(500);
-        await amqp.connection.close();
+        await connection.close();
     });
 });
