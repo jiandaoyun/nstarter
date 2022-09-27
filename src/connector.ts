@@ -1,6 +1,5 @@
+import { EventEmitter } from 'events';
 import IORedis from 'ioredis';
-import _ from 'lodash';
-import { Logger } from 'nstarter-core';
 import { ILuaScriptConfig, IRedisConfig } from './types';
 
 /**
@@ -20,6 +19,7 @@ export class RedisConnector<T extends IRedis> {
     private readonly _options: IORedis.RedisOptions;
     private readonly _name: string = '';
     private readonly _isCluster: boolean | undefined;
+    private readonly _eventEmitter = new EventEmitter();
 
     constructor(options: IRedisConfig, name?: string) {
         this._isCluster = options.isCluster;
@@ -29,12 +29,13 @@ export class RedisConnector<T extends IRedis> {
         if (name) {
             this._name = name;
         }
-        const o = _.defaults({
+        const o = {
             retryStrategy: () => 1000,
-            enableReadyCheck: true
-        }, this._options);
+            enableReadyCheck: true,
+            ...this._options
+        };
         // 避免配置 minimize 清洗行为依赖
-        if (_.isEmpty(o.sentinels)) {
+        if (!o.sentinels || o.sentinels.length === 0) {
             o.sentinels = undefined;
         }
         // 开启ssl
@@ -51,14 +52,28 @@ export class RedisConnector<T extends IRedis> {
                 redisOptions: o
             }) as any as T;
             this._client.on('node error', (err) => {
-                Logger.error(`${ this._tag } connection error`, { err });
+                this._eventEmitter.emit('error', `${ this._tag } cluster connection error`, err);
             });
         } else {
             this._client = new IORedis(o) as any as T;
         }
         this._client.on('error', (err) => {
-            Logger.error(`${ this._tag } connection error`, { err });
+            this._eventEmitter.emit('error', `${ this._tag } connection error`, err);
         });
+    }
+
+    /**
+     * 监听error事件
+     */
+    public onError(listener: (errMsg: string, err: any) => void) {
+        this._eventEmitter.on('error', listener);
+    }
+
+    /**
+     * 监听ready事件
+     */
+    public onReady(listener: () => void) {
+        this._client.on('ready', listener);
     }
 
     /**
@@ -83,27 +98,13 @@ export class RedisConnector<T extends IRedis> {
     }
 
     /**
-     * once监听
-     */
-    public once(event: string, listener: () => void) {
-        this._client.once(event, listener);
-    }
-
-    /**
-     * on监听
-     */
-    public on(event: string, listener: () => void) {
-        this._client.on(event, listener);
-    }
-
-    /**
      * 装载lua脚本
      */
     public loadLuaScripts(configs: ILuaScriptConfig[]) {
-        _.forEach(configs, (luaConfig) => {
+        for (const luaConfig of configs) {
             const { name, numberOfKeys, lua } = luaConfig;
             this._client.defineCommand(name, { numberOfKeys, lua });
-        });
+        }
     }
 
     private get _tag(): string {
