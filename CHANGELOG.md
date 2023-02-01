@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.0
+
+* 框架基础依赖整体升级
+
+### Breaking
+* 升级 Node.js 版本要求 >= 18.12.0
+* 升级 typescript -> 4.9.5
+* 升级其他基础包
+
+
 ## v0.6.0
 
 * Component 支持异步初始化
