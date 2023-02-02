@@ -7,7 +7,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
     }
     environment {
-        NODE_VERSION = 'v14.18.1'
+        NODE_VERSION = 'v18.13.0'
         NODE_MIRROR = 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/'
     }
     stages {

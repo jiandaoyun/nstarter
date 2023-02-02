@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "node16",
         "esModuleInterop": true,
-        "lib": ["es2020"],
-        "target": "es2020",
+        "lib": ["ES2021"],
+        "target": "es2021",
         "noImplicitAny": true,
         "allowJs": true,
         "checkJs": false,
