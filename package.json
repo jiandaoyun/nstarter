@@ -1,6 +1,6 @@
 {
   "name": "nstarter-core",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "The core package for nstarter projects.",
   "license": "MIT",
   "repository": {

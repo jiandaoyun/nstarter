@@ -1,12 +1,9 @@
 # Changelog
 
-## v0.7.1
-
-* 升级 tsconfig 规则，输出 API 兼容性版本升级至 ES2021
-
-## v0.7.0
+## v1.0.0
 
 * 框架基础依赖整体升级
+* 升级 tsconfig 规则，输出 API 兼容性版本升级至 ES2021
 
 ### Breaking
 * 升级 Node.js 版本要求 >= 18.12.0
