@@ -1,20 +1,14 @@
 #!/usr/bin/env node
-'use strict';
+import path from 'path';
+import { program } from 'commander';
+import ora from 'ora';
+import chalk from 'chalk';
 
-const path = require('path');
-const process = require('process');
-const program = require('commander');
-const ora = require('ora');
-const chalk = require('chalk');
-const output = require('madge/lib/output');
-
-const version = require('../package.json').version;
-const Checker = require('../lib/checker');
-
-const startTime = Date.now();
+import output from 'madge/lib/output.js';
+import { CircularChecker, pkg } from '../lib/index.js';
 
 program
-    .version(version)
+    .version(pkg.version)
     .usage('[options] <src...>')
     .option('-b, --basedir <path>', 'base directory for resolving paths')
     .option('-x, --exclude <regexp>', 'exclude modules using RegExp')
@@ -25,115 +19,114 @@ program
     .option('--no-color', 'disable color in output and image', false)
     .option('--no-spinner', 'disable progress spinner', false)
     .option('--warning', 'show warnings about skipped files', false)
-    .option('--debug', 'turn on debug output', false)
-    .parse(process.argv);
+    .option('--debug', 'turn on debug output', false);
 
-if (!program.args.length) {
-    console.log(program.helpInformation());
-    process.exit(1);
-}
+/**
+ * 获取 CLI 配置参数
+ * @returns {OptionValues}
+ */
+const getOptions = () => {
+    program.parse();
+    const options = program.opts();
 
-if (program.debug) {
-    process.env.DEBUG = '*';
-}
-
-if (!program.color) {
-    process.env.DEBUG_COLORS = false;
-}
-
-const config = {};
-
-program.options.forEach((opt) => {
-    const name = opt.name();
-
-    if (program[name]) {
-        config[name] = program[name];
+    if (program.args?.length < 1) {
+        console.log(program.helpInformation());
+        process.exit(1);
     }
-});
+    options.src = program.args[0];
 
-const spinner = ora({
-    text: 'Finding files',
-    color: 'white',
-    interval: 100000,
-    isEnabled: program.spinner
-});
+    if (options.debug) {
+        process.env.DEBUG = '*';
+    }
+    if (!options.color) {
+        process.env.DEBUG_COLORS = false;
+    }
+    return options;
+};
 
-let exitCode = 0;
-
-if (program.basedir) {
-    config.baseDir = program.basedir;
-}
-
-if (program.exclude) {
-    config.excludeRegExp = [program.exclude];
-}
-
-if (program.extensions) {
-    config.fileExtensions = program.extensions.split(',').map((s) => s.trim());
-}
-
-function dependencyFilter() {
+const dependencyFilter = (options) => {
     let prevFile;
-
     return (dependencyFilePath, traversedFilePath, baseDir) => {
         if (prevFile !== traversedFilePath) {
             const relPath = path.relative(baseDir, traversedFilePath);
             const dir = path.dirname(relPath) + '/';
             const file = path.basename(relPath);
 
-            if (program.spinner) {
+            if (options.spinner) {
                 spinner.text = chalk.grey(dir) + chalk.cyan(file);
                 spinner.render();
             }
             prevFile = traversedFilePath;
         }
     };
+};
+
+/**
+ * 生成循环依赖检查配置参数
+ * @param options
+ * @returns {{}}
+ */
+const getCheckConfig = (options) => {
+    const config = {};
+    if (options.basedir) {
+        config.baseDir = options.basedir;
+    }
+    // 排除规则
+    if (options.exclude) {
+        config.excludeRegExp = [options.exclude];
+    }
+    // 扩展名
+    if (options.extensions) {
+        config.fileExtensions = options.extensions.split(',').map((s) => s.trim());
+    }
+    if (!options.json) {
+        config.dependencyFilter = dependencyFilter(options);
+    }
+    return config;
+};
+
+const options = getOptions();
+
+let spinner;
+if (options.spinner && !options.json) {
+    spinner = ora({
+        text: 'Finding files',
+        color: 'white',
+        interval: 100000,
+        isEnabled: options.spinner
+    });
 }
 
-new Promise((resolve, reject) => {
-    resolve(program.args);
-})
-    .then((src) => {
-        if (!program.json && !program.dot) {
-            spinner.start();
-            config.dependencyFilter = dependencyFilter();
-        }
-
-        return new Checker(src, config);
-    })
-    .then((checker) => {
-        if (!program.json && !program.dot) {
-            spinner.stop();
-            output.getResultSummary(checker.madge, startTime);
-        }
-
-        const circular = checker.circular() || [];
-        output.circular(spinner, checker.madge, circular, {
-            json: program.json
-        });
-
-        if (circular.length) {
-            exitCode = 1;
-        }
-
-        if (program.image) {
-            return checker.image(program.image).then((imagePath) => {
-                spinner.succeed(`${chalk.bold('Image created at')} ${chalk.cyan.bold(imagePath)}`);
-                return checker;
-            });
-        }
-
-        return checker;
-    })
-    .then((checker) => {
-        if (program.warning && !program.json) {
-            output.warnings(checker.madge);
-        }
-
-        process.exit(exitCode);
-    })
-    .catch((err) => {
-        spinner.stop();
-        console.log('\n%s %s\n', chalk.red('✖'), err.stack);
-        process.exit(1);
+let exitCode = 0;
+const startTime = Date.now();
+try {
+    spinner?.start();
+    const checker = new CircularChecker(options.src, getCheckConfig(options));
+    await checker.check();
+    spinner?.stop();
+    // 以 json 形式输出
+    if (!options.json) {
+        output.getResultSummary(checker.madge, startTime);
+    }
+    const circular = checker.circular() || [];
+    spinner && output.circular(spinner, checker.madge, circular, {
+        json: options.json
     });
+    // 存在循环依赖
+    if (circular.length > 0) {
+        exitCode = 1;
+    }
+    // 绘制拓扑图
+    if (options.image) {
+        const imagePath = await checker.image(options.image);
+        spinner?.succeed(`${ chalk.bold('Image created at') } ${ chalk.cyan.bold(imagePath) }`);
+    }
+    if (options.warning && !options.json) {
+        output.warnings(checker.madge);
+    }
+    process.exit(exitCode);
+} catch (err) {
+    spinner?.stop();
+    console.log('\n%s %s\n', chalk.red('✖'), err.stack);
+    process.exit(1);
+}
