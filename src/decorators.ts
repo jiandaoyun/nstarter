@@ -43,7 +43,7 @@ export function transaction(options?: TransactionOptions, connection = defaultCo
                 readPreference: 'primary',
                 ...options
             });
-            session.endSession();
+            await session.endSession();
             return result;
         };
     };

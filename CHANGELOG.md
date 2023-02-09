@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.0
+
+* 升级 nstarter 框架，适配 nstarter-core 1.0
+* 升级 mongoose 依赖 -> 6.9.x+
+  * 驱动连接层 `useNewUrlParser`, `useUnifiedTopology`, `useCreateIndex` 始终为 `true`，不再需要额外配置
+  * X.509 证书改由驱动层直接加载
+
+### Breaking
+* 升级 Node.js 版本要求 >= 18.12.0
+* 升级 typescript -> 4.9.5
+
 ## v0.2.6
 
 * 注册 `@mongoosejs/async-hooks` 插件，避免 async-hook 丢失问题

@@ -1,7 +1,6 @@
-import fs from 'fs';
 import querystring from 'querystring';
 import { Logger } from 'nstarter-core';
-import mongoose, { Connection, ConnectionOptions, Promise } from 'mongoose';
+import mongoose, { Connection, ConnectOptions, Promise } from 'mongoose';
 import mongooseAsyncHooks from '@mongoosejs/async-hooks';
 import { IMongodbConfig, IMongodbQueryParams } from './types';
 import { promisify } from 'util';
@@ -31,10 +30,10 @@ export class MongodbConnector {
     public connect() {
         return this._connectDatabase().then(() => {
             this.connection.on('disconnected', () => {
-                Logger.error(`${ this._tag } 数据库连接已断开`);
+                Logger.error(`${ this._tag } mongodb server disconnected`);
             });
             this.connection.on('reconnected', () => {
-                Logger.error(`${ this._tag } 数据库连接已恢复`);
+                Logger.warn(`${ this._tag } mongodb server reconnected`);
             });
         });
     }
@@ -47,7 +46,7 @@ export class MongodbConnector {
         try {
             await this.connection.openUri(this.mongoUri, this.connectionConf);
         } catch (err) {
-            Logger.error(`${ this._tag } 数据库连接建立失败，重试连接`, { error: err });
+            Logger.error(`${ this._tag } mongodb connection failed, retrying...`, { error: err });
             await promisify(setTimeout)(RECONNECT_DELAY);
             await this._connectDatabase();
         }
@@ -80,17 +79,14 @@ export class MongodbConnector {
     /**
      * 获取数据库连接配置
      */
-    private get connectionConf(): ConnectionOptions {
+    private get connectionConf(): ConnectOptions {
         const { user, password, db, x509, timeoutMs, ssl, retryWrites, authSource, authMechanism } = this._options;
-        const baseConf: any = {
+        const baseConf: ConnectOptions = {
             user,
             serverSelectionTimeoutMS: timeoutMs || 10000,
             keepAlive: true,
             keepAliveInitialDelay: 300000,
-            socketTimeoutMS: 0,
-            useCreateIndex: true,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+            socketTimeoutMS: 0
         };
         /**
          * Azure cosmosDB必须开启ssl
@@ -114,10 +110,9 @@ export class MongodbConnector {
                 ssl: true,
                 sslValidate: true,
                 // 加载证书，如出现异常，直接中断退出
-                sslCA: [fs.readFileSync(x509.ca)],
-                sslCert: fs.readFileSync(x509.cert),
-                sslKey: fs.readFileSync(x509.key),
-                checkServerIdentity: false
+                sslCA: x509.ca,
+                sslCert: x509.cert,
+                sslKey: x509.key
             };
         } else {
             // 用户名密码认证

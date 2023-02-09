@@ -1,4 +1,5 @@
 import { ParsedUrlQueryInput } from 'querystring';
+import { AuthMechanism } from 'mongodb';
 
 export interface IMongodbQueryParams extends ParsedUrlQueryInput {
     replicaSet?: string;
@@ -24,7 +25,7 @@ export interface IMongodbConfig {
     readonly timeoutMs?: number;
     readonly db: string;
     readonly authSource?: string;
-    readonly authMechanism?: string;
+    readonly authMechanism?: AuthMechanism;
     readonly ssl?: boolean;
     readonly retryWrites?: boolean;
     readonly srv?: boolean;
