@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+* 基础依赖整体升级
+* ajv v6 -> v8
+  * https://github.com/ajv-validator/ajv/blob/0c40ebfa937d1d9cc01b4c5f06e7edfc4cfd5b00/docs/v6-to-v8-migration.md
+* 预定义类型新增引入 ajv-formats 管理
+
+### Breaking
+* 升级 Node.js 版本要求 >= 18.12.0
+* 升级 typescript -> 4.9.5
+* 升级其他基础包
+
 ## 0.2.4
 
 * 支持实体对象使用 _isValid 属性

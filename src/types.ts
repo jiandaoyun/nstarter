@@ -1,5 +1,5 @@
-import { FormatValidator } from 'ajv';
+import { Format } from 'ajv';
 
 export interface ISchemaFormats {
-    [format: string]: FormatValidator;
+    [format: string]: Format;
 }

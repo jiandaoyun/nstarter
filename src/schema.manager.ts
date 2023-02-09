@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import Ajv, { ValidateFunction } from 'ajv';
+import addDefaultFormats from "ajv-formats";
 import { Definition } from 'typescript-json-schema';
 import { ISchemaFormats } from './types';
 
@@ -9,9 +10,9 @@ import { ISchemaFormats } from './types';
 export class SchemaManager {
     private static instance: SchemaManager;
 
-    private readonly _ajv: Ajv.Ajv;
+    private readonly _ajv: Ajv;
     private readonly _schemaValidatorMap: {
-        [key: string]: Ajv.ValidateFunction
+        [key: string]: ValidateFunction
     } = {};
     private _schemaDefinitionMap: {
         [key: string]: Definition
@@ -34,6 +35,8 @@ export class SchemaManager {
             removeAdditional: true,
             $data: true
         });
+        // 注入 ajv-formats 的预定义类型定义
+        addDefaultFormats(this._ajv);
     }
 
     /**

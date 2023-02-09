@@ -1,10 +1,12 @@
 module.exports = {
     extends: [
-        "nstarter/node",
+        "nstarter",
         "nstarter/typescript",
     ],
     rules: {
         "max-depth": ["error", 6]
     },
-    root: true
+    globals: {
+        Constructor: "readable"
+    }
 };

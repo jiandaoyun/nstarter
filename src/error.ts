@@ -12,7 +12,7 @@ export class ValidationError extends Error {
         this.name = this.constructor.name;
         const name = entity.constructor.name;
         const messages = errors?.map((errInfo) =>
-            `\t- ${ name }${ errInfo.dataPath } ${ errInfo.message }`
+            `\t- ${ name }${ errInfo.instancePath } ${ errInfo.message }`
         );
         this.message = `Failed to validate object "${ name }".\n${ messages?.join('\n') }`;
         this.meta = { errors, ...meta };
