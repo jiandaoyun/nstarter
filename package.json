@@ -1,6 +1,6 @@
 {
   "name": "nstarter-mongodb",
-  "version": "0.3.0-beta1",
+  "version": "0.3.0",
   "description": "nstarter Mongodb 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -14,13 +14,14 @@
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@mongoosejs/async-hooks": "0.0.4"
+  },
   "peerDependencies": {
     "mongoose": ">=6.9.0 <7.0.0",
     "nstarter-core": ">=1.0.0 <2.0.0"
   },
   "devDependencies": {
-    "@mongoosejs/async-hooks": "0.0.4",
     "@types/node": "^18.11.18",
     "eslint": "^8.33.0",
     "eslint-config-nstarter": "^3.0.0",

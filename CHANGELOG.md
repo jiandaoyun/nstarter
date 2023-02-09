@@ -6,6 +6,7 @@
 * 升级 mongoose 依赖 -> 6.9.x+
   * 驱动连接层 `useNewUrlParser`, `useUnifiedTopology`, `useCreateIndex` 始终为 `true`，不再需要额外配置
   * X.509 证书改由驱动层直接加载
+  > https://mongoosejs.com/docs/migrating_to_6.html
 
 ### Breaking
 * 升级 Node.js 版本要求 >= 18.12.0

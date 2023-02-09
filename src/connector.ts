@@ -86,7 +86,9 @@ export class MongodbConnector {
             serverSelectionTimeoutMS: timeoutMs || 10000,
             keepAlive: true,
             keepAliveInitialDelay: 300000,
-            socketTimeoutMS: 0
+            socketTimeoutMS: 0,
+            // @see https://github.com/mongodb/node-mongodb-native/blob/4.1/docs/CHANGES_4.0.0.md#connection-pool-options
+            maxPoolSize: 10
         };
         /**
          * Azure cosmosDB必须开启ssl
