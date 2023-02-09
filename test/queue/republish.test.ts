@@ -9,8 +9,8 @@ import {
     RetryMethod
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
-import { sleep } from '../../src/utils';
 import { BaseContext, ContextProvider } from 'nstarter-core';
+import { sleep } from 'nstarter-utils';
 
 const expect = chai.expect;
 
