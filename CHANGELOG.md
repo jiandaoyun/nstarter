@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 
+
+* 移除额外的 nstarter-utils 依赖
+
 ## 0.6.0
 * 升级 nstarter 框架，适配 nstarter-core 1.0
 * 升级基础依赖
