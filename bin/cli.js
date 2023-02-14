@@ -16,8 +16,8 @@ program
     .option('-i, --image <file>', 'write graph to file as an image')
     .option('-l, --layout <name>', 'layout engine to use for graph (dot/neato/fdp/sfdp/twopi/circo)')
     .option('--extensions <list>', 'comma separated string of valid file extensions')
-    .option('--no-color', 'disable color in output and image', false)
-    .option('--no-spinner', 'disable progress spinner', false)
+    .option('--no-color', 'disable color in output and image', true)
+    .option('--no-spinner', 'disable progress spinner', true)
     .option('--warning', 'show warnings about skipped files', false)
     .option('--debug', 'turn on debug output', false);
 
