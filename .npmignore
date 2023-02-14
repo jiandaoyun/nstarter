@@ -17,8 +17,11 @@ coverage/
 
 test/
 
+Dockerfile
+makefile
 jenkinsfile.gvy
 
 /lint/
+/report/
 /.eslintignore
 /.eslintrc.js

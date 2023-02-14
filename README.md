@@ -21,7 +21,7 @@ import { RedisConnector } from 'nstarter-redis';
 
 @component()
 export class RedisComponent extends BaseComponent {
-    private readonly _redis: RedisConnector<RedisAdapter>;
+    private readonly _redis: RedisConnector;
 
     constructor() {
         super();
@@ -37,7 +37,7 @@ export class RedisComponent extends BaseComponent {
     }
 
     public get redis() {
-        return this._redis.getClient();
+        return this._redis.getClient<RedisAdapter>();
     }
 
     public async shutdown() {
