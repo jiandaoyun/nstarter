@@ -2,7 +2,7 @@
  * redis 连接配置
  */
 export interface IRedisConfig {
-    readonly name?: string;
+    readonly username?: string;
     readonly password?: string;
     readonly host?: string;
     readonly port?: number;
@@ -18,6 +18,7 @@ export interface IRedisConfig {
     }[];
     readonly db?: number;
     readonly ssl?: boolean;
+    readonly lazyConnect?: boolean;
     readonly isCluster?: boolean;
 }
 
