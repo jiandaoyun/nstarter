@@ -1,79 +1,67 @@
 import { EventEmitter } from 'events';
-import IORedis from 'ioredis';
+import { Cluster, Redis, RedisOptions } from 'ioredis';
 import { ILuaScriptConfig, IRedisConfig } from './types';
 
 /**
  * redis实例代理
  */
-export interface IRedis extends IORedis.Redis {
-
+export interface IRedis extends Redis {
     duplicate: () => IRedis;
+}
 
+export declare interface RedisConnector {
+    on: // 连接建立
+        ((event: 'ready', listener: () => void) => this) &
+        // 连接出现异常错误
+        ((event: 'error', listener: (err: Error) => void) => this);
 }
 
 /**
  * redis 连接实现
  */
-export class RedisConnector<T extends IRedis> extends EventEmitter {
-    private readonly _client: T;
-    private readonly _options: IORedis.RedisOptions;
-    private readonly _name: string = '';
+export class RedisConnector extends EventEmitter {
+    private readonly _client: Redis | Cluster;
     private readonly _isCluster: boolean | undefined;
 
-    constructor(options: IRedisConfig, name?: string) {
+    constructor(config: IRedisConfig) {
         super();
-        this._isCluster = options.isCluster;
-        this._options = {
-            ...options
-        };
-        if (name) {
-            this._name = name;
-        }
-        const o = {
+        this._isCluster = config.isCluster;
+        const options: RedisOptions = {
+            username: config.username,
+            password: config.password,
+            host: config.host,
+            port: config.port,
+            db: config.db,
+            tls: config.ssl ? {} : undefined,
+            lazyConnect: config.lazyConnect,
+            sentinels: config.sentinels?.length === 0 ?
+                undefined : config.sentinels,
             retryStrategy: () => 1000,
             enableReadyCheck: true,
-            ...this._options
         };
-        // 避免配置 minimize 清洗行为依赖
-        if (!o.sentinels || o.sentinels.length === 0) {
-            o.sentinels = undefined;
-        }
-        // 开启ssl
-        if (options.ssl) {
-            o.tls = {};
-        }
-        // 集群模式
         if (this._isCluster) {
-            this._client = new IORedis.Cluster([{
-                host: options.host,
-                port: options.port
+            // 集群模式
+            this._client = new Cluster([{
+                host: config.host,
+                port: config.port
             }], {
                 slotsRefreshTimeout: 3000,
-                redisOptions: o
-            }) as any as T;
+                redisOptions: options
+            });
             this._client.on('node error', (err) => {
-                this.emit('error', `${ this._tag } cluster connection error`, err);
+                this.emit('error', err);
             });
         } else {
-            this._client = new IORedis(o) as any as T;
+            // 单节点 | sentinel 模式
+            this._client = new Redis(options);
+            this._client.on('error', (err) => {
+                this.emit('error', err);
+            });
         }
-        this._client.on('error', (err) => {
-            this.emit('error', `${ this._tag } connection error`, err);
+        //
+        this._client.on('ready', () => {
+            this.emit('ready');
         });
-    }
-
-    /**
-     * 监听error事件
-     */
-    public onError(listener: (errMsg: string, err: any) => void) {
-        this.on('error', listener);
-    }
-
-    /**
-     * 监听ready事件
-     */
-    public onReady(listener: () => void) {
-        this._client.on('ready', listener);
     }
 
     /**
@@ -84,10 +72,18 @@ export class RedisConnector<T extends IRedis> extends EventEmitter {
     }
 
     /**
-     * redis实例
+     * 获取 redis 实例
      */
-    public getClient() {
-        return this._client;
+    public getClient<T extends IRedis>(): T {
+        // 兼容类型扩展，允许通过外部类型定义注册 lua 方法类型
+        return this._client as any as T;
+    }
+
+    /**
+     * 建立 redis 连接 (lazyConnect 模式下使用)
+     */
+    public async connect() {
+        await this._client.connect();
     }
 
     /**
@@ -105,9 +101,5 @@ export class RedisConnector<T extends IRedis> extends EventEmitter {
             const { name, numberOfKeys, lua } = luaConfig;
             this._client.defineCommand(name, { numberOfKeys, lua });
         }
-    }
-
-    private get _tag(): string {
-        return `Redis${ this._name ? `:${ this._name }` : '' }`;
     }
 }
