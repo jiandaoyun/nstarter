@@ -2,8 +2,11 @@ import { EventEmitter } from 'events';
 import { Cluster, Redis, RedisOptions } from 'ioredis';
 import { ILuaScriptConfig, IRedisConfig } from './types';
 
+/**
+ * redis实例代理
+ */
 export interface IRedis extends Redis {
-
+    duplicate: () => IRedis;
 }
 
 export declare interface RedisConnector {
