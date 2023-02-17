@@ -14,7 +14,7 @@
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
     "prestart": "tsc --build tsconfig.json",
-    "start": "node --experimental-specifier-resolution=node ./dist/index.js",
+    "start": "node --no-warnings --experimental-specifier-resolution=node ./dist/index.js",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.cjs ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
