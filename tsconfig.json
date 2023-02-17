@@ -1,3 +1,6 @@
 {
-  "extends": "nstarter-tsconfig"
+  "extends": "nstarter-tsconfig",
+  "compilerOptions": {
+    "module": "ES2020"
+  }
 }

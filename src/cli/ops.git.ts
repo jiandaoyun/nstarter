@@ -1,5 +1,5 @@
 import simpleGit, { outputHandler, SimpleGit } from 'simple-git';
-import { logger } from '../logger';
+import { Logger } from 'nstarter-core';
 import { formatStdOutput } from '../utils';
 
 /**
@@ -7,9 +7,9 @@ import { formatStdOutput } from '../utils';
  * @private
  */
 const _gitLogHandler: outputHandler = (cmd, stdout, stderr) => {
-    logger.debug(cmd);
-    stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
-    stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
+    Logger.debug(cmd);
+    stdout.on('data', (data) => Logger.debug(formatStdOutput(data)));
+    stderr.on('data', (data) => Logger.warn(formatStdOutput(data)));
 };
 
 /**
@@ -24,7 +24,7 @@ const _initGit = async (templatePath?: string): Promise<SimpleGit|undefined> => 
     }
     // 检查 git 仓库有效
     if (!await git.checkIsRepo()) {
-        logger.warn(`"${ templatePath }" is not a git repository.`);
+        Logger.warn(`"${ templatePath }" is not a git repository.`);
         return;
     }
     return git;

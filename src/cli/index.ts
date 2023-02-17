@@ -1,17 +1,18 @@
 import _ from 'lodash';
 import yargs from 'yargs';
+import { LogLevel } from 'nstarter-core';
 
-import { logger, LogLevel } from '../logger';
 import { DeployOperations } from './ops.deploy';
 import { config } from '../config';
 import { ALL_TEMPLATE_TAG, CLI_NAME } from '../constants';
 import { clearTemplate, listTemplates, removeTemplate, updateTemplate } from './ops.template';
+import { setLogLevel } from '../logger';
 
 /**
  * 命令执行入口
  */
 export const runCli = () => {
-    const argv = yargs
+    const argv = yargs(process.argv)
         // 执行部署
         .command(
             '$0 deploy [target]',
@@ -120,7 +121,6 @@ export const runCli = () => {
         .version(config.version)
         .detectLocale(false)
         .argv as any;
-    if (argv.v) {
-        logger.setLevel(LogLevel.debug);
-    }
+    const logLevel = argv.v ? LogLevel.debug : LogLevel.info;
+    setLogLevel(logLevel);
 };

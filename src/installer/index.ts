@@ -2,11 +2,11 @@ import _ from 'lodash';
 import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';
-import { safeLoad } from 'js-yaml';
+import yaml from 'js-yaml';
 import moment from 'moment-timezone';
+import { Logger } from 'nstarter-core';
 
 import { ProjectModuleGroup } from './module.group';
-import { logger } from '../logger';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
 import { IDeployConf } from '../types/cli';
@@ -34,11 +34,11 @@ export class ProjectInstaller {
         this._projectSrc = path.join(src, './template/');
         const moduleConf = path.join(src, './module.conf.yml');
         if (!fs.pathExistsSync(moduleConf)) {
-            logger.error(`Module config file not found at "${ moduleConf }"`);
+            Logger.error(`Module config file not found at "${ moduleConf }"`);
             this.isValid = false;
             return;
         }
-        this._options = safeLoad(fs.readFileSync(moduleConf, 'utf-8')) as IProjectConf;
+        this._options = yaml.load(fs.readFileSync(moduleConf, 'utf-8')) as IProjectConf;
         this._loadModuleGroups();
         this._loadModules();
     }
@@ -50,7 +50,7 @@ export class ProjectInstaller {
     private _loadModuleGroups() {
         const o = this._options;
         if (!o.module_types) {
-            logger.debug(`Template module groups not defined.`);
+            Logger.debug(`Template module groups not defined.`);
             return;
         }
         const moduleGroups = _.concat(o.module_types, {
@@ -61,7 +61,7 @@ export class ProjectInstaller {
             const group = new ProjectModuleGroup(groupConf);
             if (group.isValid) {
                 if (this._moduleGroupMap[group.name]) {
-                    logger.warn(`Module group "${ group.name }" already loaded.`);
+                    Logger.warn(`Module group "${ group.name }" already loaded.`);
                     return;
                 }
                 this._moduleGroups.push(group);
@@ -77,14 +77,14 @@ export class ProjectInstaller {
     private _loadModules() {
         const o = this._options;
         if (!o.module_types) {
-            logger.debug(`Template modules is not defined.`);
+            Logger.debug(`Template modules is not defined.`);
             return;
         }
         _.forEach(o.modules, (moduleConf: IModuleConf) => {
             const module = new ProjectModule(moduleConf);
             if (module.isValid) {
                 if (this._moduleMap[module.name]) {
-                    logger.warn(`Template module "${ module.name }" already loaded.`);
+                    Logger.warn(`Template module "${ module.name }" already loaded.`);
                     return;
                 }
                 this._moduleMap[module.name] = module;
@@ -137,14 +137,14 @@ export class ProjectInstaller {
     }
 
     public npmInitialize(options: IDeployConf, callback: Callback) {
-        logger.info('run npm install');
+        Logger.info('run npm install');
         const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
         const npmProc = spawn(npmCmd, ['install'], {
             cwd: options.workdir,
             stdio: 'pipe'
         });
-        npmProc.stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
-        npmProc.stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
+        npmProc.stdout.on('data', (data) => Logger.debug(formatStdOutput(data)));
+        npmProc.stderr.on('data', (data) => Logger.warn(formatStdOutput(data)));
         npmProc.once('exit', (code) => {
             if (code !== 0) {
                 return callback(new Error('npm install failed'));

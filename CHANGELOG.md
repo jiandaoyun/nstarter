@@ -1,5 +1,13 @@
 # Changelog
 
+### v0.6.0
+
+* 升级 node.js 兼容性版本 >= 18.x
+* 引入 nstarter-core 组件
+  - 使用标准 Logger 取代自定义实现
+* 基础依赖升级
+* 使用 esm 模块发布
+
 ### v0.5.0
 
 * 升级 node.js 兼容性版本 >= 14.x

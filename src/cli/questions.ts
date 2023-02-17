@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import fs from 'fs-extra';
-import { Question, Separator, ChoiceType } from 'inquirer';
+import inquirer, { ChoiceCollection, QuestionCollection } from 'inquirer';
 import { ProjectInstaller } from '../installer';
 import { IDeployArguments, IDeployConf } from '../types/cli';
 import { config } from '../config';
@@ -10,7 +10,7 @@ import { DEFAULT_TEMPLATE_TAG } from '../constants';
  * 获取模板选择交互问题
  * @param args
  */
-export const getTemplateQuestions = (args: IDeployArguments): Question[] =>
+export const getTemplateQuestions = (args: IDeployArguments): QuestionCollection =>
     [{
         name: 'template',
         type: 'list',
@@ -25,7 +25,7 @@ export const getTemplateQuestions = (args: IDeployArguments): Question[] =>
  * 获取模板更新确认交互问题
  * @param args
  */
-export const getTemplateUpdateQuestions = (args: IDeployArguments): Question[] =>
+export const getTemplateUpdateQuestions = (args: IDeployArguments): QuestionCollection =>
     [{
         type: 'confirm',
         name: 'update',
@@ -39,14 +39,14 @@ export const getTemplateUpdateQuestions = (args: IDeployArguments): Question[] =
  * @param args
  * @param project
  */
-export const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): Question[] => {
-    const moduleChoices: ChoiceType[] = [];
+export const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): QuestionCollection => {
+    const moduleChoices: ChoiceCollection = [];
     const moduleLabelMap: Record<string, string> = {};
     const moduleDependencyMap: Record<string, string[]> = {};
     _.forEach(project.moduleGroups, (group) => {
         // 模块分隔符
         if (!_.isEmpty(group.modules)) {
-            moduleChoices.push(new Separator(`- ${ group.label }`));
+            moduleChoices.push(new inquirer.Separator(`- ${ group.label }`));
         }
         _.forEach(group.modules, (module) => {
             // 读取并增加模块选项
@@ -104,8 +104,8 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
         type: 'checkbox',
         name: 'modules',
         message: 'Select modules:',
-        when: _.size(moduleChoices) > 0,
-        pageSize: _.size(moduleChoices),
+        when: moduleChoices.length > 0,
+        pageSize: moduleChoices.length,
         choices: moduleChoices,
         validate: (selected: string[]) => {
             // 模块依赖校验

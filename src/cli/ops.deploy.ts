@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { promisify } from 'util';
 import { createPromptModule, PromptModule } from 'inquirer';
+import { Logger } from 'nstarter-core';
 
 import { getDeployQuestions, getTemplateQuestions, getTemplateUpdateQuestions, npmInstallQuestions } from './questions';
 import { ProjectInstaller } from '../installer';
-import { logger } from '../logger';
 import { IDeployArguments, IDeployConf, INpmInstallConf, ITemplateConf } from '../types/cli';
 import { prepareTemplate, updateTemplate } from './ops.template';
 import { gitCheckTemplateVersion } from './ops.git';
@@ -35,7 +35,7 @@ export class DeployOperations {
     public async selectTemplate() {
         let templateTag = this._args.template;
         if (templateTag && !config.isTemplateExisted(templateTag)) {
-            logger.warn(`Template "${ templateTag }" is not defined.`);
+            Logger.warn(`Template "${ templateTag }" is not defined.`);
             templateTag = undefined;
         }
         if (!templateTag) {
@@ -46,13 +46,13 @@ export class DeployOperations {
         // 检查是否需要更新
         const rev = await gitCheckTemplateVersion(config.getTemplatePath(templateTag));
         if (!rev) {
-            logger.warn(`Template "${ templateTag }" is not up-to-date.`);
+            Logger.warn(`Template "${ templateTag }" is not up-to-date.`);
             const answers = await this._prompt(getTemplateUpdateQuestions(this._args));
             if (answers.update) {
                 await updateTemplate(templateTag);
             }
         } else {
-            logger.debug(`Template "${ templateTag }" is up-to-date.`);
+            Logger.debug(`Template "${ templateTag }" is up-to-date.`);
         }
         this._project = new ProjectInstaller(templateTag);
     }
@@ -84,8 +84,8 @@ export class DeployOperations {
             }
             // 确认是否需要安装 npm
             const answers = await this._prompt(npmInstallQuestions) as INpmInstallConf;
-            if (answers.npm === false) {
-                logger.info('Skip npm install by user.');
+            if (!answers.npm) {
+                Logger.info('Skip npm install by user.');
                 return;
             }
         }
@@ -99,6 +99,6 @@ export class DeployOperations {
         await this.selectTemplate();
         await this.projectDeploy();
         await this.projectNpmInstall();
-        logger.info('deploy job finished.');
+        Logger.info('deploy job finished.');
     }
 }

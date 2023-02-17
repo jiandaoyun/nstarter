@@ -1,33 +1,7 @@
 import os from 'os';
+import { Logger, LogLevel } from 'nstarter-core';
 import winston, { format } from 'winston';
-import Transport from 'winston-transport';
-import RotateFileTransport, {
-    DailyRotateFileTransportOptions
-} from 'winston-daily-rotate-file';
-
-export enum LogLevel {
-    debug = 'debug',
-    info = 'info',
-    warn = 'warn',
-    error = 'error'
-}
-
-const levelConf = {
-    levels: {
-        error: 20,
-        warn: 50,
-        info: 80,
-        debug: 90
-    },
-    colors: {
-        debug: 'cyan',
-        info: 'green',
-        warn: 'yellow',
-        error: 'red'
-    }
-};
-
-const transports: Transport[] = [];
+import RotateFileTransport from 'winston-daily-rotate-file';
 
 // 自定义日志格式化
 const formatter = format.printf((info) => {
@@ -55,10 +29,9 @@ const consoleTransport = new winston.transports.Console({
         formatter
     )
 });
-transports.push(consoleTransport);
 
 // 文件日志输出
-const baseFileLogOptions: DailyRotateFileTransportOptions = {
+const baseFileLogOptions = {
     dirname: './log/',
     zippedArchive: true,
     maxFiles: 1
@@ -74,51 +47,19 @@ const fileTransport = new RotateFileTransport({
         formatter
     )
 });
-transports.push(fileTransport);
-
-type LogMessage = string | Error;
-
-winston.addColors(levelConf.colors);
 
 /**
- * 日志管理
+ * 初始化日志组件
  */
-class Logger {
-    private _logger = winston.createLogger({
-        transports,
-        levels: levelConf.levels,
-        exitOnError: false
-    });
+export const initLogger = () => {
+    Logger.registerTransport(consoleTransport);
+    Logger.registerTransport(fileTransport);
+};
 
-    private _log(level: string, msg: LogMessage, meta?: object) {
-        if (typeof msg === 'string') {
-            // 字符串日志
-            this._logger.log(level, msg, meta);
-        } else {
-            // 错误日志
-            this._logger.log(level, msg.message, { ...meta, error: msg });
-        }
-    }
-
-    public setLevel(level: LogLevel) {
-        consoleTransport.level = level;
-    }
-
-    public debug(msg: LogMessage, meta?: object) {
-        this._log(LogLevel.debug, msg, meta);
-    }
-
-    public info(msg: LogMessage, meta?: object) {
-        this._log(LogLevel.info, msg, meta);
-    }
-
-    public warn(msg: LogMessage, meta?: object) {
-        this._log(LogLevel.warn, msg, meta);
-    }
-
-    public error(msg: LogMessage, meta?: object) {
-        this._log(LogLevel.error, msg, meta);
-    }
-}
-
-export const logger = new Logger();
+/**
+ * 修改 console 日志级别
+ * @param level - 控制台日志级别，默认：info
+ */
+export const setLogLevel = (level = LogLevel.info) => {
+    consoleTransport.level = level;
+};

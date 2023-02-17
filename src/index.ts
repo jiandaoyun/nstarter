@@ -1,15 +1,15 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-specifier-resolution=node
+import { Logger } from 'nstarter-core';
 import { runCli } from './cli';
-import { logger } from './logger';
+import { initLogger } from './logger';
 
-if (!module.parent) {
-    try {
-        runCli();
-    } catch (err) {
-        if (err) {
-            logger.error(err.message);
-            process.exit(1);
-        }
-        process.exit(0);
+try {
+    initLogger();
+    runCli();
+} catch (err) {
+    if (err) {
+        Logger.error(err.message);
+        process.exit(1);
     }
+    process.exit(0);
 }

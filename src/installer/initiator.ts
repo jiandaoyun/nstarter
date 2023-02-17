@@ -4,10 +4,10 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
-import { safeLoad, safeDump } from 'js-yaml';
+import yaml from 'js-yaml';
 import simplegit from 'simple-git';
+import { Logger } from 'nstarter-core';
 
-import { logger } from '../logger';
 import { formatStdOutput } from '../utils';
 import { IInitiatorConf } from '../types/installer';
 import { promisify } from 'util';
@@ -37,13 +37,13 @@ export class ProjectInitiator {
      */
     private _checkTargetPath() {
         const target = this._options.target;
-        logger.info(`check target path "${ path.resolve(target) }"`);
+        Logger.info(`check target path "${ path.resolve(target) }"`);
         fs.ensureDirSync(target);
         const files = fs.readdirSync(target);
         if (!_.isEmpty(files)) {
             throw new Error('target is not an empty directory.');
         }
-        logger.info('target is ready to deploy');
+        Logger.info('target is ready to deploy');
     }
 
     private _getSourcePath(relPath: string) {
@@ -175,7 +175,7 @@ export class ProjectInitiator {
      * @private
      */
     private async _readYamlConf(path: string) {
-        return this._readConf(path, safeLoad);
+        return this._readConf(path, yaml.load);
     }
 
     /**
@@ -186,7 +186,7 @@ export class ProjectInitiator {
      */
     private async _writeYamlConf(obj: object, path: string) {
         return this._writeConf(obj, path, (obj) =>
-            safeDump(obj, { indent: 2 })
+            yaml.dump(obj, { indent: 2 })
         );
     }
 
@@ -280,23 +280,23 @@ export class ProjectInitiator {
         });
 
         // 基于模板生成目标工程目录结构
-        logger.info('create target directories');
+        Logger.info('create target directories');
         await async.eachLimit(group.dir, this._concurrency, async (path) => {
-            logger.debug(`mkdir: ${ path }`);
+            Logger.debug(`mkdir: ${ path }`);
             fs.ensureDirSync(this._getTargetPath(path));
         });
 
         // 复制普通文件
-        logger.info('copy project files');
+        Logger.info('copy project files');
         await async.eachLimit(group.file, this._concurrency, async (path) => {
-            logger.debug(`copy: ${ path }`);
+            Logger.debug(`copy: ${ path }`);
             await this._copyFile(path);
         });
 
         // 部署代码文件
-        logger.info('deploy code files');
+        Logger.info('deploy code files');
         await async.eachLimit(group.code, this._concurrency, async (path) => {
-            logger.debug(`deploy: ${ path }`);
+            Logger.debug(`deploy: ${ path }`);
             await this._copyCode(path);
         });
     }
@@ -308,7 +308,7 @@ export class ProjectInitiator {
      * @private
      */
     private async _deployConfigs(file: string, process: (obj: any) => any) {
-        logger.debug(`config: ${ file }`);
+        Logger.debug(`config: ${ file }`);
         if (/\.json$/.test(file)) {
             const conf = await this._readJsonConf(file);
             return this._writeJsonConf(process(conf), file);
@@ -390,11 +390,11 @@ export class ProjectInitiator {
         const target = this._options.target;
         const git = simplegit(target)
             .outputHandler((cmd, stdout, stderr) => {
-                logger.debug(cmd);
-                stdout.on('data', (data) => logger.debug(formatStdOutput(data)));
-                stderr.on('data', (data) => logger.warn(formatStdOutput(data)));
+                Logger.debug(cmd);
+                stdout.on('data', (data) => Logger.debug(formatStdOutput(data)));
+                stderr.on('data', (data) => Logger.warn(formatStdOutput(data)));
             });
-        logger.info(`git init at "${ target }"`);
+        Logger.info(`git init at "${ target }"`);
         await git.init();
         await git.add('./*');
         await git.commit('initial commit');
@@ -413,6 +413,6 @@ export class ProjectInitiator {
         await this.deployProjectConf();
         // git 项目处理
         await this.gitInitialize();
-        logger.info(`project successfully deployed at "${ path.resolve(this._options.target) }"`);
+        Logger.info(`project successfully deployed at "${ path.resolve(this._options.target) }"`);
     }
 }

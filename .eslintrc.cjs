@@ -5,5 +5,9 @@ module.exports = {
     ],
     rules: {
         "max-lines-per-function": "off"
+    },
+    globals: {
+        Constructor: "readable",
+        Callback: "readable"
     }
 };

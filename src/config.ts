@@ -1,12 +1,10 @@
 import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
-import { logger } from './logger';
+import { Logger } from 'nstarter-core';
 import { CLI_NAME, DEFAULT_TEMPLATE_TAG } from './constants';
 import { configKey, configValue, IToolConf } from './types/config';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-export const pkg = require('../package.json');
+import { pkg } from './pkg';
 
 /**
  * 判定模板标签是否合法
@@ -52,7 +50,7 @@ class ToolConfig {
             }
         } else {
             // 生成默认配置
-            logger.warn(`config file not found, new config created at "${ this._confFile }"`);
+            Logger.warn(`config file not found, new config created at "${ this._confFile }"`);
             this.saveConfig();
         }
     }
@@ -86,15 +84,15 @@ class ToolConfig {
         } else {
             // 设置配置模板地址
             if (!_isTemplateTagValid(tag)) {
-                logger.warn(`${ tag } is not a valid template tag.`);
+                Logger.warn(`${ tag } is not a valid template tag.`);
                 return;
             }
             const isTemplateValid = /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)([\w.@:/\-~]+)(\.git)(\/)?/.test(template);
             if (!isTemplateValid) {
-                logger.warn(`${ template } is not a valid git url.`);
+                Logger.warn(`${ template } is not a valid git url.`);
                 return;
             }
-            logger.info(`set template "${ tag }" -> "${ template }"`);
+            Logger.info(`set template "${ tag }" -> "${ template }"`);
             this._conf.template[tag] = template;
         }
         this.saveConfig();
@@ -107,16 +105,16 @@ class ToolConfig {
      */
     public setConfig(key: configKey, value: configValue) {
         if (!key) {
-            logger.warn('A valid config key must be provided.');
+            Logger.warn('A valid config key must be provided.');
             return;
         }
         if (/^template\./.test(key)) {
             // 模板设置
             const matches = key.match(/^template\.(\w+)$/);
-            const tag = (matches && matches[1]) || DEFAULT_TEMPLATE_TAG;
+            const tag = (matches?.[1]) || DEFAULT_TEMPLATE_TAG;
             this._setTemplate(tag, value);
         } else {
-            logger.warn(`"${ key }" is not a valid template key.`);
+            Logger.warn(`"${ key }" is not a valid template key.`);
         }
     }
 
@@ -149,10 +147,10 @@ class ToolConfig {
      */
     public removeTemplate(tag: string) {
         if (!_isTemplateTagValid(tag)) {
-            logger.warn(`${ tag } is not a valid template tag.`);
+            Logger.warn(`${ tag } is not a valid template tag.`);
             return;
         }
-        logger.info(`Remove template "${ tag }".`);
+        Logger.info(`Remove template "${ tag }".`);
         _.unset(this._conf.template, tag);
         this.saveConfig();
     }
