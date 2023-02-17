@@ -5,7 +5,13 @@
 /log/
 
 /doc/
-/src/
+
+/lint/
+
+.editorconfig
+
+.eslintrc.cjs
+.eslintignore
 
 /tsconfig.json
 

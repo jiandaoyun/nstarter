@@ -1,6 +1,7 @@
 /node_modules/
 /dist/
 /log/
+/lint/
 
 package-lock.json
 
