@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { LogLevel } from 'nstarter-core';
 
 import { DeployOperations } from './ops.deploy';
@@ -12,7 +13,7 @@ import { setLogLevel } from '../logger';
  * 命令执行入口
  */
 export const runCli = () => {
-    const argv = yargs(process.argv)
+    const argv = yargs(hideBin(process.argv))
         // 执行部署
         .command(
             '$0 deploy [target]',

@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Startup CLI tool for node projects with template.",
-  "version": "0.6.0-rc1",
+  "version": "0.6.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/jiandaoyun/nstarter"
