@@ -48,6 +48,34 @@ export const getEnumByKey = <E>(key: string, template: E) => {
 };
 
 /**
+ * 对参数进行 Base64 转码
+ * @param payload - 需要转码的参数
+ * @return Base64 编码的文本
+ * @author kyle
+ */
+export const encodeBase64 = (payload: string): string => {
+    if (!payload) {
+        return '';
+    }
+    return Buffer.from(payload)
+        .toString('base64');
+};
+
+/**
+ * 对 Base64 文本解码
+ * @param encoded - 需要解码的文本
+ * @return Base64 解码后的文本
+ * @author kyle
+ */
+export const decodeBase64 = (encoded: string): string => {
+    if (!encoded) {
+        return '';
+    }
+    return Buffer.from(encoded, 'base64')
+        .toString();
+};
+
+/**
  * 生成分页查询参数
  * @param params - 请求查询参数
  * @param maxCount - 分页取数数量限制
