@@ -1,7 +1,12 @@
-retract:
-	npm unpublish --force
+TOKEN ?=
 
-upload:
-	npm publish
+docker-build:
+	docker build --target=test-report -o report .
 
-.PHONY: retract upload
+docker-release:
+	docker build --target=release --build-arg TOKEN="${TOKEN}" .
+
+clean:
+	rm -rf report/
+
+.PHONY: clean
