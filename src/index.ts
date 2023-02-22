@@ -15,4 +15,5 @@ const NsUtils = {
     ...NumberUtils
 };
 
-export = NsUtils;
+// eslint-disable-next-line import/no-default-export
+export default NsUtils;
