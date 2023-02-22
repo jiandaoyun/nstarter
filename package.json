@@ -13,7 +13,7 @@
   "type": "module",
   "files": [
     "dist/",
-    "docs/",
+    "doc/",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
