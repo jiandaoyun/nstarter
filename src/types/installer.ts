@@ -31,3 +31,15 @@ export interface IInitiatorConf {
     ignoredModules: ProjectModule[];
     ignoredFiles: string[];
 }
+
+
+export type TDependencyType = 'dependencies' | 'devDependencies' | 'peerDependencies';
+export interface IDependencyMap {
+    [key: string]: string;
+}
+
+export interface IPackageConf {
+    dependencies?: IDependencyMap;
+    devDependencies?: IDependencyMap;
+    peerDependencies?: IDependencyMap;
+}

@@ -7,6 +7,7 @@ import { DeployOperations } from './ops.deploy';
 import { config } from '../config';
 import { ALL_TEMPLATE_TAG, CLI_NAME } from '../constants';
 import { clearTemplate, listTemplates, removeTemplate, updateTemplate } from './ops.template';
+import { upgradeProjectWithTemplate } from './ops.upgrade';
 import { setLogLevel } from '../logger';
 
 /**
@@ -16,7 +17,7 @@ export const runCli = () => {
     const argv = yargs(hideBin(process.argv))
         // 执行部署
         .command(
-            '$0 deploy [target]',
+            '$0 deploy [target] <options>',
             'CLI tools to deploy TypeScript project.',
             (yargs) => yargs
                 .positional('target', {
@@ -85,6 +86,30 @@ export const runCli = () => {
             async (argv) => {
                 await updateTemplate(argv.template);
             })
+        .command(
+            ['upgrade [target] <options>'],
+            'Upgrade local project with template',
+            (yargs) => yargs
+                .positional('target', {
+                    describe: 'Target project directory.',
+                    type: 'string'
+                })
+                .options({
+                    template: {
+                        alias: 't',
+                        describe: 'Template to use.',
+                        type: 'string'
+                    },
+                    strict: {
+                        alias: 's',
+                        describe: 'Use strict version rule to upgrade.',
+                        type: 'boolean'
+                    }
+                }),
+            async (argv) => {
+                await upgradeProjectWithTemplate(argv.target, argv.template, argv.strict);
+            }
+        )
         // 清理模板
         .command(
             'clean [template]',

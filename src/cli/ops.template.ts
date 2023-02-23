@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import path from "path";
+import path from 'path';
 import fs from 'fs-extra';
 import { Logger } from 'nstarter-core';
 
