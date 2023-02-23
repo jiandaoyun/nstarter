@@ -26,7 +26,20 @@ export const loadPkg = (pkgDir: string) => {
  */
 export const savePkg = (pkgDir: string, pkg: IPackageConf) => {
     const pkgPath = path.join(pkgDir, './package.json');
-    fs.writeJsonSync(pkgPath, pkg);
+    fs.writeJsonSync(pkgPath, pkg, {
+        spaces: 2
+    });
+};
+
+/**
+ * 获取版本号信息
+ * @param version
+ */
+export const getSemVer = (version?: string) => {
+    if (!version) {
+        return;
+    }
+    return version.match(/^([\^~]?)(?<version>[\w.-]+)/)?.groups!['version'];
 };
 
 /**
@@ -44,11 +57,12 @@ export const replacePkgDependency = (tgtDeps: IDependencyMap, tplDeps: IDependen
         const isStdVer = !/[<>]/.test(tplVer);
         if (!isStrict && isStdVer) {
             // 宽松版本模式下，只替换 semver 版本数字，不变更范围限定模式
-            const newVer = tplVer.match(/^([^~]?)(?<version>[\w.-]+)/)?.groups!['version'];
-            if (!newVer) {
-                continue;
+            const newVer = getSemVer(tplVer);
+            const oriVer = getSemVer(tgtDeps[key]);
+            if (newVer && oriVer && oriVer !== newVer) {
+                Logger.info(`upgrade [${ key }] ${ oriVer } -> ${ newVer }`);
+                tgtDeps[key] = tgtDeps[key].replace(oriVer, newVer);
             }
-            tgtDeps[key] = tgtDeps[key].replace(/^([^~]?)([\w.-]+)/, `$1${ tplVer }`);
         } else {
             // 直接替换模模板版本
             tgtDeps[key] = tplVer;
@@ -89,7 +103,7 @@ export const upgradeProjectWithTemplate = (target = './', tag = DEFAULT_TEMPLATE
     try {
         const newPkg = upgradePkg(
             loadPkg(target),
-            loadPkg(templatePath),
+            loadPkg(path.join(templatePath, 'template')),
             isStrict,
         );
         savePkg(target, newPkg);

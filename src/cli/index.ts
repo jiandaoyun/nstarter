@@ -17,7 +17,7 @@ export const runCli = () => {
     const argv = yargs(hideBin(process.argv))
         // 执行部署
         .command(
-            '$0 deploy [target] <options>',
+            '$0 deploy [target]',
             'CLI tools to deploy TypeScript project.',
             (yargs) => yargs
                 .positional('target', {
@@ -87,7 +87,7 @@ export const runCli = () => {
                 await updateTemplate(argv.template);
             })
         .command(
-            ['upgrade [target] <options>'],
+            ['upgrade [target]'],
             'Upgrade local project with template',
             (yargs) => yargs
                 .positional('target', {
