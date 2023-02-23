@@ -11,6 +11,13 @@
     "nstarter": "./dist/index.js"
   },
   "type": "module",
+  "files": [
+    "dist/",
+    "doc/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
     "prestart": "tsc --build tsconfig.json",
