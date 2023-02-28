@@ -32,6 +32,7 @@ Commands:
   nstarter config set <key> <value>  Config nstarter options.
   nstarter list                      List all templates configured.[aliases: ls]
   nstarter update [template]         Update local template cache.  [aliases: up]
+  nstarter upgrade [target]          Upgrade local project with template.
   nstarter clean [template]          Clear local template cache.
   nstarter remove <template>         Remove selected template.     [aliases: rm]
 
@@ -120,6 +121,28 @@ Options:
   -v, --verbose  Show debug info.                                      [boolean]
       --version  Show version number                                   [boolean]
 ```
+
+### 基于模板升级本地工程
+
+可以使用 `nstarter upgrade` 操作，将本地现有工程，按照模板所提供的包依赖进行升级操作。
+
+```bash
+nstarter upgrade [target]
+
+Upgrade local project with template.
+
+Positionals:
+  target  Target project directory.                                     [string]
+
+Options:
+      --help      Show help                                            [boolean]
+  -v, --verbose   Show debug info.                                     [boolean]
+      --version   Show version number                                  [boolean]
+  -t, --template  Template to use.                                      [string]
+  -s, --strict    Use strict version rule to upgrade.                  [boolean]
+```
+
+其中，使用严格模式 (strict) 可以将本地目标工程中的依赖包版本限定为与模板严格相等的状态，默认情况下，不启用严格模式，按照原始范围限定规则替换版本号。
 
 ### 清除本地模板缓存
 

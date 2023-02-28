@@ -88,7 +88,7 @@ export const runCli = () => {
             })
         .command(
             ['upgrade [target]'],
-            'Upgrade local project with template',
+            'Upgrade local project with template.',
             (yargs) => yargs
                 .positional('target', {
                     describe: 'Target project directory.',
