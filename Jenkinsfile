@@ -1,57 +1,51 @@
-#!groovy
 pipeline {
-    agent any
+    agent {
+        node { label 'default' }
+    }
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
+    }
     environment {
-        NODE_VERSION = 'v14.18.1'
-        NODE_MIRROR = 'https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/'
-        CI = 'JENKINS'
+        DOCKER_BUILDKIT = "1"
     }
     stages {
-        stage('Install') {
+        stage('Build') {
             steps {
-                nvm(
-                    'version': env.NODE_VERSION,
-                    'nvmNodeJsOrgMirror': env.NODE_MIRROR
-                ) {
-                    sh "make install"
-                }
+                sh(script: 'make docker-build')
+                publishHTML target: [
+                    reportName: '代码质量报告',
+                    reportDir: 'report',
+                    reportFiles: 'lint/eslint.html',
+                    reportTitles: '代码质量',
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: false
+                ]
+                publishHTML target: [
+                    reportName: '单元测试覆盖率报告',
+                    reportDir: 'report',
+                    reportFiles: 'coverage/lcov-report/index.html',
+                    reportTitles: '覆盖率',
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: false
+                ]
             }
         }
-        stage('build') {
+        stage('Release') {
             steps {
-                nvm('version': env.NODE_VERSION) {
-                    sh "make lint"
-                    sh "make test"
-                }
-            }
-        }
-        stage('Publish') {
-            steps {
-                nvm('version': env.NODE_VERSION) {
-                    sh "make upload"
+                withCredentials([string(credentialsId: 'npm_release_token', variable: 'TOKEN')]) {
+                    sh(script: "make docker-release TOKEN=${env.TOKEN}")
                 }
             }
         }
     }
-  	post {
-        fixed {
-            emailext(
-                to: 'jdy-dev@fanruan.com',
-                subject: "[JENKINS][${env.JOB_NAME}] 构建恢复(${env.BUILD_NUMBER})",
-                body: """详情可见: ${BUILD_URL}"""
-            )
-        }
-        regression {
-            emailext(
-                to: 'jdy-dev@fanruan.com',
-                recipientProviders: [[$class: 'FailingTestSuspectsRecipientProvider']],
-                subject: "[JENKINS][${env.JOB_NAME}] 构建失败(${env.BUILD_NUMBER})",
-                body: """详情可见: ${BUILD_URL}""",
-                attachLog: true
-            )
-        }
+    post {
         always {
-            sh 'make clean'
+            script {
+                sh(script: 'make clean')
+            }
         }
     }
 }
