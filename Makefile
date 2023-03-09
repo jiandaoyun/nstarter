@@ -1,20 +1,12 @@
-install:
-	npm prune
-	npm install
+TOKEN ?=
 
-build: install
-	npm run build
+docker-build:
+	docker build --target=test-report -o report .
 
-lint: 
-	npm run lint
-
-test: build
-	npm run test
-
-upload: 
-	npm publish
+docker-release:
+	docker build --target=release --build-arg TOKEN="${TOKEN}" .
 
 clean:
-	rm -rf node_modules dist coverage
+	rm -rf report/
 
-.PHONY: install build test lint upload clean
+.PHONY: clean
