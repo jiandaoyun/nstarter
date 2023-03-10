@@ -14,7 +14,7 @@ RUN npm run build
 
 # 单元测试
 FROM compile as test
-RUN npm run eslint:html \
+RUN npm run lint \
     && npm run test
 
 # 输出报告
