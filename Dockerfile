@@ -14,6 +14,7 @@ RUN npm run build
 
 # 单元测试
 FROM compile as test
+ENV CI=Jenkins
 RUN npm run lint \
     && npm run test
 
