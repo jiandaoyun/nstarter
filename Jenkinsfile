@@ -8,7 +8,6 @@ pipeline {
     }
     environment {
         DOCKER_BUILDKIT = "1"
-        CI = "Jenkins"
     }
     stages {
         stage('Build') {
