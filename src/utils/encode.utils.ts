@@ -1,9 +1,5 @@
-/*
- * Copyright (c) 2015-2022, FineX, All Rights Reserved.
- *
- * @author Mars.Du
- * @date 2022/8/25
- *
+/**
+ * 编码处理工具方法
  */
 
 /**

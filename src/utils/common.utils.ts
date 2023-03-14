@@ -94,3 +94,11 @@ export const getPagination = (params: {
     limit = Math.max(Math.min(maxCount, limit), 1);
     return { skip, limit };
 };
+
+/**
+ * Check if `value` is null or undefined.
+ * @param value
+ */
+export const isNil = (value?: any): value is null | undefined => {
+    return value === null || value === undefined;
+};
