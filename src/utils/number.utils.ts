@@ -13,3 +13,11 @@ export const parseNumber = (value: any) => {
     }
     return null;
 };
+
+/**
+ * Check if `value` is a safe integer.
+ * @param value
+ */
+export const isSafeInteger = (value?: number): value is number => {
+    return Number.isSafeInteger(value);
+};

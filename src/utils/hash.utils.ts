@@ -1,9 +1,5 @@
-/*
- * Copyright (c) 2015-2022, FineX, All Rights Reserved.
- *
- * @author Mars.Du
- * @date 2022/8/25
- *
+/**
+ * 哈希处理工具方法
  */
 
 import crypto from 'crypto';
