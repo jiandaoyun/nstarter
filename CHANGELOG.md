@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+* 添加调整原有 `import` 单个工具方法的方式，现在可以直接 `import NsUtils, { words } from 'nstarter-utils'` 的方式引入。
+
 ## 0.3.0
 * 添加 `words`、`snakeCase`、`last`、`head`、`shift`、`arrayEach`、`isNil`、`isSafeInteger` 工具方法支持
 
