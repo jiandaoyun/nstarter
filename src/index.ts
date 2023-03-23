@@ -19,5 +19,20 @@ const NsUtils = {
     ...StringUtils
 };
 
+/**
+ * 保持 import { isNil } from 'nstarter-utils' 的方式导入
+ */
+export *  from './constants';
+export * from './utils/array.utils';
+export * from './utils/common.utils';
+export * from './utils/file.utils';
+export * from './utils/encode.utils';
+export * from './utils/hash.utils';
+export * from './utils/number.utils';
+export * from './utils/string.utils';
+
+/**
+ * 保持 import NsUtils from 'nstarter-utils' 的方式导入
+ */
 // eslint-disable-next-line import/no-default-export
 export default NsUtils;
