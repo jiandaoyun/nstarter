@@ -3,9 +3,15 @@
  */
 import { promisify } from 'util';
 
-import { RandomString } from '../constants';
+import {
+    nativeFunctionToString,
+    nativeObjectToString,
+    numberTag,
+    objectProto,
+    objectTag,
+    RandomString
+} from '../constants';
 import { IPagination } from './types';
-
 
 /**
  * 等待执行
@@ -101,4 +107,70 @@ export const getPagination = (params: {
  */
 export const isNil = (value?: any): value is null | undefined => {
     return value === null || value === undefined;
+};
+
+export const isString = (str: any): str is string => {
+    return typeof str === 'string';
+};
+
+/**
+ * 检查 value 是否是 类对象。 如果一个值是类对象，那么它不应该是 null，而且 typeof 后的结果是 "object"。
+ * NsUtils.isObjectLike(null) => false
+ * NsUtils.isObjectLike(new Set) => false
+ * NsUtils.isObjectLike({}) => true
+ * NsUtils.isObjectLike([1, 2, 3]) => true
+ * @param obj
+ */
+export const isObjectLike = (obj: any): obj is object => {
+    return obj !== null && typeof obj === 'object';
+};
+
+/**
+ * 检查 value 是否为 Object 的language type。 (例如： arrays, functions, objects, regexes,new Number(0), 以及 new String(''))
+ * NsUtils.isObjectLike(null) => false
+ * NsUtils.isObjectLike(new Set) => true
+ * NsUtils.isObjectLike({}) => true
+ * NsUtils.isObjectLike([1, 2, 3]) => true
+ * @param obj
+ */
+export const isObject = (obj: any): obj is object => {
+    return obj !== null && (typeof obj === 'object' || typeof obj === 'function');
+};
+
+/**
+ * 检查value是不是number的基本类型
+ * NsUtils.isNumber(null) => false
+ * NsUtils.isNumber(12) => true
+ * NsUtils.isNumber('12') => false
+ * NsUtils.isNumber(Number(12)) => true
+ * NsUtils.isNumber(new Number(12)) => true
+ * @param num
+ */
+export const isNumber = (num: any): num is number => {
+    return typeof num === 'number' || (isObjectLike(num) && Object.prototype.toString.call(num) === numberTag);
+};
+
+/**
+ * 检查 value 是否是普通对象。 也就是说该对象由 Object 构造函数创建，或者 [[Prototype]] 为 null 。
+ * NsUtils.isPlainObject(null) => false
+ * NsUtils.isPlainObject(12) => false
+ * NsUtils.isPlainObject('12') => false
+ * NsUtils.isPlainObject(new Set) => false
+ * NsUtils.isPlainObject(new Set()) => false
+ * NsUtils.isPlainObject([1, 2, 3]) => false
+ * NsUtils.isPlainObject(Object.create(null)) => true
+ * NsUtils.isPlainObject({}) => true
+ * * @param obj
+ */
+export const isPlainObject = (obj: any): obj is object => {
+    if (!isObjectLike(obj) || nativeObjectToString.call(obj) !== objectTag) {
+        return false;
+    }
+    const proto = Object.getPrototypeOf(Object(obj));
+    if (proto === null) {
+        return true;
+    }
+    const Ctor = objectProto.hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+    return typeof Ctor === 'function' && Ctor instanceof Ctor &&
+        nativeFunctionToString.call(Ctor) === nativeFunctionToString.call(Object);
 };
