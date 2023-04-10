@@ -7,6 +7,7 @@ import * as EncodeUtils from './utils/encode.utils';
 import * as HashUtils from './utils/hash.utils';
 import * as NumberUtils from './utils/number.utils';
 import * as StringUtils from './utils/string.utils';
+import * as ObjectUtils from './utils/object.utils';
 
 const NsUtils = {
     ...ArrayUtils,
@@ -16,7 +17,8 @@ const NsUtils = {
     ...EncodeUtils,
     ...HashUtils,
     ...NumberUtils,
-    ...StringUtils
+    ...StringUtils,
+    ...ObjectUtils
 };
 
 /**
@@ -30,6 +32,7 @@ export * from './utils/encode.utils';
 export * from './utils/hash.utils';
 export * from './utils/number.utils';
 export * from './utils/string.utils';
+export * from './utils/object.utils';
 
 /**
  * 保持 import NsUtils from 'nstarter-utils' 的方式导入

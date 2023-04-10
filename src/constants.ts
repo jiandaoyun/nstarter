@@ -9,3 +9,12 @@ export enum RandomString {
     lower_numeric = '1234567890abcdefghijklmnopqrstuvwxyz',
     upper_numeric = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 }
+
+export const stringTag = '[object String]';
+export const numberTag = '[object Number]';
+export const objectTag = '[object Object]';
+
+export const objectProto = Object.prototype;
+export const funcProto = Function.prototype;
+export const nativeObjectToString = objectProto.toString;
+export const nativeFunctionToString = funcProto.toString;
