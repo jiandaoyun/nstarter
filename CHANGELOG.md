@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.0
+* 支持自定义 MongoDBRepo 实例注册中心
+
 ## v0.3.0
 
 * 升级 nstarter 框架，适配 nstarter-core 1.0
