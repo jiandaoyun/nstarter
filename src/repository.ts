@@ -8,19 +8,17 @@ export abstract class MongodbRepo {
     }
 }
 
-const _defaultRepositories: {
-    [name: string]: MongodbRepo
-} = {};
+export interface IRepoRegistry {
+    [name: string]: MongodbRepo;
+}
 
-export const repoProvider = <T extends MongodbRepo>(Repository: Constructor<T>) =>
+const _defaultRepositories: IRepoRegistry = {};
+
+export const repoProvider = <T extends MongodbRepo>(Repository: Constructor<T>, registry: IRepoRegistry = _defaultRepositories) =>
     (sess?: ClientSession): T => {
         if (!sess) {
             const repoKey = Repository.name;
-            let repo = _defaultRepositories[repoKey];
-            if (!repo) {
-                repo = new Repository();
-                _defaultRepositories[repoKey] = repo;
-            }
+            const repo = registry[repoKey] ??= new Repository();
             return repo as T;
         } else {
             return new Repository(sess);
