@@ -1,7 +1,8 @@
 # Changelog
 
 ## v0.5.0
-* 提供统一的 ObjectId、MongoId 类型定义
+* 提供统一的 ObjectId、MongoId 类型定义及空对象判断方法
+* 引入 mocha 测试框架，新增 utils 测试用例
 * 升级 mongoose 依赖 -> 6.11.5
   * 修复 init 方法存在的原型污染漏洞(>= 6.11.3)
     > https://github.com/advisories/GHSA-9m93-W8W6-76hh

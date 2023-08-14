@@ -1,0 +1,22 @@
+check-leaks: false
+color: true
+delay: false
+diff: true
+exit: true
+extension:
+  - ts
+spec:
+  - test/**/*.ts
+full-trace: false
+inline-diffs: false
+opts: false
+reporter: min
+require:
+  - 'ts-node/register'
+  - 'source-map-support/register'
+retries: 1
+slow: 100
+sort: true
+timeout: 5000
+ui: bdd
+v8-stack-trace-limit: 100
