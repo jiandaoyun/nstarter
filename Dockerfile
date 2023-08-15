@@ -9,13 +9,16 @@ RUN npm install
 
 # 编译
 FROM build-env as compile
+RUN npm run build
 
+FROM build-env as test
 RUN npm run eslint:html \
-    && npm run build
+    && npm run test
 
 # 输出报告
 FROM scratch as test-report
-COPY --from=compile /var/opt/build/lint/ /lint
+COPY --from=test /var/opt/build/lint/ /lint
+COPY --from=test /var/opt/build/coverage/ /coverage
 
 # 发布
 FROM compile as release
