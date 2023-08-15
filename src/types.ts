@@ -1,5 +1,6 @@
 import { ParsedUrlQueryInput } from 'querystring';
-import { AuthMechanism } from 'mongodb';
+import { AuthMechanism, ObjectId as MongodbObjectId } from 'mongodb';
+import { Types } from 'mongoose';
 
 export interface IMongodbQueryParams extends ParsedUrlQueryInput {
     replicaSet?: string;
@@ -30,3 +31,9 @@ export interface IMongodbConfig {
     readonly retryWrites?: boolean;
     readonly srv?: boolean;
 }
+
+export const ObjectId = Types.ObjectId;
+
+export type ObjectId = Types.ObjectId | MongodbObjectId;
+
+export type MongoId = ObjectId | string;
