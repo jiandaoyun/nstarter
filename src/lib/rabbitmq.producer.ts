@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import retry from 'async-retry';
 import { Options } from 'amqplib';
 
-import { CustomProps, DefaultConfig, Priority, ProducerEvents, RabbitProps } from '../constants';
+import { CustomProps, DefaultConfig, Priority, ProducerEvents } from '../constants';
 import { IProduceHeaders, IProducerConfig, IQueueContext, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 import { BaseContext } from 'nstarter-core';
@@ -20,7 +20,6 @@ export declare interface RabbitMqProducer<T, C extends BaseContext> {
  * @property _queue - 队列
  * @property _options - 配置属性
  * @property _options.pushRetryTimes - 消息 publish 失败后重试次数
- * @property _options.pushDelay - 延时 publish 时间，单位：MS
  * @property _options.expiration - 消息投递超时时长，超过时间未被消费，会被删除
  * @property _options.priority - 消息投递优先级
  */
@@ -33,7 +32,6 @@ export class RabbitMqProducer<T, C extends BaseContext = BaseContext> extends Ev
         this._queue = queue;
         this._options = {
             pushRetryDelay: DefaultConfig.pushRetryDelay,
-            pushDelay: 0,
             ...options,
             // 总共重试 1~n 次
             pushRetryTimes: Math.max(options.pushRetryTimes ?? DefaultConfig.pushRetryTimes, 1) - 1,
@@ -68,11 +66,6 @@ export class RabbitMqProducer<T, C extends BaseContext = BaseContext> extends Ev
             ...o.headers,
             ...options.headers
         };
-        // 延迟推送策略
-        const pushDelay = options.pushDelay || o.pushDelay;
-        if (pushDelay) {
-            headers[RabbitProps.messageDelay] = pushDelay;
-        }
         // 记录发起时间
         headers[CustomProps.publishTime] = Date.now();
         return {

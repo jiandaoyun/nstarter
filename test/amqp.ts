@@ -8,10 +8,3 @@ export const normalQueueConf: IQueueConfig = {
     maxLength: 100,
     prefetch: 10
 };
-
-export const delayQueueConf: IQueueConfig = {
-    name: 'test:delay',
-    maxLength: 100,
-    prefetch: 10,
-    isDelay: true
-}

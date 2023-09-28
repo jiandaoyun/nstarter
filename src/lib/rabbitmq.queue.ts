@@ -1,7 +1,7 @@
 import { BaseContext, ContextProvider } from 'nstarter-core';
 import { AmqpConnectionManager, ChannelWrapper, Options, SetupFunc, Channel } from 'amqp-connection-manager';
 import { ConsumeMessage } from 'amqplib';
-import { DefaultConfig, ExchangeType, OverflowMethod, RabbitProps } from '../constants';
+import { DefaultConfig, OverflowMethod, RabbitProps } from '../constants';
 import { IMessageHandler, IQueueContext, IQueueMessage, IQueuePayload, IWrappedPayload } from '../types';
 
 
@@ -10,7 +10,6 @@ export interface IQueueConfig {
     prefetch: number;
     maxLength: number;
     overflowMethod?: OverflowMethod;
-    isDelay?: boolean;
 }
 
 /**
@@ -30,7 +29,6 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
     constructor(rabbitMq: AmqpConnectionManager, options: IQueueConfig) {
         this._options = {
             overflowMethod: OverflowMethod.reject_publish,
-            isDelay: false,
             ...options
         };
         this._rabbitMq = rabbitMq;
@@ -69,18 +67,11 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
      * @private
      */
     private _getExchangeOptions(): Options.AssertExchange {
-        const options: Options.AssertExchange = {
+        return {
             durable: true,
             autoDelete: false,
             internal: false
         };
-        // 延迟队列
-        if (this._options.isDelay) {
-            options.arguments = {
-                [RabbitProps.delayDeliverType]: DefaultConfig.exchangeType
-            };
-        }
-        return options;
     }
 
     /**
@@ -99,9 +90,8 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
                 if (o.prefetch) {
                     await channel.prefetch(o.prefetch);
                 }
-                const exchangeType = o.isDelay ? ExchangeType.delay : DefaultConfig.exchangeType;
                 const { exchange } = await channel.assertExchange(
-                    o.name, exchangeType, this._getExchangeOptions()
+                    o.name, DefaultConfig.exchangeType, this._getExchangeOptions()
                 );
                 this.exchange = exchange;
                 await channel.bindQueue(queue, exchange, DefaultConfig.routingKey);

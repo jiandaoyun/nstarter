@@ -1,3 +1,4 @@
+import os from 'os';
 import { AmqpConnectionManager, AmqpConnectionManagerClass } from 'amqp-connection-manager';
 import { RabbitMQConfig } from '../types';
 
@@ -13,7 +14,14 @@ export class AmqpConnector {
         const { heartbeatInterval, reconnectInterval } = this._config;
         this.connection = new AmqpConnectionManagerClass(this.amqpUrls, {
             heartbeatIntervalInSeconds: heartbeatInterval,
-            reconnectTimeInSeconds: reconnectInterval
+            reconnectTimeInSeconds: reconnectInterval,
+            connectionOptions: {
+                clientProperties: {
+                    // @see https://www.rabbitmq.com/connections.html#client-provided-names
+                    connection_name: os.hostname(),
+                    ...config.client
+                }
+            }
         });
     }
 

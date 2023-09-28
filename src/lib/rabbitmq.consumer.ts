@@ -3,7 +3,7 @@ import { BaseContext, ContextProvider } from 'nstarter-core';
 import { Options } from 'amqp-connection-manager';
 
 import retry from 'async-retry';
-import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RabbitProps, RetryMethod } from '../constants';
+import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RetryMethod } from '../constants';
 import { IConsumerConfig, IQueueContext, IQueueMessage, IQueuePayload } from '../types';
 import { RabbitMqQueue } from './rabbitmq.queue';
 import { sleep } from '../utils';
@@ -182,8 +182,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
         } catch (err) {
             // 执行重试
             const headers = message.properties?.headers || {};
-            const pushDelay = o.retryDelay,
-                triedTimes = headers[CustomProps.retryTimes] || 0;
+            const triedTimes = headers[CustomProps.retryTimes] || 0;
             const publishTime = headers[CustomProps.publishTime];
             let timeoutTime;
             if (publishTime && o.timeout) {
@@ -196,17 +195,18 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                 || (timeoutTime && timeoutTime < Date.now())
             ) {
                 // 超出重试计数
-                await this._error(err, message);
+                this._error(err, message);
             } else {
                 // 重新发布至队列
                 try {
                     // 无需额外 retry 逻辑，publish 封装中本身具备 publish retry 策略
+                    if (o.retryDelay) {
+                        await sleep(o.retryDelay);
+                    }
                     const retryTimes = triedTimes + 1;
                     headers[CustomProps.retryTimes] = retryTimes;
-                    if (pushDelay) {
-                        headers[RabbitProps.messageDelay] = pushDelay;
-                    }
                     this.emit(ConsumerEvents.retry, err, message, retryTimes);
+                    // 注入上下文
                     const context = ContextProvider.getContext<C>();
                     await this._republish(message.content, context, {
                         mandatory: true,
@@ -215,7 +215,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                         headers
                     });
                 } catch (err) {
-                    await this._error(err, message);
+                    this._error(err, message);
                 }
             }
         }

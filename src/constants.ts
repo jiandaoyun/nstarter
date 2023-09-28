@@ -5,8 +5,7 @@ export enum ExchangeType {
     topic = 'topic',
     headers = 'headers',
     fanout = 'fanout',
-    direct = 'direct',
-    delay = 'x-delayed-message'
+    direct = 'direct'
 }
 
 /**
@@ -46,8 +45,6 @@ export enum OverflowMethod {
  */
 export enum RabbitProps {
     deadLetterExchange = 'x-dead-letter-exchange',           // 死信 Exchange 名称
-    messageDelay = 'x-delay',                                // 队列消息动态延时，单位：MS
-    delayDeliverType = 'x-delayed-type',                     // 延时消息 Exchange 分发规则
     maxMessageLength = 'x-max-length',                       // 队列消息最大长度, 超过后会被移到死信队列中
     overflowMethod = 'x-overflow'                            // 队列超出长度限制后的行为
 }
