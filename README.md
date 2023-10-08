@@ -32,7 +32,6 @@ const queueConfig: IQueueConfig = {
     name: 'demo:normal',
     prefetch: 2,
     maxLength: 10000,
-    isDelay: true
 };
 
 export const demo_queue = queueFactory<IDemoMessage>(amqp, queueConfig);
@@ -45,10 +44,7 @@ import { demo_queue, IDemoMessage } from './queue';
 /**
  * 增量同步延迟队列 生产者
  */
-const produceOption: Partial<IProduceOptions> = {
-    // 设置延时等级
-    pushDelay: 10000 // 10s
-};
+const produceOption: Partial<IProduceOptions> = {};
 
 export const producer = queueProducerFactory<IDemoMessage>(demo_queue, produceOption);
 
@@ -126,8 +122,7 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `options` | `IProducerConfig<T>` | 消息参数 |
 | `options.headers` | `IProduceHeaders` | 消息生产者 `headers` |
 | `options.priority` | `Priority` | 消息优先级，高优先级先分发消费 |
-| `options.pushRetryTimes` | `number` | 消息发送时，本地重试次数 |
-| `options.pushDelay` | `DelayLevel` | 消息发送时，本地重试延时 | 
+| `options.pushRetryTimes` | `number` | 消息发送时，本地重试次数 | 
 
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。
@@ -141,7 +136,7 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 | `queue` | `RabbitMqQueue<T>` | 队列对象 |
 | `options` | `IConsumerConfig<T>` | 消费者参数 |
 | `options.retryTimes` | `number` | 重试次数 |
-| `options.retryDelay` | `DelayLevel` | 重试延时等级 (仅对延迟队列生效) |
+| `options.retryDelay` | `DelayLevel` | 重试延时等级 |
 | `options.retryMethod` | `RetryMethod` | 重试策略，RetryMethod.retry 本地重试，`RetryMethod.republish` 重新发布到队列 |
 | `options.timeout` | `number` | 消息消费超时时间，从消息生产开始算，`republish` 会刷新时间 |
 | `options.run()` | `(message: IQueueMessage<T>): Promise<void>` | 消息消费逻辑 |

@@ -21,6 +21,10 @@ export interface RabbitMQConfig {
     // 链接配置
     readonly heartbeatInterval?: number;
     readonly reconnectInterval?: number;
+    // 客户端配置
+    readonly client?: {
+        readonly [key: string]: any
+    };
 }
 
 export type IQueuePayload<T> = T;
@@ -50,8 +54,6 @@ export interface IProducerConfig extends Options.Publish {
     priority?: Priority;
     pushRetryTimes?: number;
     pushRetryDelay?: number;
-    // 延时添加到队列
-    pushDelay?: number;
 }
 
 export interface IConsumerConfig<T> {

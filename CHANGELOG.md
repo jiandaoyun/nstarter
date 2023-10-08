@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+* 支持传递客户端信息，注册到服务端统一观察消费者信息
+  * 默认补充传递当前节点 hostname 
+
+* Breaking changes:
+  * 移除延迟队列相关兼容性，不再提供 pushDelay 配置参数 
+
+
 ## 0.6.1 
 
 * 移除额外的 nstarter-utils 依赖
