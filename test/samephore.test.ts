@@ -8,6 +8,7 @@ import { test } from '@japa/runner';
 import { randomUUID } from 'crypto';
 import { DistributedSemaphore, ILockOptions } from '../src';
 import { getRedis } from '../src/redis';
+import './types';
 
 test.group('DistributedSemaphore', (group) => {
     const redis = getRedis().client;

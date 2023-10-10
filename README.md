@@ -28,12 +28,12 @@ init(redis);
 ```typescript
 import { DistributedLock } from 'nstarter-lock';
 const lock = new DistributedLock('key', {
-    lockTimeout: 10000,								// 锁超时时间, 毫秒.
+    lockTimeout: 10000,								  // 锁超时时间, 毫秒.
     acquireTimeout: 10000,							// 上锁最大等待时间, 毫秒.
     acquireAttemptsLimit: Number.POSITIVE_INFINITY,	// 上锁最大尝试次数.
-    retryInterval: 10,								// 上锁重试间隔, 毫秒.
+    retryInterval: 10,								  // 上锁重试间隔, 毫秒.
     refreshInterval: 8000,							// 锁续期周期, 除非释放锁或手动停止刷新, 否则会持续尝试续期. 设置为 0 停用该特性.
-    externallyAcquiredIdentifier: randomUUID(),		// 分布式锁标识符, 设置相同标识符可实现锁重入, 详见测试用例.
+    identifier: randomUUID(),						// 分布式锁标识符.
     onLockLost: Logger.warn							// 续期失败导致锁丢失时的回调函数.
 });
 
@@ -53,10 +53,10 @@ await lock.stopRefresh();
 ```typescript
 import { DistributedSemaphore } from 'nstarter-lock';
 const semaphore = new DistributedSemaphore('key', 10, {
-    lockTimeout: 10000,								// 信号量超时时间, 毫秒.
+    lockTimeout: 10000,								  // 信号量超时时间, 毫秒.
     acquireTimeout: 10000,							// 加信号量最大等待时间, 毫秒.
     acquireAttemptsLimit: Number.POSITIVE_INFINITY,	// 加信号量最大尝试次数.
-    retryInterval: 10,								// 加信号量重试间隔, 毫秒.
+    retryInterval: 10,									// 加信号量重试间隔, 毫秒.
     refreshInterval: 8000,							// 信号量续期周期, 除非释放信号量或手动停止刷新, 否则会持续尝试续期. 设置为 0 停用该特性.
 });
 
