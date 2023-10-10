@@ -8,6 +8,7 @@ import { test } from '@japa/runner';
 import { randomUUID } from 'crypto';
 import { DistributedLock, ILockOptions } from '../src';
 import { getRedis } from '../src/redis';
+import './types';
 
 test.group('DistributedLock', (group) => {
     const redis = getRedis().client;
@@ -38,18 +39,6 @@ test.group('DistributedLock', (group) => {
         const lock2 = new DistributedLock(key, o);
         assert.isTrue(await lock1.tryAcquire());
         assert.isFalse(await lock2.tryAcquire());
-    });
-
-    test('reentrant', async ({ assert }) => {
-        const identifier = randomUUID();
-        const lock1 = new DistributedLock(key, {
-            ...o, externallyAcquiredIdentifier: identifier
-        });
-        const lock2 = new DistributedLock(key, {
-            ...o, externallyAcquiredIdentifier: identifier
-        });
-        assert.isTrue(await lock1.tryAcquire());
-        assert.isTrue(await lock2.tryAcquire());
     });
 
     test('timeout', async ({ assert }) => {

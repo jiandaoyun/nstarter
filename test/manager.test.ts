@@ -6,6 +6,7 @@
 
 import { test } from '@japa/runner';
 import { IKeyedResource, LockManager } from '../src';
+import './types';
 
 test.group('LockManager', () => {
     class StubLock implements IKeyedResource {
@@ -14,7 +15,8 @@ test.group('LockManager', () => {
         constructor(
             public key: string,
             public acquired: string[]
-        ) {}
+        ) {
+        }
 
         public async acquire(): Promise<void> {
             this.acquired.push(this.key);

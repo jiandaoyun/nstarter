@@ -6,6 +6,7 @@
 
 import { test } from '@japa/runner';
 import { IResource, LockGuard } from '../src';
+import './types';
 
 test.group('LockGuard', () => {
     class StubLock implements IResource {
