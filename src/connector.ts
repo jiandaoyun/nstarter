@@ -22,6 +22,12 @@ export class MongodbConnector {
         }
         this.connection = mongoose.createConnection();
         this.connection.plugin(mongooseAsyncHooks);
+        // 关闭 mongoose 严格查询，保留 non-schema 过滤条件
+        mongoose.set('strictQuery', false);
+        // 关闭 mongoose upsert 的默认值逻辑（update、findOneAndUpdate）
+        mongoose.set('setDefaultsOnInsert', false);
+        // 关闭 mongoose 自动建表逻辑
+        mongoose.set('autoCreate', false);
     }
 
     /**
