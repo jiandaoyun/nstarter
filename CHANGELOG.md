@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1
+* 调整默认的 mongoose 全局配置，兼容老版本
+* 升级 mongoose 开发依赖 -> 6.12.0
+
 ## v0.5.0
 * 提供统一的 ObjectId、MongoId 类型定义及空对象判断方法
 * 引入 mocha 测试框架，新增 utils 测试用例
