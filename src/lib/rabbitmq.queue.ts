@@ -138,7 +138,12 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
         options: Options.Consume
     ): Promise<void> {
         await this.waitForSetup();
+        const o = this._options;
         this._setupFunc = async (channel: Channel) => {
+            if (o.prefetch) {
+                // 防止 channel 关闭重建时，创建没有 prefetch 限制的 consumer
+                await channel.prefetch(o.prefetch);
+            }
             const { consumerTag } = await channel.consume(
                 this.queue,
                 (message: ConsumeMessage | null) => {
