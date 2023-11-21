@@ -6,8 +6,11 @@
   * 默认补充传递当前节点 hostname 
 
 * Breaking changes:
-  * 移除延迟队列相关兼容性，不再提供 pushDelay 配置参数 
+  * 移除延迟队列相关兼容性，不再提供 pushDelay 配置参数
 
+## 0.6.3
+
+* 修复 channel 重建后，会导致 prefetch 不生效的问题
 
 ## 0.6.1 
 
