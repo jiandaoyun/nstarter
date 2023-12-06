@@ -30,15 +30,18 @@ export const getRpcName = (ctorName: string) => {
  * @param originErr
  */
 export const deserializeError = (originErr: ServiceError) => {
+    // GRPC 错误包装为 NsError
+    const err = new NsError('Grpc', 5);
+    // 从原始错误中获取错误码与错误信息
+    _.extend(err, {
+        errCode: _.toNumber(originErr.code),
+        errmsg: originErr.details,
+    });
+    // 从原始错误中获取错误meta信息
     const meta = originErr.metadata?.getMap();
-    const err = meta?.errcode
-        ? new NsError('Grpc', _.toNumber(meta.errcode))
-        : new NsError('Grpc', 5);
     if (meta) {
         _.extend(err, {
-            ...meta,
-            errcode: _.toNumber(meta.errcode),
-            errmsg: originErr.details
+            ...meta
         });
     }
     return err;
