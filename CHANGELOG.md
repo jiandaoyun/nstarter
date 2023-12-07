@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.1
+* 修改反序列化错误方法, 使得原始 `GRPC` 错误码信息保留
+
 ## v0.4.0
 * 升级 nstarter 框架，适配 nstarter-core 1.0
 * 升级基础依赖

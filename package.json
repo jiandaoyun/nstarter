@@ -1,6 +1,6 @@
 {
   "name": "nstarter-grpc",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "nstarter grpc 通信插件",
   "license": "MIT",
   "repository": {
@@ -35,5 +35,9 @@
   },
   "engine": {
     "node": ">=18.12.0"
+  },
+  "volta": {
+    "node": "18.13.0",
+    "npm": "8.19.3"
   }
 }
