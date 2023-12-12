@@ -8,26 +8,31 @@ title: "nstarter-rabbitmq"
 
 ### AMQP 链接
 ```typescript
-import AmqpConnector from 'nstarter-rabbitmq';
-const amqp = AmqpConnector({
-    user: 'user',
-    password: 'password',
+import { AmqpConnector } from 'nstarter-rabbitmq';
+
+export const amqp = new AmqpConnector({
     brokers: [
         {
             host: '127.0.0.1',
             port: 5672
         }
     ],
-    heartbeatIntervalInSeconds: 60,
-    reconnectTimeInSeconds: 1
+    protocol: "amqp",
+    user: 'guest',
+    password: 'guest',
+    heartbeatInterval: 60,
+    reconnectInterval: 1
+}, (error) => {
+    console.log(error);
 });
 ```
 
 ### 队列启动
 ```typescript
-import { IQueueConfig, queueFactory, IRabbitMqMessage } from 'nstarter-rabbitmq';
+import { IQueueConfig, queueFactory } from 'nstarter-rabbitmq';
+import { amqp } from "./amqp";
 
-export interface IDemoMessage extends IRabbitMqMessage {
+export interface IDemoMessage {
     value: string;
 }
 
@@ -39,17 +44,18 @@ const queueConfig: IQueueConfig = {
     isDelay: true
 };
 
-export const demo_queue = queueFactory<IDemoMessage>(amqp, queueConfig);
+export const demo_queue = queueFactory<IDemoMessage>(amqp.connection, queueConfig);
 ```
 ### 生产者，向队列发消息
 ```typescript
-import { IProduceOptions, queueProducerFactory } from 'nstarter-rabbitmq';
+import { IProducerConfig, queueProducerFactory } from 'nstarter-rabbitmq';
 import { demo_queue, IDemoMessage } from './queue';
+import _ from "lodash";
 
 /**
  * 增量同步延迟队列 生产者
  */
-const produceOption: Partial<IProduceOptions> = {
+const produceOption: Partial<IProducerConfig> = {
     // 设置延时等级
     pushDelay: 10000 // 10s
 };
@@ -60,27 +66,26 @@ export const producer = queueProducerFactory<IDemoMessage>(demo_queue, produceOp
 producer.setup().then();
 // 发送消息
 producer
-    .publish({ value: 'demo:normal' }, { mandatory: true, deliveryMode: true, persistent: true })
+    .publish({ value: 'demo:normal' })
     .then(_.noop)
     .catch((err: Error) => console.log(err));
 ```
 
 ### 消费者，向队列订阅消息
 ```typescript
-import { AckPolicy, queueConsumerFactory, RetryMethod, IConsumerConfig, startQueueConsumers } from 'nstarter-rabbitmq';
-import { queue, IDemoMessage } from'./queue';
+import { IConsumerConfig, queueConsumerFactory, RetryMethod, startQueueConsumers } from 'nstarter-rabbitmq';
+import { demo_queue, IDemoMessage } from './queue';
 
 const consumerConfig: IConsumerConfig<IDemoMessage> = {
     retryMethod: RetryMethod.republish,
-    ackPolicy: AckPolicy.after,
-    consumeTimeout: 10000, // 10s
-    run(message): Promise<void> {
+    timeout: 10000, // 10s
+    run: async (message): Promise<void> => {
         const demoMessage: IDemoMessage = message.content;
-        console.log(demoMessage);            
+        console.log(demoMessage);
     }
 };
 
-export const consumer = queueConsumerFactory<IDemoMessage>(queue, consumerConfig);
+export const consumer = queueConsumerFactory<IDemoMessage>(demo_queue, consumerConfig);
 
 // 注册队列消费者
 consumer.register();
@@ -136,8 +141,8 @@ RabbitMQ 会“拿回”该消息的。`requeue` 为 `true` 会重新将该消�
 #### RabbitMqProducer#setup(): Promise<void>
 队列生产者启动方法。
 
-#### RabbitMqProducer#publish(content: IQueuePayload<T>, options: Publish): Promise<void>
-此方法带本地重试机制。参数内容同 `RabbitMqQueue#publish(content, options)`。
+#### RabbitMqProducer#publish(content: IQueuePayload<T>, context?: IQueueContext<C>): Promise<void>
+此方法带本地重试机制。
 
 ### RabbitMqConsumer
 | 参数名 | 类型 | 参数说明 |
