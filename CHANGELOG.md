@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.0
+
+* service 注入管理支持领域隔离注册
+  - 新增 `getScopedServiceDecorators(scope)` 方法，用于生成指定领域的 service 装饰器
+  - 默认 `service()`, `injectService()` 装饰器，保留全局公共域的注册行为
+
 ## v1.0.0
 
 * 框架基础依赖整体升级
