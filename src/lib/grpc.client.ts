@@ -30,8 +30,8 @@ export const getGrpcServiceClient = async (pkg: string, service: string): Promis
             if (clientConfig.servername) {
                 const buffer = await getCertificateBuffer(clientConfig.address, clientConfig.servername!);
                 return new GrpcClient(clientConfig.address, credentials.createSsl(buffer), {
-                    'grpc.ssl_target_name_override': clientConfig.servername!,
-                    ...DEFAULT_CHANNEL_OPTION
+                    ...DEFAULT_CHANNEL_OPTION,
+                    'grpc.ssl_target_name_override': clientConfig.servername!
                 });
             } else {
                 return new GrpcClient(clientConfig.address, credentials.createSsl(), {
