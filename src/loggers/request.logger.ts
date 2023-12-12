@@ -82,7 +82,7 @@ export class RequestLogger {
         return (req, res, next) => {
             const startTime = Date.now();
             const reqLogger = once(() => RequestLogger._logRequest(req, res, startTime));
-            req.on('close', reqLogger);
+            res.on('close', reqLogger);
             res.on('finish', reqLogger);
             return next();
         };
