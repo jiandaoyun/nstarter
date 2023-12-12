@@ -33,6 +33,9 @@
     "rimraf": "^4.1.2",
     "typescript": "~4.9.5"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "engine": {
     "node": ">=18.12.0"
   },
