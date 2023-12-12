@@ -3,6 +3,7 @@ import https, { Agent } from 'https';
 import { TLSSocket } from 'tls';
 import { IClientConfig } from '../types';
 import { getProtoServiceClient } from './proto';
+import { DEFAULT_CHANNEL_OPTION } from '../constants';
 
 export const clientRegistry = new Map<string, IClientConfig>();
 
@@ -28,12 +29,19 @@ export const getGrpcServiceClient = async (pkg: string, service: string): Promis
             // 泛域名证书
             if (clientConfig.servername) {
                 const buffer = await getCertificateBuffer(clientConfig.address, clientConfig.servername!);
-                return new GrpcClient(clientConfig.address, credentials.createSsl(buffer), { 'grpc.ssl_target_name_override': clientConfig.servername! });
+                return new GrpcClient(clientConfig.address, credentials.createSsl(buffer), {
+                    'grpc.ssl_target_name_override': clientConfig.servername!,
+                    ...DEFAULT_CHANNEL_OPTION
+                });
             } else {
-                return new GrpcClient(clientConfig.address, credentials.createSsl());
+                return new GrpcClient(clientConfig.address, credentials.createSsl(), {
+                    ...DEFAULT_CHANNEL_OPTION
+                });
             }
         } else {
-            return new GrpcClient(clientConfig.address, credentials.createInsecure());
+            return new GrpcClient(clientConfig.address, credentials.createInsecure(), {
+                ...DEFAULT_CHANNEL_OPTION
+            });
         }
     } else {
         // 客户端未定义
