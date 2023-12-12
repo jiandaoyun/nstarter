@@ -70,3 +70,20 @@ import {
       }
   }
   ```
+
+* 领域隔离的服务管理
+
+  > ℹ️ `nstarter-core`: `1.1.0` 版本在支持的新特性。
+
+  在不同类型的工程实际服务层逻辑组织中，对于一些封装有复杂服务层逻辑的 npm 业务工程包，或者使用 monorepo 方式管理的复杂独立模块工程项目，如果仍然维持将所有不同领域的服务对象，注册到同一个公共服务管理容器中，会带来一系列的服务管理和使用上的困境。典型的例子，由于服务对象的开发实现会按照模块隔离，不同模块下无法直接关注到其他模块服务对象的定义实现，使用公共注册容器，会直接导致服务注册域使用的冲突。
+
+  为了解决这个问题，`nstarter-core` 从 `1.1.0` 版本开始，引入了服务对象的领域隔离管理机制。通过使用 `getScopedServiceDecorators` 装饰器生成方法，可以生成指定领域下的服务层装饰器。获取对应领域的 `service`, `injectService` 装饰器后，便可通过与默认全局装饰器完全相同的方式来使用。
+
+  ```typescript
+  import { getScopedServiceDecorators } from 'nstarter-core';
+  
+  const scope = Symbol.for('demo_scope');
+  
+  const { service, injectService } = getScopedServiceDecorators(scope);
+  ```
+  
