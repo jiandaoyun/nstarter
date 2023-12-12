@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.2
+* 添加 `keepalive` 机制, 修复隔段时间随机 `CALL CANCELLED` 错误
+
 ## v0.4.1
 * 修改反序列化错误方法, 使得原始 `GRPC` 错误码信息保留
 
