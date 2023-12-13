@@ -35,7 +35,8 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
-    "https-proxy": "http://172.24.64.31:3128"
+    "https-proxy": "socks5://172.24.64.31:1080",
+    "http-proxy": "socks5://172.24.64.31:1080"
   },
   "engine": {
     "node": ">=18.12.0"
