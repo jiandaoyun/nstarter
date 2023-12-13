@@ -5,6 +5,7 @@ FROM ${NODE_IMAGE} as build-env
 WORKDIR /var/opt/build
 
 COPY . .
+ENV npm_config_proxy socks5://172.24.64.31:1080
 RUN npm install
 
 # 编译
