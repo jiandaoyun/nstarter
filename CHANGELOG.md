@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.2
+* 添加 `isValidObjectId` 方法，用于判断是否为有效的 ObjectId
+* 添加 `isObjectIdEqual` 方法，用于判断两个 ObjectId 是否相等
+
 ## v0.5.1
 * 调整默认的 mongoose 全局配置，兼容老版本
 * 升级 mongoose 开发依赖 -> 6.12.0
