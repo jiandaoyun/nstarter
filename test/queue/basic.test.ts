@@ -11,6 +11,7 @@ import {
 } from '../../src';
 import { amqp, normalQueueConf } from '../amqp';
 import { before } from 'mocha';
+import { BaseContext, ContextProvider } from "nstarter-core";
 
 describe('test: basic', () => {
     const queue = queueFactory(amqp.connection, normalQueueConf);
@@ -31,6 +32,7 @@ describe('test: basic', () => {
 
     before(async () => {
         await amqp.connect();
+        ContextProvider.initialize(BaseContext);
     });
 
     it('consumer.register', async () => {
