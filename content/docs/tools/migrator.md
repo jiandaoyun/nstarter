@@ -3,143 +3,209 @@ title: "数据迁移框架 (Migrator)"
 weight: 20
 ---
 
+# nstarter-mongo-migrator
 
-# nstater-mongo-migrator
+**nstarter Mongodb 数据库结构迁移框架**
 
-Mongodb 数据库结构迁移框架
+本项目通过工程化的方式管理不同应用服务所使用数据库的结构定义，实现对数据库初始化以及结构迁移的自动化管理能力。
 
-## 用途
+**主要功能**
 
-针对数据库迁移的环境，结合 kubernetes 环境的要求，采用容器化的形式进行封装。同时提供 lodash, moment 这类基础的工具方法，便于结构迁移使用，以满足基本的标准化要求。
+- 指定目标 schema 版本进行数据库结构迁移
+- 执行 mongosh 脚本
+- dump mongodb 数据库/表
 
-* 提供标准统一的运行环境，以及统一的工具方法
-* 能够允许以 Kubernetes Job 的方式运行迁移任务，便于在内网执行迁移
-* 支持对不同环境下，部署统一应用场景的迁移任务分发
+## 使用说明
 
+### 命令行使用
 
-## 目录结构
+```bash
+nstarter-migrator
 
+Migrate mongodb to target schema.
+
+Commands:
+  nstarter-migrator migrate            Migrate mongodb to target schema.
+                                                                       [default]
+  nstarter-migrator run <script>       Run mongo shell script.
+  nstarter-migrator dump [collection]  Dump mongodb collection.
+
+Options:
+  --help     Show help                                                 [boolean]
+  --version  Show version number                                       [boolean]
 ```
-/var/opt/migration      工作目录
-├── env                 工具依赖的安装目录
-│   └──package.json     依赖包定义
-├── scripts             迁移脚本挂载点
-│   └──index.js         迁移执行的入口脚本
-├── output              输出内容的持久化挂载点
-├── run.js              迁移启动脚本
-└── entrypoint.sh       启动脚本
+
+* `migrate` - 执行数据库 schema 迁移，迁移工具默认行为
+   
+   当未指定 schema 版本时，使用 `schemas` 目录下提供的最新版本。当通过 `SCHEMA_VERSION` 环境变量指定了目标版本时，则最高升级至目标版本
+
+* `run <script>` - 执行 mongosh 脚本
+
+* `dump [collection]` - dump 指定数据库/表
+   
+   - 当不指定 `collection` 参数时，则 dump 整个数据库。
+   - 配置文件中可以通过 `dump.query` 参数配置 dump 过程中的查询条件 (JSON)
+  
+   > 参考 https://www.mongodb.com/docs/database-tools/mongodump/#syntax
+  
+**容器化使用**
+
+本工具建议通过容器化环境使用，使用过程中，只需要在挂载必要的配置/输入输出目录挂载点后，传递命令参数，即可执行对应的动作。
+
+示例：
+
+```bash
+docker run -it -v $(shell pwd)/conf.d:/var/opt/migration/conf.d \
+    nstarter-mongodb-migrator:latest \ 
+    run ./tasks/migrate.js
 ```
 
-## 用户权限
-
-迁移脚本执行过程中，使用 `mongodb:mongodb` 用户与用户组执行迁移任务，因而在挂载外部挂载点的过程中，需要对挂载点分配执行用户相应的操作权限。
-
-* UID: 999
-* GID: 999
-
-
-## 配置
 
 ### 环境变量
 
-迁移框架容器使用时，通过环境变量对数据库的连接配置进行配置，以更灵活的支持不同的运行环境。
+  - `APP_NAME` - 应用服务名称，可以作为配置文件中配置参数的替代
+  - `SCHEMA_VERSION` - 目标 schema 版本（可选）
+  - `NODE_OPTIONS` - 可用于控制 node.js & mongosh 运行时的环境参数
 
-* `MONGO_URI` - 数据库的连接字符串，默认值 `localhost:27017`
+### 配置文件 `conf.d/config.yml`:
 
-   支持的形式：
+```yaml
+app_name: app       # 应用服务名称
 
-   ```
-   192.168.0.5/foo       指定服务器默认端口 (27017) 访问指定数据库
-   192.168.0.5:9999/foo  指定服务器与端口访问数据库
-   mongodb://192.168.0.5:9999/foo  带协议的 URI
-   ```
-
-   需要注意，此处指定的 db 既作为数据库脚本操作数据库，也同时作为鉴权数据库。
-
-* `USERNAME` - 登录 mongodb 服务器的用户名，使用 `MONGO_URI` 中的 db 作为
-* `PASSWORD` - 登录 mongodb 服务器的密码
-* `SCRIPT` - 执行的数据库操作脚本。默认为 `./scripts/index.js`
-* `BUCKET` - (可选) 用于上传输出结果的 oss bucket 
-
-### OSS 文件输出
-
-迁移框架支持将控制台日志，以及其他迁移过程执行的输出结果，上传至 oss 进行持久存储。
-
-* 阿里云 ossutil 配置文件可以再 kubernetes 中，通过 ConfigMap/Secret 挂载到工作目录下。配置内容示例如下，endpoint 可以根据环境来选择内网还是公网输出。
-
-  ```ini
-  [Credentials]
-  language=CH
-  endpoint=oss-cn-hangzhou.aliyuncs.com
-  accessKeyID=<access_key_id>
-  accessKeySecret=<access_key_id>
-  ```
-
-  更多详细参数说明，可参考阿里云官方文档：
-
-  https://help.aliyun.com/document_detail/50452.html
-
-## 使用示例
-
-```bash
-docker run \
-    --env MONGO_URI=172.24.64.53:27019/nstarter \
-    --env USERNAME=nstarter \
-    --env PASSWORD=FineX2015 \
-    --env BUCKET=xxx\
-    -v /tmp/ossutilconfig:/var/opt/migration/ossutilconfig \
-    nstater-mongo-migrator:latest
-```
-
-通过容器启动的方式，也可以挂载本地脚本目录后，启动进行调试。
-
-
-## 工具方法
-
-在 mongodb shell 中，由于并不具备完整的 node.js API，部分操作需要通过工具方法完成。在此介绍部分常用的工具方法，主要用于输入输出。
-
-- `writeFile(pathToFile, stringContents)` - 输出文本到指定文件中
-
-  示例：
+mongodb:            # 数据库连接配置
+  servers:
+    - host: localhost
+      port: 27017
+  db: database
+  username: db-user
+  password: pa5sw0rd
   
-  ```javascript
-  writeFile('./output/output.txt', "output");
-  ```
+dump:
+  readPreference: primary
+  gzip: true
+  oplog: false
+  #pipe: tee output/test.out
+  output: ./output/dump.gz
+  query: ./conf.d/dump_query.json
 
-- `print(stringContents)` - 输出文本内容到控制台日志。
-
-- `printjson(contents)` 与 `print(tojson(contents))` - 以 json 格式化形式输出到控制台。
-
-- `cat(pathToFile)` - 读取指定文件的文本内容
-
-  示例：
-
-  ```javascript
-  cat('./sample.json')
-  ```
-
-- `load(pathToFile)` - 加载外部 javascript 模块。mongodb shell 不支持通过 require 方式加载外部模块，因而提供一个简化版功能用于加载外部模块。
-
-更多 shell 提供的内置特殊方法，可以参考官方文档。
-
-https://docs.mongodb.com/manual/reference/method/load/
-
-另外 mongodb shell 本身支持常用 ES6 语法，因而可在迁移过程中直接使用，不过对于少部分特殊功能，可能会存在兼容性不完整，使用时需要经过验证。
-
-
-## 迁移脚本示例
-
-默认提供的 `scirpts/index.js` 即为迁移脚本示例：
-
-```javascript
-'use strict';
-
-// demo
-print(`Current Date: ${ moment().toDate() }`);
-
-print('List collections:');
-print(_.repeat('-', 20));
-print(db.getCollectionNames());
+system:
+  log:              # 日志输出配置
+    console:
+      enabled: true
+      level: info
+      colorize: true
+    file:
+      enabled: true
+      level: info
+      dir: ./log/
 ```
 
-环境中已经默认提供 lodash, moment 等基础工具。
+**实验性功能**
+
+- 在 dump 任务执行过程中，允许通过 pipe 指定管道命令，直接将 dump 结果进行管道输出。当指定管道输出时，文件输出配置不再起作用。
+
+
+### 目录结构
+
+```text
+.
+├── conf.d                  # 配置文件 
+│   └── config.example.yml  # 示例配置文件
+├── env                     # 运行时环境配置定义
+│   ├── mongosh.conf        # mongosh 配置文件
+│   ├── mongoshrc.js        # mongosh 初始化配置
+│   └── package.json        # 运行时环境工具包依赖配置
+├── log                     # 日志输出目录
+├── output                  # 默认的结果输出目录
+├── resources               # 资源文件
+├── schemas                 # 示例 schema 结构定义，实际应用场景下会被替换为实际数据库机构定义
+├── scripts                 # 脚本目录
+│   ├── hooks               # 钩子目录
+│   │   ├── pre_hook.sh     # 执行前钩子脚本
+│   │   └── post_hook.sh    # 执行后钩子脚本
+│   └── entrypoint.sh       # 容器入口脚本
+├── tasks                   # mongosh 任务脚本目录 (js)
+├── src                     # 工程源码
+└── VERSION                 # 版本文件
+```
+
+
+### 数据库模型定义
+
+对于不同的数据库实例，要求采用规定的 schema 目录结构，定义数据库模型的变更。
+
+- `schema_0` 用于描述当前服务所对应的数据库的初始结构。可以仅包含在业务工程中，不进行自动初始化的逻辑。比如某些表结构的索引创建等操作。
+- `schema_<YYYYMMDD_xxx>` 采用日期版本编号控制某次发布所对应的结构变更，其内部用于编写迁移过程。日期版本号建议使用预估的发布上线日期。对于单一需求任务使用独立的目录维护迁移脚本，如果同一发布版本内，存在多个不同的迁移任务，可以使用不同的后缀字符串进行区分。
+
+> ⚠️ 注意：
+> - 对初始结构定义，需要与业务服务保持一致的结构，并持续性更新，确保对于新创建的数据库实例，仅需执行初始化逻辑，即可打包最新状态。
+> - 所有结构迁移与初始化操作，原则上仅使用不超过应用服务所使用数据库权限执行。诸如分片划分等针对特定部署实例，单独设定的配置，不在结构模型定义的维护范畴内。此工程仅用于维护数据库的本身的逻辑结构变更。
+
+```text
+<app>
+└── schemas/
+    ├── schema_0/                 # 初始结构定义 (最新状态表索引等初始结构)
+    │   ├── 01.xxx.js
+    │   ├── ...
+    │   ├── CHANGELOG.md          # 变更记录
+    │   └── README.md             # 结构说明
+    ├── schema_<YYYYMMDD_xxx>/    # 单次迁移变更 (日期命名，可使用计划的迭代上线时间作为日期基准)
+    │   ├── lib/                  # 迁移脚本依赖 (尽可能不使用，对于 mongoshell 需要按照容器内的绝对路径引用)
+    │   │   └── utils.js
+    │   ├── 01.xxx.js             # 结构迁移脚本 (顺序敏感，建议使用数字序号命名文件)
+    │   ├── 02.xxx.js
+    │   ├── ...
+    │   └── README.md             # 迁移说明 （关联 Issue，变更了什么，风险与影响）
+    ├── ...
+    └── README.md                 # 数据库实例说明
+```
+
+
+### 迁移脚本编写
+
+数据结构模型定义，以及迁移脚本，使用 mongodb 官方提供的数据库 shell (mongosh) 实现。 mongosh 提供了 node.js 原生标准库的语法能力支持 (Node.js 16)，同时也向下兼容老版本 mongoshell 的大部分语法。并且 mongosh 还提供了 commonJS 模块的加载能力，能够装载常见的第三方库用于扩展功能。
+
+> https://www.mongodb.com/docs/mongodb-shell/
+
+除了原生功能以外，迁移框架预先加载了部分工具方法，可以在编写过程中，直接使用一些常用的工具库。包含：
+
+- `lodash`
+- `moment` & `moment-timezone`
+
+另外，node.js 标准库所提供能功能也均可以直接使用。
+
+
+### 连接多个数据实例
+
+迁移框架提供了脚本执行过程中，操作多个不同数据库实例的能力。通过在配置文件中，配置 `ref_db`，可以在迁移执行的上下文，自动注入独立的数据库连接对象。
+
+示例：
+
+* 在 `config.yml` 中配置 `ref_db`
+
+  ```yaml
+  ref_db:
+    - name: testDb
+      servers:
+        - host: 127.0.0.1
+          port: 27017
+      db: test
+  ```
+
+* 在迁移脚本中，使用前面 `name` 参数声明的变量 `testDb` 对象进行目标数据库操作
+
+  ```javascript
+  testDb.collection.find({ key: 'key' })
+  ```
+
+> ℹ️ 本地开发说明
+> 本地开发/调试环境，通常并不会有默认行为，但可以在上下文中，手动使用 `connect` 方法，建立数据库连接测试。
+> ```javascript
+> const testDb = connect('mongodb://127.0.0.1:27017/test')
+> ```
+
+
+### 钩子脚本
+
+迁移框架在 `scripts/hooks/` 目录下，提供了 `pre_hook.sh`, `post_hook.sh` 两个默认的钩子脚本入口，用于实现在任务执行前/后的其他行为动作调度。例如，下游工程在使用迁移框架过程中，可以定义自己的钩子行为，将日志/输出结果上传至对象存储。
+
