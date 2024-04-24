@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+* 使用 Channel#ack 替代 ChannelWrapper#ack，以防止 ChannelWrapper 重连后使用错误的 Channel 去 ack 消息
+
 ## 0.7.0
 
 * 支持传递客户端信息，注册到服务端统一观察消费者信息
