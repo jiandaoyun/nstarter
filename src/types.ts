@@ -6,6 +6,7 @@ import {
 } from 'amqplib';
 import { Priority, RetryMethod } from './constants';
 import { BaseContext, ContextItem } from 'nstarter-core';
+import { Channel } from 'amqp-connection-manager';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
@@ -79,5 +80,5 @@ export type IQueueMessage<T> = Extend<ConsumeMessage, {
 }>;
 
 export interface IMessageHandler<T> {
-    (payload: IQueueMessage<T>): void;
+    (channel: Channel, payload: IQueueMessage<T>): void;
 }

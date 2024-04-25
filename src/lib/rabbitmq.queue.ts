@@ -170,7 +170,7 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
                         // 注入上下文
                         ContextProvider.startContext();
                     }
-                    process.nextTick(() => messageHandler(payload));
+                    process.nextTick(() => messageHandler(channel, payload));
                 },
                 options
             );
@@ -204,13 +204,6 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
     public async publish(content: IQueuePayload<T>, context: IQueueContext<C> | undefined, options: Options.Publish) {
         const payload = this._serializePayload(content, context);
         return this._channelWrapper.publish(this.exchange, DefaultConfig.routingKey, payload, options);
-    }
-
-    public ack(
-        message: IQueueMessage<T>,
-        allUpTo?: boolean
-    ): void {
-        this._channelWrapper.ack(message as any, allUpTo);
     }
 
     /**

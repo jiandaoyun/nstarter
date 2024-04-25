@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { BaseContext, ContextProvider } from 'nstarter-core';
-import { Options } from 'amqp-connection-manager';
+import { Channel, Options } from 'amqp-connection-manager';
 
 import retry from 'async-retry';
 import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RetryMethod } from '../constants';
@@ -107,7 +107,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
      */
     public async start(): Promise<void> {
         const o = this._options;
-        await this._queue.subscribe(async (message: IQueueMessage<T>) => {
+        await this._queue.subscribe(async (channel: Channel, message: IQueueMessage<T>) => {
             try {
                 if (o.retryMethod === RetryMethod.republish) {
                     // 队列重新发布重试
@@ -120,7 +120,8 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                 this._error(err, message);
             } finally {
                 // 确保消费过程 message 被 ack
-                this._queue.ack(message);
+                // NOTICE: FXD-60912 调用 ChannelWrapper 去 ack 消息，会导致消息 deliver 和 ack 的不是同一个 channel
+                channel.ack(message as any, false);
             }
             // 采用手动 ack 策略，自动 ack 会将队列消息直接分发
         }, { noAck: false });
