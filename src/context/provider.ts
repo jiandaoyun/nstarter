@@ -79,6 +79,13 @@ export class ContextProvider<T extends BaseContext> {
     }
 
     /**
+     * 当前环境是否初始化
+     */
+    public static hasInitialized(): boolean {
+        return !!ContextProvider._instance;
+    }
+
+    /**
      * 获取上下文请求处理中间件
      */
     public static getMiddleware<T extends BaseContext>(options: IContextMiddlewareOptions): RequestHandler {
