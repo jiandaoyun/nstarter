@@ -81,7 +81,7 @@ export class ContextProvider<T extends BaseContext> {
     /**
      * 当前环境是否初始化
      */
-    public static hasInitialize(): boolean {
+    public static hasInitialized(): boolean {
         return !!ContextProvider._instance;
     }
 
