@@ -11,7 +11,7 @@ const requestLogger = winston.loggers.add('request', {});
 
 export interface IRequestMeta {
     path: string;
-    ip: string;
+    ip: string | undefined;
     body: any;
     query: any;
     duration: number;
