@@ -1,7 +1,6 @@
 import os from 'os';
 import { AmqpConnectionManager, AmqpConnectionManagerClass } from 'amqp-connection-manager';
 import { RabbitMQConfig } from '../types';
-import { Logger } from "nstarter-core";
 
 /**
  * Rabbitmq 连接管理器
@@ -22,16 +21,6 @@ export class AmqpConnector {
                     connection_name: os.hostname(),
                     ...config.client
                 }
-            }
-        });
-        this.connection.on('connectFailed', ({ err }) => {
-            if (err) {
-                Logger.error(err);
-            }
-        });
-        this.connection.on('disconnect', ({ err }) => {
-            if (err) {
-                Logger.error(err);
             }
         });
     }
