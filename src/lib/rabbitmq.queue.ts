@@ -167,8 +167,10 @@ export class RabbitMqQueue<T, C extends BaseContext = BaseContext> {
                             ...message,
                             content: deserialized as IQueuePayload<T>
                         };
-                        // 注入上下文
-                        ContextProvider.startContext();
+                        if (ContextProvider.hasInitialized()) {
+                            // 如果已经初始化过上下文环境，注入上下文
+                            ContextProvider.startContext();
+                        }
                     }
                     process.nextTick(() => messageHandler(channel, payload));
                 },
