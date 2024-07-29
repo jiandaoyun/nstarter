@@ -1,6 +1,7 @@
 {
   "extends": "nstarter-tsconfig",
   "compilerOptions": {
-    "declaration": true
+    "declaration": true,
+    "moduleResolution": "Node16"
   }
 }
