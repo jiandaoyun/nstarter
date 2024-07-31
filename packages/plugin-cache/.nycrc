@@ -1,0 +1,14 @@
+{
+    "extension": [
+        ".ts"
+    ],
+    "exclude": [
+        "test/**/*",
+        "**/*.d.ts",
+        "**/node_modules/*"
+    ],
+    "reporter": [
+        "lcov",
+        "text"
+    ]
+}
