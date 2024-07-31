@@ -1,69 +1,9 @@
 {
   "name": "nstarter",
-  "description": "Startup CLI tool for node projects with template.",
-  "version": "0.6.1",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jiandaoyun/nstarter"
-  },
-  "license": "MIT",
-  "bin": {
-    "nstarter": "./dist/index.js"
-  },
-  "type": "module",
-  "files": [
-    "dist/",
-    "doc/",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
-    "prestart": "tsc --build tsconfig.json",
-    "start": "node --no-warnings --experimental-specifier-resolution=node ./dist/index.js",
-    "eslint": "eslint --ext .js,.ts --config .eslintrc.cjs ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
-  },
-  "keywords": [
-    "project starter",
-    "node.js",
-    "typescript",
-    "nstarter",
-    "starter",
-    "template"
-  ],
-  "dependencies": {
-    "async": "^3.2.4",
-    "fs-extra": "^11.1.0",
-    "glob": "^8.1.0",
-    "inquirer": "^9.1.4",
-    "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
-    "moment-timezone": "^0.5.40",
-    "nstarter-core": "^1.0.0",
-    "simple-git": "^3.16.1",
-    "winston": "^3.8.2",
-    "winston-daily-rotate-file": "^4.7.1",
-    "winston-transport": "^4.5.0",
-    "yargs": "^17.6.2"
-  },
-  "devDependencies": {
-    "@types/async": "^3.2.18",
-    "@types/fs-extra": "^11.0.1",
-    "@types/glob": "^8.0.1",
-    "@types/inquirer": "9.0.3",
-    "@types/js-yaml": "^4.0.5",
-    "@types/lodash": "^4.14.191",
-    "@types/node": "^18.11.18",
-    "@types/yargs": "^17.0.22",
-    "eslint": "^8.33.0",
-    "eslint-config-nstarter": "^3.0.0",
-    "nstarter-tsconfig": "^0.4.0",
-    "typescript": "~4.9.5"
-  },
-  "engines": {
-    "node": ">=18.12.0",
-    "npm": ">=8.19.0"
-  }
+  "private": true,
+  "workspaces": [
+    "cli",
+    "core",
+    "packages/*"
+  ]
 }
