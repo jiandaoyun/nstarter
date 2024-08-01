@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { RequestHandler } from 'express';
+import type { RequestHandler } from 'express';
 
 /**
  * requestId 初始化中间件

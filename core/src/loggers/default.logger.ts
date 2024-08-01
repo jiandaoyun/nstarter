@@ -1,5 +1,6 @@
-import winston, { Logger as WinstonLogger } from 'winston';
-import Transport from 'winston-transport';
+import type { Logger as WinstonLogger } from 'winston';
+import type Transport from 'winston-transport';
+import winston from 'winston';
 
 const levelConf = {
     levels: {

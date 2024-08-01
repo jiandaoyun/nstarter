@@ -1,4 +1,4 @@
-import { ContextItem } from './types';
+import type { ContextItem } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
