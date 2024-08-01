@@ -1,0 +1,7 @@
+{
+    "extends": "nstarter-tsconfig",
+    "compilerOptions": {
+        "declaration": true,
+        "sourceMap": true
+    }
+}

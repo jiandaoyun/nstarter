@@ -1,0 +1,15 @@
+/node_modules/
+/dist/
+/build/
+/lint/
+/test/
+
+/log/
+
+package-lock.json
+
+.nyc_output/
+coverage/
+
+.vscode/
+.idea/
