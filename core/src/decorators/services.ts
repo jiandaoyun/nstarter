@@ -1,6 +1,5 @@
 import getDecorators from 'inversify-inject-decorators';
-import type { IServiceMeta } from '../lib';
-import { serviceMetaKey, getSvcContainer, defaultSvcScope } from '../lib';
+import { serviceMetaKey, getSvcContainer, IServiceMeta, defaultSvcScope } from '../lib';
 import { camelCase } from '../utils';
 
 /**

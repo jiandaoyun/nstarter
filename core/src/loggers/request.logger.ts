@@ -1,9 +1,8 @@
-import type { Logger as WinstonLogger } from 'winston';
-import type Transport from 'winston-transport';
-import type { RequestHandler, Request, Response } from 'express';
-import type { LogLevel } from '../constants';
-import { once } from '../utils';
-import winston from 'winston';
+import winston, { Logger as WinstonLogger } from 'winston';
+import Transport from 'winston-transport';
+import { RequestHandler, Request, Response } from 'express';
+import { LogLevel } from '../constants';
+import {once} from '../utils';
 
 /**
  * 请求日志记录

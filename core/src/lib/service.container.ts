@@ -1,6 +1,6 @@
 import { Container, injectable } from 'inversify';
 import 'reflect-metadata';
-import type { IServiceMeta } from './types';
+import { IServiceMeta } from './types';
 
 /**
  * 默认服务注册作用域

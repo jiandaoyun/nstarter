@@ -2,17 +2,6 @@
   "extends": "nstarter-tsconfig",
   "compilerOptions": {
     "declaration": true,
-    "moduleResolution": "Node16",
-    "outDir": "./dist",
-    "typeRoots": [
-      "./typings",
-      "./node_modules/@types"
-    ]
-  },
-  "include": [
-    "./src/**/*"
-  ],
-  "exclude": [
-    "./node_modules"
-  ],
+    "moduleResolution": "Node16"
+  }
 }
