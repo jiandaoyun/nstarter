@@ -1,0 +1,7 @@
+.vscode/
+.idea/
+
+.gitignore
+makefile
+
+jenkinsfile.gvy
