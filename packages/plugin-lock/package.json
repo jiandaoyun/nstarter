@@ -27,14 +27,10 @@
     "@japa/run-failed-tests": "1.1.1",
     "@japa/runner": "2.5.1",
     "@japa/spec-reporter": "1.3.3",
-    "@types/node": "20.8.4",
     "@typescript-eslint/eslint-plugin": "6.7.5",
     "@typescript-eslint/parser": "6.7.5",
     "c8": "8.0.1",
-    "eslint": "8.51.0",
-    "ioredis": "5.3.2",
-    "ts-node": "10.9.1",
-    "typescript": "4.9.5"
+    "ioredis": "5.3.2"
   },
   "files": [
     "dist/**/*",
@@ -45,9 +41,5 @@
     "reporter": [
       "text-summary"
     ]
-  },
-  "volta": {
-    "node": "18.15.0",
-    "npm": "9.6.0"
   }
 }

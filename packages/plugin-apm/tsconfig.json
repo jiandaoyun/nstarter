@@ -1,17 +1,6 @@
 {
   "extends": "nstarter-tsconfig",
   "compilerOptions": {
-    "declaration": true,
-    "outDir": "./dist",
-    "typeRoots": [
-      "./typings",
-      "./node_modules/@types"
-    ]
-  },
-  "include": [
-    "./src/**/*"
-  ],
-  "exclude": [
-    "./node_modules"
-  ],
+    "declaration": true
+  }
 }

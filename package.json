@@ -7,5 +7,18 @@
     "packages/*",
     "tools/*",
     "development/*"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "eslint": "^8.56.0",
+    "eslint-config-nstarter": "^4.0.1",
+    "nstarter-tsconfig": "*",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.5.4"
+  },
+  "volta": {
+    "node": "20.16.0",
+    "npm": "10.8.1"
+  }
 }

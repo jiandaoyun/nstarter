@@ -25,24 +25,6 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.191",
-    "@types/node": "^18.11.18",
-    "eslint": "^8.33.0",
-    "eslint-config-nstarter": "^3.0.0",
-    "nstarter-core": "^1.0.0",
-    "nstarter-tsconfig": "^0.4.0",
-    "rimraf": "^4.1.2",
-    "typescript": "~4.9.5"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "https-proxy": "socks5://172.24.64.31:1080",
-    "http-proxy": "socks5://172.24.64.31:1080"
-  },
-  "engine": {
-    "node": ">=18.12.0"
-  },
-  "volta": {
-    "node": "18.13.0",
-    "npm": "8.19.3"
+    "nstarter-core": "*"
   }
 }
