@@ -1,9 +1,9 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AsyncLocalStorage } from 'async_hooks';
 import { v4 as uuidv4 } from 'uuid';
 
-import { BaseContext } from './base.context';
-import { IRequestContextIdGenerator, ContextItem, IContextMiddlewareOptions } from './types';
+import type { BaseContext } from './base.context';
+import type { IRequestContextIdGenerator, ContextItem, IContextMiddlewareOptions } from './types';
 
 export const defaultIdGenerator: IRequestContextIdGenerator = (req) => {
     return uuidv4();

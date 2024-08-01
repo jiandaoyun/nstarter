@@ -4,7 +4,7 @@
  * @date  2020/07/08
  */
 
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { Container, injectable } from 'inversify';
 import 'reflect-metadata';
 
