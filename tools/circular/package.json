@@ -1,0 +1,38 @@
+{
+  "name": "nstarter-circular",
+  "description": "Circular dependency check tool for nstarter projects",
+  "version": "0.3.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiandaoyun/nstarter-circular"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "nstarter-circular": "bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "eslint": "eslint --ext .js,.ts ./lib ./bin",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+  },
+  "keywords": [
+    "nstarter",
+    "circular"
+  ],
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "commander": "^10.0.0",
+    "escape-string-regexp": "^5.0.0",
+    "lodash": "^4.17.21",
+    "madge": "^6.0.0",
+    "ora": "^6.1.2"
+  },
+  "devDependencies": {
+    "eslint": "8.33.0",
+    "eslint-config-nstarter": "3.0.0"
+  },
+  "engines": {
+    "node": ">=18.12.0"
+  }
+}
