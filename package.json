@@ -5,6 +5,7 @@
     "cli",
     "core",
     "packages/*",
-    "tools/*"
+    "tools/*",
+    "development/*"
   ]
 }
