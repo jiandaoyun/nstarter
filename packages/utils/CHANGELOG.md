@@ -1,4 +1,7 @@
 # Changelog
+## 0.3.3
+* `arrayMap` 方法入参出参使用泛型
+
 ## 0.3.2
 * 添加`set`、`defaults`、`isString`、`isObject`、`arrayFilter`、`arrayIncludes`、`arrayMap`、`isPlainObject`、`isNumber`、`isObjectLike`工具方法支持
 
