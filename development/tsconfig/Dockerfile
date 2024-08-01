@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:18.13.0-alpine
+ARG NODE_IMAGE=node:20.16.0-alpine
 
 # 发布
 FROM ${NODE_IMAGE} as release

@@ -2,17 +2,17 @@
     "compilerOptions": {
         "module": "node16",
         "esModuleInterop": true,
-        "lib": ["ES2021"],
-        "target": "es2021",
+        "lib": ["es2023"],
+        "target": "es2022",
         "noImplicitAny": true,
         "allowJs": true,
         "checkJs": false,
         "skipLibCheck": true,
-        "moduleResolution": "node",
+        "moduleResolution": "Node16",
         "sourceMap": true,
         "declaration": false,
-        "outDir": "../../dist",
-        "baseUrl": "./src",
+        "outDir": "${configDir}/dist",
+        "baseUrl": "${configDir}/src",
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
         "forceConsistentCasingInFileNames": true,
@@ -26,15 +26,15 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "typeRoots": [
-            "../../typings",
-            "../../node_modules/@types"
+            "${configDir}/typings",
+            "${configDir}/node_modules/@types"
         ]
     },
     "include": [
-        "../../src/**/*"
+        "${configDir}/src/**/*"
     ],
     "exclude": [
-        "../../node_modules"
+        "${configDir}/node_modules"
     ],
     "ts-node": {
         "transpileOnly": true,

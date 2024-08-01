@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.0
+
+* 引入 `${configDir}` 模板变量，支持注入上下文工程实际路径
+
+### Breaking changes
+
+* 要求 Typescript 版本 >= 5.5
+
+
 ## v0.4.0
 
 * 升级输出以及 lib 引用版本 -> es2021
