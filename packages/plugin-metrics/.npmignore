@@ -1,0 +1,14 @@
+node_modules/
+
+.vscode/
+.idea/
+
+*.code-workspace
+
+.git/
+.gitkeep
+/.gitignore
+
+jenkinsfile.gvy
+
+/lint/

@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+
+.gitignore
+.npmrc
+makefile
+
+jenkinsfile.gvy

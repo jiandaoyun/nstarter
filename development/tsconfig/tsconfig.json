@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        "module": "node16",
+        "esModuleInterop": true,
+        "lib": ["ES2021"],
+        "target": "es2021",
+        "noImplicitAny": true,
+        "allowJs": true,
+        "checkJs": false,
+        "skipLibCheck": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "declaration": false,
+        "outDir": "../../dist",
+        "baseUrl": "./src",
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "forceConsistentCasingInFileNames": true,
+        "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "pretty": true,
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "typeRoots": [
+            "../../typings",
+            "../../node_modules/@types"
+        ]
+    },
+    "include": [
+        "../../src/**/*"
+    ],
+    "exclude": [
+        "../../node_modules"
+    ],
+    "ts-node": {
+        "transpileOnly": true,
+        "files": true,
+        "compilerOptions": {}
+    }
+}

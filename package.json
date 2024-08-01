@@ -4,6 +4,8 @@
   "workspaces": [
     "cli",
     "core",
-    "packages/*"
+    "packages/*",
+    "tools/*",
+    "development/*"
   ]
 }
