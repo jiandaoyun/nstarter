@@ -1,0 +1,30 @@
+{
+  "name": "nstarter-redis",
+  "version": "0.2.0",
+  "description": "nstarter redis 数据库连接管理组件",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": "./dist",
+  "types": "./dist",
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+  },
+  "dependencies": {
+    "ioredis": "5.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "eslint": "^8.33.0",
+    "eslint-config-nstarter": "^3.0.0",
+    "nstarter-tsconfig": "^0.4.0",
+    "typescript": "~4.9.5"
+  },
+  "engine": {
+    "node": ">=18.12.0"
+  }
+}
