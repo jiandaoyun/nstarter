@@ -1,8 +1,0 @@
-.vscode/
-.idea/
-
-.hugo_build.lock
-
-resources/_gen
-
-*.code-workspace
