@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "module": "node16",
+        "moduleResolution": "Node16",
         "esModuleInterop": true,
         "lib": ["es2023"],
         "target": "es2022",
@@ -8,7 +9,6 @@
         "allowJs": true,
         "checkJs": false,
         "skipLibCheck": true,
-        "moduleResolution": "Node16",
         "sourceMap": true,
         "declaration": false,
         "outDir": "${configDir}/dist",

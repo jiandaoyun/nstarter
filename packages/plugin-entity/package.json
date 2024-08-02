@@ -3,7 +3,8 @@
   "description": "nstarter 标准传输对象实体化插件",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jiandaoyun/nstarter-plugin-entity"
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-entity"
   },
   "keywords": [
     "nstarter", "plugin"
@@ -26,11 +27,6 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "chai": "^4.3.7",
-    "mocha": "^10.2.0",
-    "nyc": "15.1.0",
     "typescript-json-schema": "^0.55.0"
   }
 }

@@ -1,4 +1,4 @@
-import { Agent } from './types';
+import type { Agent } from './types';
 
 /**
  * APM 连接管理

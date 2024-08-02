@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-apm"
   },
   "main": "./dist",
   "types": "./dist",
@@ -22,12 +23,6 @@
     "nstarter-core": ">=1.0.0 <2.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^20.14.8",
-    "chai": "^4.3.7",
-    "mocha": "^10.2.0",
-    "nstarter-core": "*",
-    "nyc": "^15.1.0"
+    "nstarter-core": "*"
   }
 }

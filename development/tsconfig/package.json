@@ -3,8 +3,9 @@
     "description": "tsconfig template for nstarter projects",
     "version": "0.5.0",
     "repository": {
-        "type": "git",
-        "url": "https://github.com/jiandaoyun/nstarter"
+      "type": "git",
+      "url": "https://github.com/jiandaoyun/nstarter",
+      "directory": "development/tsconfig"
     },
     "main": "tsconfig.json",
     "keywords": [

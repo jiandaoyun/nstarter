@@ -5,15 +5,22 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jiandaoyun/nstarter"
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "core"
   },
   "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
-    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
+    "eslint": "eslint --ext .js,.ts  --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
-  "main": "./dist",
-  "types": "./dist",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "dependencies": {
     "http-status": "^1.7.4",
     "inversify": "^6.0.2",
@@ -24,13 +31,9 @@
     "winston-transport": "^4.7.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.16",
     "@types/express": "^4.17.21",
     "@types/express-session": "^1.18.0",
-    "@types/mocha": "^10.0.7",
-    "@types/uuid": "^10.0.0",
-    "chai": "^5.1.1",
-    "mocha": "^10.7.0"
+    "@types/uuid": "^10.0.0"
   },
   "engines": {
     "node": ">=20.16.0 <21.0",

@@ -4,7 +4,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-metrics"
   },
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",

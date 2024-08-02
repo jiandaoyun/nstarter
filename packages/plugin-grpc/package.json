@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://code.fineres.com/projects/FX/repos/nstarter-plugin-grpc/"
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-grpc"
   },
   "main": "./dist",
   "types": "./dist",
@@ -16,7 +17,7 @@
   },
   "dependencies": {
     "@grpc/proto-loader": "0.7.4",
-    "@grpc/grpc-js": "1.8.8",
+    "@grpc/grpc-js": "1.11.1",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13"
   },
