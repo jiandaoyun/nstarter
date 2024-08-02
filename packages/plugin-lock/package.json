@@ -2,6 +2,11 @@
   "name": "nstarter-lock",
   "version": "0.2.0",
   "description": "Mutex/Semaphore for Project NStarter.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-lock"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

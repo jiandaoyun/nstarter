@@ -3,6 +3,7 @@
 ## v0.5.0
 
 * 引入 `${configDir}` 模板变量，支持注入上下文工程实际路径
+* 面向 `esModule` 与 `commonJs` 场景分别提供模板配置，支撑 Hybrid package 生成
 
 ### Breaking changes
 

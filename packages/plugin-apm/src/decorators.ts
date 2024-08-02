@@ -1,6 +1,6 @@
 import { Logger } from 'nstarter-core';
 import { apmConnector } from './connector';
-import { ISpanOptions, ITransactionOptions, Span, Transaction } from './types';
+import type { ISpanOptions, ITransactionOptions, Span, Transaction } from './types';
 import { TraceResult, TraceType } from './enums';
 
 /**

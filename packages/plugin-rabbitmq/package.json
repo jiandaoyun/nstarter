@@ -4,7 +4,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-rabbitmq"
   },
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
@@ -26,13 +27,8 @@
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.5",
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
     "@types/retry": "^0.12.2",
-    "chai": "^4.3.7",
-    "mocha": "10.2.0",
     "nstarter-core": "*",
-    "nstarter-utils": "*",
-    "nyc": "^15.1.0"
+    "nstarter-utils": "*"
   }
 }

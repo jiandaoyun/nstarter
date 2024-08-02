@@ -1,4 +1,4 @@
-import agent from 'elastic-apm-node';
+import type agent from 'elastic-apm-node';
 
 export interface ITransactionOptions {
     type?: string;

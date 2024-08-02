@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/utils"
   },
   "main": "./dist",
   "types": "./dist",
@@ -15,12 +16,5 @@
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1",
-    "chai": "^4.3.7",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0"
-  }
+  "dependencies": {}
 }

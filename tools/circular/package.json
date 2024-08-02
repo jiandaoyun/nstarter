@@ -4,7 +4,8 @@
   "version": "0.3.3",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jiandaoyun/nstarter-circular"
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "tools/circular"
   },
   "license": "MIT",
   "type": "module",
