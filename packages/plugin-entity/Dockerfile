@@ -1,4 +1,4 @@
-FROM node:18.13.0-alpine as build
+FROM node:20.16.0-alpine as build
 
 WORKDIR /var/opt/build
 COPY . .

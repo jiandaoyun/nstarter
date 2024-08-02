@@ -1,6 +1,0 @@
-{
-  "extends": "nstarter-tsconfig",
-  "compilerOptions": {
-    "declaration": true
-  }
-}

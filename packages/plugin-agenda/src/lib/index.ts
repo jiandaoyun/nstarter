@@ -1,1 +1,0 @@
-export { AgendaManager } from './agenda';
