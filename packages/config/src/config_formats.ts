@@ -1,4 +1,5 @@
-import nconf, { IFormat } from 'nconf';
+import type { IFormat } from 'nconf';
+import nconf from 'nconf';
 import { dump, load } from 'js-yaml';
 
 const yamlFormat: IFormat = {

@@ -1,10 +1,12 @@
-import nconf, { IFormat } from 'nconf';
+import type { IFormat } from 'nconf';
+import nconf from 'nconf';
 import _ from 'lodash';
 import fs from 'fs';
 import { EventEmitter } from 'events';
 import { watch } from 'chokidar';
 
-import { ConfigLoadEvents, IConfig, IConfigLoaderOptions } from './types';
+import type { IConfig, IConfigLoaderOptions } from './types';
+import { ConfigLoadEvents } from './types';
 import { Logger } from './logger';
 import { configFormats } from './config_formats';
 
