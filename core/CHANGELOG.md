@@ -5,6 +5,7 @@
 * 基础框架组件升级
   - 升级 Node.js 版本要求 >= 20.16.0
   - 升级 typescript -> 5.5.4
+* 支持 `commonJs` + `esModule`
 
 
 ## v1.1.1

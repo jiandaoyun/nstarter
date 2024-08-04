@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
-import { CacheEvents, ICacheOptions } from '../types';
+import type { ICacheOptions } from '../types';
+import { CacheEvents } from '../types';
 
 /**
  * 缓存事件定义

@@ -26,8 +26,12 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "typeRoots": [
-            "${configDir}/typings",
-            "${configDir}/node_modules/@types"
+          "${configDir}/typings",
+          "${configDir}/node_modules/@types",
+          "${configDir}/../typings",
+          "${configDir}/../node_modules/@types",
+          "${configDir}/../../typings",
+          "${configDir}/../../node_modules/@types"
         ]
     },
     "include": [

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import { AbstractCacheManager } from './lib';
+import type { AbstractCacheManager } from './lib';
 import { CACHE_ARG_META_PREFIX } from './constants';
-import { ICacheOptions } from './types';
+import type { ICacheOptions } from './types';
 
 const getCacheArgMetaKey = (propertyKey: string) => `${ CACHE_ARG_META_PREFIX }:${ propertyKey }`;
 

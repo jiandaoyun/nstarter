@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0
+
+* 升级 nstarter-core -> 1.2.0
+  - 运行时环境 Node.js >= 20.16.0
+  - TypeScript -> 5.x
+* 支持 `commonJs` + `esModule`
+* 升级基础组件依赖
+  - `elastic-apm-node` -> `4.7.2`
+
+
 ## 0.3.0
 
 * 升级 nstarter-core -> 1.0.0
@@ -8,6 +18,7 @@
 
 * 升级 Node.js 版本要求 >= 18.12.0
 * 升级 typescript -> 4.9.5
+
 
 ## 0.2.1
 

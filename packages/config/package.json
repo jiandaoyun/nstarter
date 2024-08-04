@@ -1,6 +1,6 @@
 {
   "name": "nstarter-config",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "nstarter 配置加载管理器",
   "license": "MIT",
   "repository": {
@@ -9,22 +9,29 @@
     "directory": "packages/config"
   },
   "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
-    "lint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
-    "lint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
+    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
+    "eslint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
     "test": "nyc mocha --config .mocharc.yml"
   },
-  "main": "./dist",
-  "types": "./dist",
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "dependencies": {
-    "chokidar": "^3.5.3",
+    "chokidar": "^3.6.0",
     "js-yaml": "4.1.0",
     "lodash": "^4.17.21",
-    "nconf": "0.12.0"
+    "nconf": "0.12.1"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.5",
-    "@types/lodash": "^4.14.191",
-    "@types/nconf": "^0.10.3"
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.7",
+    "@types/nconf": "^0.10.7"
   }
 }
