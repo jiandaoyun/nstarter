@@ -10,6 +10,8 @@ build/
 coverage/
 .nyc_output/
 
+resources/
+
 ## IDE
 *.code-workspace
 .vscode/
