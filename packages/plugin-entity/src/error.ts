@@ -1,5 +1,5 @@
-import { ErrorObject } from 'ajv';
-import { AbstractEntity } from './abstract.entity';
+import type { ErrorObject } from 'ajv';
+import type { AbstractEntity } from './abstract.entity';
 
 /**
  * 结构校验错误

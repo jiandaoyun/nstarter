@@ -9,24 +9,30 @@
   "keywords": [
     "nstarter", "plugin"
   ],
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "MIT",
   "scripts": {
-    "compile": "tsc --build tsconfig.json",
-    "build": "rimraf dist && npm run compile",
-    "lint": "eslint --config .eslintrc.js --ext .ts --quiet ./src",
-    "lint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
+    "eslint": "eslint --config .eslintrc.js --ext .ts ./src",
+    "eslint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
     "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
     "schema": "typescript-json-schema \"./test/entities/*.ts\" \"*\" --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors --noExtraProps"
   },
-  "main": "./dist",
-  "types": "./dist",
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "dependencies": {
-    "ajv": "^8.12.0",
-    "ajv-formats": "^2.1.1",
-    "reflect-metadata": "^0.1.13"
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
-    "typescript-json-schema": "^0.55.0"
+    "typescript-json-schema": "^0.64.0"
   }
 }
