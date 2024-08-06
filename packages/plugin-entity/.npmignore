@@ -9,8 +9,8 @@ node_modules/
 .gitkeep
 /.gitignore
 
-release/
 lint/
+dist/.build
 
 coverage/
 .nyc_output/

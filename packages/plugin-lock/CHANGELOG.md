@@ -1,5 +1,20 @@
 ## 更新日志
 
+### 2024
+
+* 0.3.0:
+  * 环境依赖升级
+    - 运行时环境 Node.js >= 20.16.0
+    - TypeScript -> 5.x
+  * 组件升级
+    - ioredis - 5.4.0
+    - redis-semaphore -> 5.6.0
+      > changelog: https://github.com/swarthy/redis-semaphore/releases/tag/v5.6.0
+  * 开发环境依赖
+    - @typescript-eslint/* -> 7.17.0
+  * 支持 `commonJs` + `esModule`
+
+
 ### 2023
 
 * 0.2.x:

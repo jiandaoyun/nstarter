@@ -22,7 +22,7 @@ export const controllerMetaKey = Symbol.for('ioc#controller');
 export const registerCtl = (target: Constructor) => {
     const identifier = Reflect.getMetadata(controllerMetaKey, target);
     controllerContainer
-        .bind(identifier.id)
+        .bind<object>(identifier.id)
         .to(injectable()(target))
         .onActivation((context, target: object) => {
             return new Proxy(target, {
