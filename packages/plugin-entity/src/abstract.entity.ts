@@ -1,8 +1,8 @@
 import 'reflect-metadata';
-import { ValidateFunction } from 'ajv';
+import type { ValidateFunction } from 'ajv';
 
 import { SchemaManager } from './schema.manager';
-import { Definition } from 'typescript-json-schema';
+import type { Definition } from 'typescript-json-schema';
 import { ValidationError } from './error';
 import { metaKey } from './enums';
 

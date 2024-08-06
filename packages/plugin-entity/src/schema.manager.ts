@@ -1,8 +1,9 @@
 import * as fs from 'fs';
-import Ajv, { ValidateFunction } from 'ajv';
+import type { ValidateFunction } from 'ajv';
+import Ajv from 'ajv';
 import addDefaultFormats from "ajv-formats";
-import { Definition } from 'typescript-json-schema';
-import { ISchemaFormats } from './types';
+import type { Definition } from 'typescript-json-schema';
+import type { ISchemaFormats } from './types';
 
 /**
  * 实例模型管理器

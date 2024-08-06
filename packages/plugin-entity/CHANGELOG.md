@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0
+
+* 基础组件升级
+  - ajv -> 8.17.1
+  - ajv-formats -> 3.0.1
+  - reflect-metadata -> 0.2.2
+* 支持 `commonJs` + `esModule`
+
+
 ## 0.3.0
 
 * 基础依赖整体升级

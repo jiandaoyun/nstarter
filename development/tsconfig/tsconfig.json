@@ -25,6 +25,7 @@
         "strictNullChecks": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
+        "useDefineForClassFields": false,
         "typeRoots": [
           "${configDir}/typings",
           "${configDir}/node_modules/@types",
