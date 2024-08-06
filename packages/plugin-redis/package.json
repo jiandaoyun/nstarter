@@ -1,6 +1,6 @@
 {
   "name": "nstarter-redis",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "nstarter redis 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -8,14 +8,21 @@
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
     "directory": "packages/plugin-redis"
   },
-  "main": "./dist",
-  "types": "./dist",
   "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
   },
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "dependencies": {
-    "ioredis": "5.3.1"
+    "ioredis": "5.4.0"
   }
 }

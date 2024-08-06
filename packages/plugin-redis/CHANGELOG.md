@@ -1,6 +1,13 @@
 # Changelog
 
-## v0.2.0
+## 0.3.0
+
+* 组件升级
+  - ioredis -> 5.4.0
+* 支持 `commonJs` + `esModule`
+
+
+## 0.2.0
 
 * 移除 Connector 对外层服务的 name 管理行为
 * 使用原生 EventEmitter 抛出连接事件
@@ -20,14 +27,14 @@
 * 升级 typescript -> 4.9.5
 
 
-## v0.0.3
+## 0.0.3
 
 * 去掉nstarter-core和lodash依赖
 
-## v0.0.2
+## 0.0.2
 
 * 重载duplicate方法
 
-## v0.0.1
+## 0.0.1
 
 * 初始化项目
