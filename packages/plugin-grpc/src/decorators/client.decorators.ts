@@ -1,4 +1,4 @@
-import type { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
+import type { Client, handleClientStreamingCall, handleUnaryCall, ServerUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
@@ -67,13 +67,13 @@ export function grpcUnaryCall<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = async (conf: T) => {
+        descriptor.value = async (conf: ServerUnaryCall<T, R>) => {
             const client = await _getClient(target);
             const path = upperFirst(key);
             const method: handleUnaryCall<T, R> | undefined = _.get(client, ['__proto__', path]);
             if (method) {
                 return new Promise((resolve, reject) => {
-                    method.apply(client, [conf, (err: ServiceError, value: R | null) => {
+                    method.apply(client, [conf, (err: any, value?: R | null) => {
                         if (err) {
                             reject(deserializeError(err));
                         } else {

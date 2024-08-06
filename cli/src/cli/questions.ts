@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import fs from 'fs-extra';
-import inquirer, { ChoiceCollection, QuestionCollection } from 'inquirer';
-import { ProjectInstaller } from '../installer';
-import { IDeployArguments, IDeployConf } from '../types/cli';
+import type { ChoiceCollection, QuestionCollection } from 'inquirer';
+import inquirer from 'inquirer';
+import type { ProjectInstaller } from '../installer';
+import type { IDeployArguments, IDeployConf } from '../types/cli';
 import { config } from '../config';
 import { DEFAULT_TEMPLATE_TAG } from '../constants';
 

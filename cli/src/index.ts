@@ -8,7 +8,7 @@ try {
     runCli();
 } catch (err) {
     if (err) {
-        Logger.error(err.message);
+        Logger.error((err as Error).message);
         process.exit(1);
     }
     process.exit(0);

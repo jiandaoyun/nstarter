@@ -1,4 +1,5 @@
-import simpleGit, { outputHandler, SimpleGit } from 'simple-git';
+import type { outputHandler, SimpleGit } from 'simple-git';
+import simpleGit from 'simple-git';
 import { Logger } from 'nstarter-core';
 import { formatStdOutput } from '../utils';
 

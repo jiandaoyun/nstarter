@@ -118,7 +118,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                     await this._handleWithRetry(message);
                 }
             } catch (err) {
-                this._error(err, message);
+                this._error(err as Error, message);
             } finally {
                 // 确保消费过程 message 被 ack
                 // NOTICE: FXD-60912 调用 ChannelWrapper 去 ack 消息，会导致消息 deliver 和 ack 的不是同一个 channel
@@ -197,7 +197,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                 || (timeoutTime && timeoutTime < Date.now())
             ) {
                 // 超出重试计数
-                this._error(err, message);
+                this._error(err as Error, message);
             } else {
                 // 重新发布至队列
                 try {
@@ -217,7 +217,7 @@ export class RabbitMqConsumer<T, C extends BaseContext = BaseContext> extends Ev
                         headers
                     });
                 } catch (err) {
-                    this._error(err, message);
+                    this._error(err as Error, message);
                 }
             }
         }

@@ -11,8 +11,6 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "declaration": false,
-        "incremental": true,
-        "tsBuildInfoFile": "${configDir}/dist/.build",
         "outDir": "${configDir}/dist",
         "baseUrl": "${configDir}/src",
         "allowUnreachableCode": false,

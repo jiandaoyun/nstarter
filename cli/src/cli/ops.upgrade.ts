@@ -5,7 +5,7 @@ import { Logger } from 'nstarter-core';
 
 import { DEFAULT_TEMPLATE_TAG } from '../constants';
 import { config } from '../config';
-import { IDependencyMap, IPackageConf, TDependencyType } from '../types/installer';
+import type { IDependencyMap, IPackageConf, TDependencyType } from '../types/installer';
 
 /**
  * 读取 package.json
@@ -108,6 +108,6 @@ export const upgradeProjectWithTemplate = (target = './', tag = DEFAULT_TEMPLATE
         );
         savePkg(target, newPkg);
     } catch (err) {
-        Logger.error(err.message);
+        Logger.error((err as Error).message);
     }
 };
