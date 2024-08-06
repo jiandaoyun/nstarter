@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0
+* 升级 nstarter-core -> 1.2.0
+  - 运行时环境 Node.js >= 20.16.0
+  - TypeScript -> 5.x
+* 组件升级
+  - @grpc/proto-loader -> 0.7.13
+  - @grpc/grpc-js -> 1.11.1
+  - reflect-metadata -> 0.2.2
+* 移除已被废弃的 `server.start()` 调用
+* 支持 `commonJs` + `esModule`
+
+
 ## v0.4.2
 * 添加 `keepalive` 机制, 修复隔段时间随机 `CALL CANCELLED` 错误
 * npm源更换为华为云镜像源

@@ -1,7 +1,8 @@
 import _ from 'lodash';
-import { Client, loadPackageDefinition } from '@grpc/grpc-js';
+import type { Client} from '@grpc/grpc-js';
+import { loadPackageDefinition } from '@grpc/grpc-js';
 import { loadSync } from '@grpc/proto-loader';
-import { IPackageLoadOptions } from '../types';
+import type { IPackageLoadOptions } from '../types';
 import { DEFAULT_PKG } from '../constants';
 
 export const protoRegistry: Record<string, typeof Client> = {};

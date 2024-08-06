@@ -1,7 +1,8 @@
-import { Client, credentials } from '@grpc/grpc-js';
+import type { Client} from '@grpc/grpc-js';
+import { credentials } from '@grpc/grpc-js';
 import https, { Agent } from 'https';
-import { TLSSocket } from 'tls';
-import { IClientConfig } from '../types';
+import type { TLSSocket } from 'tls';
+import type { IClientConfig } from '../types';
 import { getProtoServiceClient } from './proto';
 import { DEFAULT_CHANNEL_OPTION } from '../constants';
 
