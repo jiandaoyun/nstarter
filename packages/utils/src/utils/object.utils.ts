@@ -3,7 +3,7 @@
  * @author Henry.Zeng
  * @date 2023/4/6
  */
-import { NULL } from './types';
+import type { NULL } from './types';
 import { isNil, isString, isObject } from './common.utils';
 
 /**
