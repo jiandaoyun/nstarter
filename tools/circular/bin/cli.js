@@ -8,6 +8,7 @@ import output from 'madge/lib/output.js';
 import { CircularChecker, pkg } from '../lib/index.js';
 
 program
+    .name('nstarter-circular')
     .version(pkg.version)
     .usage('[options] <src...>')
     .option('-b, --basedir <path>', 'base directory for resolving paths')
