@@ -1,4 +1,4 @@
-import { LabelValues } from 'prom-client';
+import type { LabelValues } from 'prom-client';
 
 export interface IReqLabels extends LabelValues<string> {
     method: string;

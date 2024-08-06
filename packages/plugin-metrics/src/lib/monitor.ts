@@ -1,4 +1,4 @@
-import { IFnLabels, IReqLabels } from '../types';
+import type { IFnLabels, IReqLabels } from '../types';
 import { reqCountMetric, reqTimeMetric, fnCountMetric, fnTimeMetric } from './metrics';
 
 export class MetricsMonitor {

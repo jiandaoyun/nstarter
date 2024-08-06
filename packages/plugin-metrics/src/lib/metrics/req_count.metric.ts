@@ -1,6 +1,6 @@
 import { BaseMetric } from '../index';
 import { Counter } from 'prom-client';
-import { IReqLabels } from '../../types';
+import type { IReqLabels } from '../../types';
 
 class ReqCountMetric extends BaseMetric<Counter<string>> {
     protected _metric = new Counter({

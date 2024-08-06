@@ -1,6 +1,6 @@
 import { Counter } from 'prom-client';
 import { BaseMetric } from '../index';
-import { IFnLabels } from '../../types';
+import type { IFnLabels } from '../../types';
 
 class FnCountMetric extends BaseMetric<Counter<string>> {
     protected _metric = new Counter({
