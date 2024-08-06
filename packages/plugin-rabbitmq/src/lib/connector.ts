@@ -1,6 +1,7 @@
 import os from 'os';
-import { AmqpConnectionManager, AmqpConnectionManagerClass } from 'amqp-connection-manager';
-import { RabbitMQConfig } from '../types';
+import type { AmqpConnectionManager} from 'amqp-connection-manager';
+import { AmqpConnectionManagerClass } from 'amqp-connection-manager';
+import type { RabbitMQConfig } from '../types';
 
 /**
  * Rabbitmq 连接管理器

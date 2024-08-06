@@ -1,8 +1,9 @@
-import { BaseContext, ContextProvider } from 'nstarter-core';
-import { AmqpConnectionManager, ChannelWrapper, Options, SetupFunc, Channel } from 'amqp-connection-manager';
-import { ConsumeMessage } from 'amqplib';
+import type { BaseContext} from 'nstarter-core';
+import { ContextProvider } from 'nstarter-core';
+import type { AmqpConnectionManager, ChannelWrapper, Options, SetupFunc, Channel } from 'amqp-connection-manager';
+import type { ConsumeMessage } from 'amqplib';
 import { DefaultConfig, OverflowMethod, RabbitProps } from '../constants';
-import { IMessageHandler, IQueueContext, IQueueMessage, IQueuePayload, IWrappedPayload } from '../types';
+import type { IMessageHandler, IQueueContext, IQueueMessage, IQueuePayload, IWrappedPayload } from '../types';
 
 
 export interface IQueueConfig {
