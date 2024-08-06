@@ -1,4 +1,4 @@
-import { ServerWritableStream } from '@grpc/grpc-js';
+import type { ServerWritableStream } from '@grpc/grpc-js';
 
 export interface IServerConfig {
     port: number;

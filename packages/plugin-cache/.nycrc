@@ -10,5 +10,6 @@
     "reporter": [
         "lcov",
         "text"
-    ]
+    ],
+    "cache": false
 }

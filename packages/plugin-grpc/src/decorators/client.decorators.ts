@@ -1,9 +1,9 @@
-import { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
+import type { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
-import { StreamResult } from '../types';
+import type { StreamResult } from '../types';
 import { deserializeError, getRpcName, upperFirst } from '../utils';
 
 /**

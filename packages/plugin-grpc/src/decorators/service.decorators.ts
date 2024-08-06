@@ -1,11 +1,12 @@
-import { handleServerStreamingCall, handleUnaryCall, Metadata, UntypedHandleCall } from '@grpc/grpc-js';
-import { HandleCall } from '@grpc/grpc-js/build/src/server-call';
+import type { handleServerStreamingCall, handleUnaryCall, UntypedHandleCall } from '@grpc/grpc-js';
+import { Metadata } from '@grpc/grpc-js';
+import type { HandleCall } from '@grpc/grpc-js/build/src/server-call';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { DEFAULT_PKG, METHOD_PREFIX } from '../constants';
 import { server } from '../lib';
 import { getProtoServiceName } from '../lib/proto';
-import { GrpcHandler } from '../types';
+import type { GrpcHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
 
 /**

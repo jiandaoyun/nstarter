@@ -1,4 +1,4 @@
-import { ServiceError } from '@grpc/grpc-js';
+import type { ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
 import {
     LogLevel,

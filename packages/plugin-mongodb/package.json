@@ -1,6 +1,6 @@
 {
   "name": "nstarter-mongodb",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "nstarter Mongodb 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -8,23 +8,32 @@
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
     "directory": "packages/plugin-mongodb"
   },
-  "main": "./dist",
-  "types": "./dist",
   "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
     "test": "nyc mocha --config .mocharc.yml",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
   },
   "dependencies": {
-    "@mongoosejs/async-hooks": "0.0.4"
+    "@mongoosejs/async-hooks": "0.0.5",
+    "@types/mongoosejs__async-hooks": "^0.0.0"
   },
   "peerDependencies": {
-    "mongoose": ">=6.11.3 <7.0.0",
-    "nstarter-core": ">=1.0.0 <2.0.0"
+    "mongoose": ">=7.8.0 <8.0.0",
+    "nstarter-core": ">=1.2.0 <2.0.0"
   },
   "devDependencies": {
-    "mongoose": "6.12.0",
+    "mongoose": "7.8.0",
     "nstarter-core": "*"
   }
 }

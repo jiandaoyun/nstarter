@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
 import retry from 'async-retry';
-import { Options } from 'amqplib';
+import type { Options } from 'amqplib';
 
 import { CustomProps, DefaultConfig, Priority, ProducerEvents } from '../constants';
-import { IProduceHeaders, IProducerConfig, IQueueContext, IQueuePayload } from '../types';
-import { RabbitMqQueue } from './rabbitmq.queue';
-import { BaseContext } from 'nstarter-core';
+import type { IProduceHeaders, IProducerConfig, IQueueContext, IQueuePayload } from '../types';
+import type { RabbitMqQueue } from './rabbitmq.queue';
+import type { BaseContext } from 'nstarter-core';
 
 /**
  * 生产事件

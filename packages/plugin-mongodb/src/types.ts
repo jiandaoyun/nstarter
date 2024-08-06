@@ -1,5 +1,5 @@
-import { ParsedUrlQueryInput } from 'querystring';
-import { AuthMechanism, ObjectId as MongodbObjectId } from 'mongodb';
+import type { ParsedUrlQueryInput } from 'querystring';
+import type { AuthMechanism, ObjectId as MongodbObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 
 export interface IMongodbQueryParams extends ParsedUrlQueryInput {

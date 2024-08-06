@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0
+
+* 升级 nstarter-core -> 1.2.0
+  - 运行时环境 Node.js >= 20.16.0
+  - TypeScript -> 5.x
+* 组件升级
+  - prom-client -> 15.1.3
+* 支持 `commonJs` + `esModule`
+
 ## 0.3.0
 
 * 升级 nstarter 框架，适配 nstarter-core 1.0

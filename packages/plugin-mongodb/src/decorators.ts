@@ -1,5 +1,5 @@
-import { TransactionOptions } from 'mongodb';
-import { ClientSession } from 'mongoose';
+import type { TransactionOptions } from 'mongodb';
+import type { ClientSession } from 'mongoose';
 import { defaultConnection } from './connector';
 
 const SESSION_IDX = 'mongodb:sess_idx';

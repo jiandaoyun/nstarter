@@ -24,7 +24,8 @@
     "prestart": "tsc --build tsconfig.json",
     "start": "node --no-warnings ./dist/index.js",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.cjs ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint"
   },
   "keywords": [
     "project starter",

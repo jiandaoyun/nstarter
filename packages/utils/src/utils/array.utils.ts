@@ -2,7 +2,7 @@
  * 数组处理工具方法
  */
 
-import { NULL } from './types';
+import type { NULL } from './types';
 import { isNil } from './common.utils';
 
 /**

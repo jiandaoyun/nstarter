@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events';
-import { BaseContext, ContextProvider } from 'nstarter-core';
-import { Channel, Options } from 'amqp-connection-manager';
+import type { BaseContext} from 'nstarter-core';
+import { ContextProvider } from 'nstarter-core';
+import type { Channel, Options } from 'amqp-connection-manager';
 
 import retry from 'async-retry';
 import { ConsumerEvents, CustomProps, DefaultConfig, defaultStopTimeout, RetryMethod } from '../constants';
-import { IConsumerConfig, IQueueContext, IQueueMessage, IQueuePayload } from '../types';
-import { RabbitMqQueue } from './rabbitmq.queue';
+import type { IConsumerConfig, IQueueContext, IQueueMessage, IQueuePayload } from '../types';
+import type { RabbitMqQueue } from './rabbitmq.queue';
 import { sleep } from '../utils';
 
 

@@ -1,7 +1,19 @@
 # Changelog
+
+## 0.9.0
+
+* 升级 nstarter-core -> 1.2.0
+  - 运行时环境 Node.js >= 20.16.0
+  - TypeScript -> 5.x
+* 组件升级
+  - amqp-connection-manager -> 4.1.14
+  - amqplib -> 0.10.4
+
+
 ## 0.8.0
 
 * 升级nstarter-core包，调整消费者默认注入上下文逻辑
+
 
 ## 0.7.1
 

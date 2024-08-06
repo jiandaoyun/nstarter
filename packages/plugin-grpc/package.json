@@ -1,6 +1,6 @@
 {
   "name": "nstarter-grpc",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "nstarter grpc 通信插件",
   "license": "MIT",
   "repository": {
@@ -8,24 +8,32 @@
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
     "directory": "packages/plugin-grpc"
   },
-  "main": "./dist",
-  "types": "./dist",
   "scripts": {
-    "build": "rimraf dist && tsc --build tsconfig.json",
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
   },
   "dependencies": {
-    "@grpc/proto-loader": "0.7.4",
+    "@grpc/proto-loader": "0.7.13",
     "@grpc/grpc-js": "1.11.1",
     "lodash": "^4.17.21",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
-    "nstarter-core": ">=1.0.0 <2.0.0"
+    "nstarter-core": ">=1.2.0 <2.0.0"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.191",
+    "@types/lodash": "^4.17.7",
     "nstarter-core": "*"
   }
 }

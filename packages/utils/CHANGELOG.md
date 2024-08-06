@@ -1,4 +1,12 @@
 # Changelog
+
+## 0.4.0
+* 升级 nstarter-core -> 1.2.0
+    - 运行时环境 Node.js >= 20.16.0
+    - TypeScript -> 5.x
+* 支持 `commonJs` + `esModule`
+
+
 ## 0.3.3
 * `arrayMap` 方法入参出参使用泛型
 

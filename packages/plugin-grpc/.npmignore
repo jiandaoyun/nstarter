@@ -12,3 +12,5 @@ node_modules/
 jenkinsfile.gvy
 
 /lint/
+
+dist/.build

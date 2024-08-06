@@ -11,7 +11,7 @@ import {
     objectTag,
     RandomString
 } from '../constants';
-import { IPagination } from './types';
+import type { IPagination } from './types';
 
 /**
  * 等待执行

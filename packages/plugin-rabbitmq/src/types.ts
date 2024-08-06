@@ -1,12 +1,12 @@
-import {
+import type {
     ConsumeMessage,
     MessageProperties,
     MessagePropertyHeaders,
     Options
 } from 'amqplib';
-import { Priority, RetryMethod } from './constants';
-import { BaseContext, ContextItem } from 'nstarter-core';
-import { Channel } from 'amqp-connection-manager';
+import type { Priority, RetryMethod } from './constants';
+import type { BaseContext, ContextItem } from 'nstarter-core';
+import type { Channel } from 'amqp-connection-manager';
 
 type Extend<Source, Target> = Omit<Source, keyof Target> & Target;
 
@@ -74,7 +74,7 @@ export interface IConsumerConfig<T> {
 export type IQueueMessage<T> = Extend<ConsumeMessage, {
     content: IQueuePayload<T>,
     properties: Extend<MessageProperties, {
-        headers: IProduceHeaders
+        headers?: IProduceHeaders
     }>,
     duration?: number
 }>;

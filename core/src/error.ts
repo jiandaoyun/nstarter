@@ -24,7 +24,7 @@ export class NsError extends Error {
     public readonly code: number;
     public readonly level: LogLevel;
     public readonly meta: any;
-    public readonly httpCode: number;
+    public readonly httpCode?: number;
 
     constructor(name: string, code: number, level?: LogLevel, options?: ErrorOptions) {
         super();

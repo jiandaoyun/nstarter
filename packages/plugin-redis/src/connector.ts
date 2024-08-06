@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
-import { Cluster, Redis, RedisOptions } from 'ioredis';
-import { ILuaScriptConfig, IRedisConfig } from './types';
+import type { RedisOptions } from 'ioredis';
+import { Cluster, Redis } from 'ioredis';
+import type { ILuaScriptConfig, IRedisConfig } from './types';
 
 /**
  * redis实例代理

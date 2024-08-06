@@ -1,4 +1,4 @@
-import { IServerConfig } from '../types';
+import type { IServerConfig } from '../types';
 import { Server, ServerCredentials } from '@grpc/grpc-js';
 
 export const server = new Server();
@@ -13,7 +13,6 @@ export const startGrpcServer = async (conf: IServerConfig) => {
             }
         });
     });
-    server.start();
 };
 
 export const stopGrpcServer = async () => {

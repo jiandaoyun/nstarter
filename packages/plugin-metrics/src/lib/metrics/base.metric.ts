@@ -1,4 +1,4 @@
-import { Metric } from 'prom-client';
+import type { Metric } from 'prom-client';
 import { monitorRegistry } from '../registry';
 
 export abstract class BaseMetric<T extends Metric<any>> {

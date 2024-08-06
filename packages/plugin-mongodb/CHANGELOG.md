@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0
+
+* 升级 nstarter-core -> 1.2.0
+    - 运行时环境 Node.js >= 20.16.0
+    - TypeScript -> 5.x
+* 升级 mongoose 依赖 -> 7.8.0 
+  - 主要影响
+    - 移除 `remove()` 方法，使用标准 `deleteOne()`, `deleteMany()` 取代
+    - 移除 `update()` 方法，使用 `updateOne()`, `updateMany()` 取代
+    - 移除 `callback` 异步返回支持
+    - `ObjectId` 要求使用 `new` 初始化
+  > 其他兼容性说明 https://mongoosejs.com/docs/7.x/docs/migrating_to_7.html
+* 支持 `commonJs` + `esModule`
+
+
 ## v0.5.2
 * 添加 `isValidObjectId` 方法，用于判断是否为有效的 ObjectId
 * 添加 `isObjectIdEqual` 方法，用于判断两个 ObjectId 是否相等

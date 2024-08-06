@@ -1,8 +1,9 @@
 import querystring from 'querystring';
 import { Logger } from 'nstarter-core';
-import mongoose, { Connection, ConnectOptions, Promise } from 'mongoose';
+import type { Connection, ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
 import mongooseAsyncHooks from '@mongoosejs/async-hooks';
-import { IMongodbConfig, IMongodbQueryParams } from './types';
+import type { IMongodbConfig, IMongodbQueryParams } from './types';
 import { promisify } from 'util';
 import { RECONNECT_DELAY } from './constants';
 

@@ -1,4 +1,4 @@
-import { Options } from '@grpc/proto-loader';
+import type { Options } from '@grpc/proto-loader';
 
 export interface IPackageLoadOptions {
     protoPath: string;
