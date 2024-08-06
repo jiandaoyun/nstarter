@@ -11,7 +11,8 @@
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint"
   },
   "exports": {
     ".": {
