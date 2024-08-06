@@ -1,4 +1,4 @@
-import { ClientSession } from "mongoose";
+import type { ClientSession } from "mongoose";
 
 export abstract class MongodbRepo {
     protected readonly _session?: ClientSession;

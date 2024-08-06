@@ -12,7 +12,7 @@
     "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
-    "clean": "rimraf coverage && rimraf .nyc_output"
+    "clean": "rimraf dist && rimraf coverage && rimraf .nyc_output"
   },
   "exports": {
     ".": {

@@ -1,4 +1,4 @@
-import { MongoId, ObjectId } from './types';
+import type { MongoId, ObjectId } from './types';
 
 /**
  * 判断 ObjectId 对象是否为空
