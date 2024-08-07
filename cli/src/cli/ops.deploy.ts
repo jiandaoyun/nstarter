@@ -1,11 +1,12 @@
 import _ from 'lodash';
 import { promisify } from 'util';
-import { createPromptModule, PromptModule } from 'inquirer';
+import type { PromptModule } from 'inquirer';
+import { createPromptModule } from 'inquirer';
 import { Logger } from 'nstarter-core';
 
 import { getDeployQuestions, getTemplateQuestions, getTemplateUpdateQuestions, npmInstallQuestions } from './questions';
 import { ProjectInstaller } from '../installer';
-import { IDeployArguments, IDeployConf, INpmInstallConf, ITemplateConf } from '../types/cli';
+import type { IDeployArguments, IDeployConf, INpmInstallConf, ITemplateConf } from '../types/cli';
 import { prepareTemplate, updateTemplate } from './ops.template';
 import { gitCheckTemplateVersion } from './ops.git';
 import { config } from '../config';

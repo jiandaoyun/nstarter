@@ -78,8 +78,8 @@ export const apmTransaction = (name?: string, options: ITransactionOptions = {})
         labels: null,
         ...options
     };
-    return (target, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const taskName = name || `${ target.constructor.name }:${ propertyKey }`;
+    return (target, propertyKey: symbol | string, descriptor: PropertyDescriptor) => {
+        const taskName = name || `${ target.constructor.name }:${ String(propertyKey) }`;
         const func = descriptor.value;
         descriptor.value = (...args: any[]) => {
             const apm = apmConnector.apm;
@@ -115,8 +115,8 @@ export const apmSpan = (name?: string, options: ISpanOptions = {}): MethodDecora
         labels: null,
         ...options
     };
-    return (target, propertyKey: string, descriptor: PropertyDescriptor) => {
-        const taskName = name || `${ target.constructor.name }:${ propertyKey }`;
+    return (target, propertyKey: symbol | string, descriptor: PropertyDescriptor) => {
+        const taskName = name || `${ target.constructor.name }:${ String(propertyKey) }`;
         const func = descriptor.value;
         descriptor.value = (...args: any[]) => {
             const apm = apmConnector.apm;

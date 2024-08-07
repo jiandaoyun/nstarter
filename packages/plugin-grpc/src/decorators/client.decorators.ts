@@ -1,9 +1,8 @@
-import type { Client, handleClientStreamingCall, handleUnaryCall, ServiceError } from '@grpc/grpc-js';
+import type { Client, ClientReadableStream, handleUnaryCall, ServerUnaryCall, ServiceError } from '@grpc/grpc-js';
 import _ from 'lodash';
 import 'reflect-metadata';
 import { CLIENT_META, DEFAULT_PKG } from '../constants';
 import { getGrpcServiceClient } from '../lib';
-import type { StreamResult } from '../types';
 import { deserializeError, getRpcName, upperFirst } from '../utils';
 
 /**
@@ -34,9 +33,9 @@ export function grpcStreamingCall<T, R>() {
         descriptor.value = async (...args: any[]) => {
             const client = await _getClient(target);
             const path = upperFirst(key);
-            const method: handleClientStreamingCall<T, R> = _.get(client, ['__proto__', path]);
+            const method: (...args: any[]) => ClientReadableStream<R> = _.get(client, ['__proto__', path]);
             if (method) {
-                const stream: StreamResult<R> = method.apply(client, args);
+                const stream: ClientReadableStream<R> = method.apply(client, args);
                 if (stream) {
                     const oriFunc = stream.on;
                     stream.on = function on(event: string | symbol, listener: (...args: any[]) => void) {
@@ -67,13 +66,13 @@ export function grpcUnaryCall<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        descriptor.value = async (conf: T) => {
+        descriptor.value = async (conf: ServerUnaryCall<T, R>) => {
             const client = await _getClient(target);
             const path = upperFirst(key);
             const method: handleUnaryCall<T, R> | undefined = _.get(client, ['__proto__', path]);
             if (method) {
                 return new Promise((resolve, reject) => {
-                    method.apply(client, [conf, (err: ServiceError, value: R | null) => {
+                    method.apply(client, [conf, (err: any, value?: R | null) => {
                         if (err) {
                             reject(deserializeError(err));
                         } else {

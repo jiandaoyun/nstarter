@@ -20,3 +20,7 @@ resources/
 
 ## OS
 .DS_Store
+
+
+.nx/cache
+.nx/workspace-data

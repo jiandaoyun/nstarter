@@ -1,4 +1,4 @@
-import { ProjectModule } from '../installer/module.conf';
+import type { ProjectModule } from '../installer/module.conf';
 
 export interface IModuleConf {
     name: string;

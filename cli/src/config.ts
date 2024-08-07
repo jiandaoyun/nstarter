@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { Logger } from 'nstarter-core';
 import { CLI_NAME, DEFAULT_TEMPLATE_TAG } from './constants';
-import { configKey, configValue, IToolConf } from './types/config';
+import type { configKey, configValue, IToolConf } from './types/config';
 import { pkg } from './pkg';
 
 /**

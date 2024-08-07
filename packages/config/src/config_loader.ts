@@ -92,10 +92,12 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
                 ...nconf.get()
             });
             Logger.horizontalRule();
-        } catch (err) {
+        } catch (err: unknown) {
             // 配置阶段 logger 未完成初始化
             Logger.error('Invalid config file, please check.');
-            Logger.error(err.message);
+            if (err instanceof Error) {
+                Logger.error(err.message);
+            }
             throw err;
         }
     }

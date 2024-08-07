@@ -1,4 +1,8 @@
-import type { handleServerStreamingCall, handleUnaryCall, UntypedHandleCall } from '@grpc/grpc-js';
+import type {
+    handleServerStreamingCall,
+    handleUnaryCall,
+    UntypedHandleCall
+} from '@grpc/grpc-js';
 import { Metadata } from '@grpc/grpc-js';
 import type { HandleCall } from '@grpc/grpc-js/build/src/server-call';
 import _ from 'lodash';
@@ -6,7 +10,7 @@ import 'reflect-metadata';
 import { DEFAULT_PKG, METHOD_PREFIX } from '../constants';
 import { server } from '../lib';
 import { getProtoServiceName } from '../lib/proto';
-import type { GrpcHandler } from '../types';
+import type { ServerStreamingHandler, UnaryHandler } from '../types';
 import { getRpcName, upperFirst } from '../utils';
 
 /**
@@ -52,7 +56,7 @@ export function grpcUnaryMethod<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        const method: GrpcHandler<T, R> = descriptor.value;
+        const method: UnaryHandler<T, R> = descriptor.value;
         const run: handleUnaryCall<T, R> = (call, callback) => {
             method.apply(null, [call.request])
                 .then(
@@ -82,7 +86,7 @@ export function grpcStreamingMethod<T, R>() {
         key: string,
         descriptor: PropertyDescriptor
     ) => {
-        const method: GrpcHandler<T, R> = descriptor.value;
+        const method: ServerStreamingHandler<T, R> = descriptor.value;
         const run: handleServerStreamingCall<T, R> = (call) => {
             const oriFunc = call.emit;
             call.emit = function emit(event: string | symbol, ...args: any[]) {
@@ -95,8 +99,8 @@ export function grpcStreamingMethod<T, R>() {
                         _.extend(err, {
                             metadata
                         });
-                        return oriFunc.apply(this, [event, err]);
                     }
+                    return oriFunc.apply(this, [event, err]);
                 } else {
                     // 正常执行
                     return oriFunc.apply(this, [event, ...args]);
