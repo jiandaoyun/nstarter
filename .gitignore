@@ -10,13 +10,14 @@ build/
 coverage/
 .nyc_output/
 
+*.tgz
+
 resources/
 
 ## IDE
 *.code-workspace
 .vscode/
 .idea/
-
 
 ## OS
 .DS_Store
