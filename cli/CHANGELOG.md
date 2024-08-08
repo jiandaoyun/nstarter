@@ -1,5 +1,12 @@
 # Changelog
 
+### v0.7.0
+
+* 升级 nstarter-core -> 1.2.0
+    - 运行时环境 Node.js >= 20.16.0
+    - TypeScript -> 5.x
+* CLI 基础依赖升级
+
 ### v0.6.1
 
 * 增加基于模板更新当前工程依赖能力

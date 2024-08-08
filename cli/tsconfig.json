@@ -1,7 +1,7 @@
 {
   "extends": "nstarter-tsconfig",
   "compilerOptions": {
-    "moduleResolution": "bundler",
-    "module": "es2022"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }

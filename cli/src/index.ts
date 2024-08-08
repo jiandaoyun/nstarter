@@ -1,4 +1,4 @@
-#!/usr/bin/env node --no-warnings --experimental-specifier-resolution=node
+#!/usr/bin/env node --no-warnings --import=extensionless/register
 import { Logger } from 'nstarter-core';
 import { runCli } from './cli';
 import { initLogger } from './logger';
