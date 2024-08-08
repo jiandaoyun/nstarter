@@ -6,7 +6,7 @@
 
 import { Mutex as DefaultMutex, RedlockMutex } from 'redis-semaphore';
 import { getRedis } from './redis';
-import { ILock, ILockOptions } from './types';
+import type { ILock, ILockOptions } from './types';
 
 export class DistributedLock implements ILock {
     readonly #key;

@@ -4,7 +4,7 @@
  * @date 2022/10/15
  */
 
-import { IResource } from './types';
+import type { IResource } from './types';
 
 /**
  * lock guard.

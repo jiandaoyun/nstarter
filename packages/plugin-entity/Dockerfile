@@ -10,7 +10,7 @@ ENV NODE_ENV=test
 
 RUN mkdir -p ./resources && \
     npm run schema && \
-    npm run lint:html && \
+    npm run eslint:html && \
     npm run test && \
     npm run build
 

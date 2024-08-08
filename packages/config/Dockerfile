@@ -11,7 +11,7 @@ RUN npm install
 FROM build-env as build
 
 ENV NODE_ENV=test
-RUN npm run lint:html && \
+RUN npm run eslint:html && \
     npm run test &&  \
     npm run build
 

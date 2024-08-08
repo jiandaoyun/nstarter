@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
-    "eslint": "eslint --ext .js,.ts --config .eslintrc.js ./src",
-    "eslint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
+    "eslint": "eslint --ext .js,.ts --config ../../.eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
     "test": "nyc mocha --config .mocharc.yml",
     "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output"
   },

@@ -4,15 +4,15 @@
  * @date 2022/10/15
  */
 
-import { Cluster, default as Standalone } from 'ioredis';
+import type { Cluster, default as Standalone } from 'ioredis';
 
 type RedisInstance = Standalone | Cluster;
 type RedisProvider = {
-    client: Standalone;
-    isCluster: false;
+    client: Standalone,
+    isCluster: false
 } | {
-    client: Cluster;
-    isCluster: true;
+    client: Cluster,
+    isCluster: true
 };
 
 let provider: RedisProvider;
