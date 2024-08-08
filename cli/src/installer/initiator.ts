@@ -1,6 +1,6 @@
 import _  from 'lodash';
 import async  from 'async';
-import glob from 'glob';
+import { glob } from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import readline from 'readline';
@@ -10,7 +10,6 @@ import { Logger } from 'nstarter-core';
 
 import { formatStdOutput } from '../utils';
 import type { IInitiatorConf } from '../types/installer';
-import { promisify } from 'util';
 
 /**
  * 工程初始化
@@ -256,7 +255,7 @@ export class ProjectInitiator {
     public async deployFiles() {
         const o = this._options;
         // 搜索文件
-        const search = await promisify(glob)('**/*', {
+        const search = await glob('**/*', {
             cwd: o.source,
             root: o.source,
             mark: true,
@@ -363,7 +362,7 @@ export class ProjectInitiator {
             ignorePathList.push(module.files);
         });
         // 搜索文件
-        const search = await promisify(glob)('conf.d/*', {
+        const search = await glob('conf.d/*', {
             cwd: o.source,
             root: o.source,
             mark: true,

@@ -11,7 +11,8 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "eslint": "npx nx run-many -t eslint",
-    "test": "npx nx run-many -t test"
+    "test": "npx nx run-many -t test",
+    "clean": "npx nx run-many -t clean && rimraf .nx/cache"
   },
   "devDependencies": {
     "@types/chai": "^4.3.16",

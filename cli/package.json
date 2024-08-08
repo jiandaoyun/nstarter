@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Startup CLI tool for node projects with template.",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
@@ -21,8 +21,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json",
-    "prestart": "tsc --build tsconfig.json",
-    "start": "node --no-warnings ./dist/index.js",
+    "start": "node --no-warnings --import=extensionless/register ./dist/index.js",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.cjs ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
     "clean": "rimraf dist && rimraf lint"
@@ -36,28 +35,28 @@
     "template"
   ],
   "dependencies": {
-    "async": "^3.2.4",
-    "fs-extra": "^11.1.0",
-    "glob": "^8.1.0",
-    "inquirer": "^9.1.4",
+    "async": "^3.2.5",
+    "extensionless": "^1.9.9",
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "inquirer": "^9.3.5",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "moment-timezone": "^0.5.40",
+    "moment-timezone": "^0.5.45",
     "nstarter-core": "*",
-    "simple-git": "^3.16.1",
-    "winston": "^3.8.2",
-    "winston-daily-rotate-file": "^4.7.1",
-    "winston-transport": "^4.5.0",
-    "yargs": "^17.6.2"
+    "simple-git": "^3.25.0",
+    "winston": "^3.13.1",
+    "winston-daily-rotate-file": "^5.0.0",
+    "winston-transport": "^4.7.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/async": "^3.2.18",
-    "@types/fs-extra": "^11.0.1",
-    "@types/glob": "^8.0.1",
-    "@types/inquirer": "9.0.3",
-    "@types/js-yaml": "^4.0.5",
-    "@types/lodash": "^4.14.191",
-    "@types/yargs": "^17.0.22"
+    "@types/async": "^3.2.24",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.7",
+    "@types/yargs": "^17.0.32"
   },
   "engines": {
     "node": ">=20.16.0",
