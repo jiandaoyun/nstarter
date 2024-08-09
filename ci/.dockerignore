@@ -9,17 +9,20 @@ Makefile
 ci/
 Jenkinsfile.gvy
 
-node_modules/
 
 ## CI
 log/
 lint/
 build/
+dist/
+node_modules/
 
 dist/.build
 
 coverage/
 .nyc_output/
+
+resources/
 
 .mocharc.yml
 .nycrc
