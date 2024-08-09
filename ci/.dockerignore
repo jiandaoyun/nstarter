@@ -1,16 +1,15 @@
-node_modules/
-
-test/
-
-## Config
-.git/
+.git
 .gitkeep
+.gitattributes
 .gitignore
 
 .editorconfig
 
-.npmrc
-.eslint*
+Makefile
+ci/
+Jenkinsfile.gvy
+
+node_modules/
 
 ## CI
 log/
@@ -27,21 +26,12 @@ coverage/
 
 *.tgz
 
-tsconfig.*.json
-tsconfig.json
-
-# CI
-Jenkinsfile.gvy
-Dockerfile
-makefile
 
 ## IDE
 *.code-workspace
 .vscode/
 .idea/
 
-.nx/cache
-.nx/workspace-data
 
 ## OS
 .DS_Store
