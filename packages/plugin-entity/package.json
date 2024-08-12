@@ -13,9 +13,9 @@
   "license": "MIT",
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
-    "eslint": "eslint --config .eslintrc.js --ext .ts ./src",
-    "eslint:html": "npm run lint -- --output-file ./lint/eslint.html --format html",
-    "test": "nyc mocha --config .mocharc.yml --unhandled-rejections=none",
+    "eslint": "eslint --config ../../.eslintrc.js --ext .ts ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "test": "nyc mocha --config ../../.mocharc.yml --unhandled-rejections=none",
     "schema": "typescript-json-schema \"./test/entities/*.ts\" \"*\" --out ./resources/schema.entities.json --required --excludePrivate --ignoreErrors --noExtraProps",
     "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output"
   },

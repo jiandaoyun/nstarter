@@ -1,0 +1,40 @@
+.git
+.gitkeep
+.gitattributes
+.gitignore
+
+.editorconfig
+
+Makefile
+ci/
+Jenkinsfile.gvy
+
+
+## CI
+log/
+lint/
+build/
+dist/
+node_modules/
+
+dist/.build
+
+coverage/
+.nyc_output/
+
+resources/
+
+.mocharc.yml
+.nycrc
+
+*.tgz
+
+
+## IDE
+*.code-workspace
+.vscode/
+.idea/
+
+
+## OS
+.DS_Store

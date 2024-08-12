@@ -4,7 +4,7 @@
  * @date 2022/10/15
  */
 
-import { IKeyedResource, IResource } from './types';
+import type { IKeyedResource, IResource } from './types';
 
 export class LockManager implements IResource {
     readonly #resources: IKeyedResource[];

@@ -6,7 +6,8 @@
 
 import { assert } from '@japa/assert';
 import { runFailedTests } from '@japa/run-failed-tests';
-import { configure, PluginFn, processCliArgs, run, TestContext } from '@japa/runner';
+import type { PluginFn} from '@japa/runner';
+import { configure, processCliArgs, run, TestContext } from '@japa/runner';
 import { specReporter } from '@japa/spec-reporter';
 import Redis from 'ioredis';
 import { init } from '../src';

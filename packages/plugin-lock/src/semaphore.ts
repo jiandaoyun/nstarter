@@ -6,7 +6,7 @@
 
 import { RedlockSemaphore, Semaphore as DefaultSemaphore } from 'redis-semaphore';
 import { getRedis } from './redis';
-import { ISemaphoreOptions } from './types';
+import type { ISemaphoreOptions } from './types';
 
 export class DistributedSemaphore {
     readonly #key;

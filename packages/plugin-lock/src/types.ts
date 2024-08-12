@@ -4,14 +4,14 @@
  * @date 2022/10/15
  */
 
-import { LockOptions } from 'redis-semaphore';
+import type { LockOptions } from 'redis-semaphore';
 
 export interface IResource {
-    acquire(): Promise<void>;
+    acquire: () => Promise<void>;
 
-    tryAcquire(): Promise<boolean>;
+    tryAcquire: () => Promise<boolean>;
 
-    release(): Promise<void>;
+    release: () => Promise<void>;
 }
 
 export interface IKeyedResource extends IResource {
@@ -19,7 +19,7 @@ export interface IKeyedResource extends IResource {
 }
 
 export interface ILock extends IKeyedResource {
-    stopRefresh(): void;
+    stopRefresh: () => void;
 
     identifier: string;
     isAcquired: boolean;
@@ -29,7 +29,7 @@ export interface ILockOptions extends LockOptions {
 }
 
 export interface ISemaphore extends IKeyedResource {
-    stopRefresh(): void;
+    stopRefresh: () => void;
 
     identifier: string;
     isAcquired: boolean;

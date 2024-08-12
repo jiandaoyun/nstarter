@@ -1,9 +1,0 @@
-.vscode/
-.idea/
-
-.git/
-.gitignore
-
-node_modules/
-
-makefile

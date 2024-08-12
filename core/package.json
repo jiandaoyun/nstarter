@@ -1,6 +1,6 @@
 {
   "name": "nstarter-core",
-  "version": "1.2.0-beta",
+  "version": "1.2.0",
   "description": "The core package for nstarter projects.",
   "license": "MIT",
   "repository": {
@@ -10,8 +10,9 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
-    "eslint": "eslint --ext .js,.ts  --config .eslintrc.js ./src",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint": "eslint --ext .js,.ts  --config ../.eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint"
   },
   "exports": {
     ".": {

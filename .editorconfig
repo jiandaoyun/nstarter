@@ -10,5 +10,5 @@ charset = utf-8
 [{*.json,*.yml,*.yaml}]
 indent_size = 2
 
-[makefile]
+[{makefile,Makefile}]
 indent_style = tab

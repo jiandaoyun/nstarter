@@ -1,0 +1,11 @@
+node_modules/
+
+dist/
+typings/
+test/
+
+build/
+lint/
+
+.nyc_output/
+coverage/

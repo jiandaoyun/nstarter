@@ -11,8 +11,10 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "eslint": "npx nx run-many -t eslint",
+    "eslint:html": "npx nx run-many -t eslint:html",
     "test": "npx nx run-many -t test",
-    "clean": "npx nx run-many -t clean && rimraf .nx/cache"
+    "pack": "mkdirp ./build && npm pack --workspaces --pack-destination ./build",
+    "clean": "npx nx run-many -t clean && rimraf .nx/cache && rmraf ./build"
   },
   "devDependencies": {
     "@types/chai": "^4.3.16",
@@ -22,6 +24,7 @@
     "eslint": "^8.56.0",
     "eslint-config-nstarter": "^4.0.1",
     "nstarter-tsconfig": "*",
+    "mkdirp": "^3.0.1",
     "mocha": "^10.7.0",
     "nx": "19.5.6",
     "nyc": "^17.0.0",
