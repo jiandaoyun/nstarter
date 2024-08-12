@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
-    "test": "c8 node -r ts-node/register ./bin/test.ts",
+    "test": "c8 node --require ts-node/register ./bin/test.ts",
     "eslint": "eslint --ext .js,.ts --fix ./src"
   },
   "exports": {
