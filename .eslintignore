@@ -1,5 +1,7 @@
 node_modules/
 
+ci/**/*.js
+
 dist/
 typings/
 test/

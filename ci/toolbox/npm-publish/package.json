@@ -1,0 +1,7 @@
+{
+  "name": "npm-publish",
+  "private": true,
+  "bin": {
+    "npm-publish": "./npm_publish.js"
+  }
+}

@@ -24,6 +24,10 @@
         "{projectRoot}/coverage"
       ],
       "cache": true
+    },
+    "upload": {
+      "dependsOn": ["^build"],
+      "cache": true
     }
   },
   "defaultBase": "dev"

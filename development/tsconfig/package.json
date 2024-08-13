@@ -1,16 +1,19 @@
 {
-    "name": "nstarter-tsconfig",
-    "description": "tsconfig template for nstarter projects",
-    "version": "0.5.0",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/jiandaoyun/nstarter",
-      "directory": "development/tsconfig"
-    },
-    "main": "tsconfig.json",
-    "keywords": [
-        "nstarter",
-        "tsconfig",
-        "typescript"
-    ]
+  "name": "nstarter-tsconfig",
+  "description": "tsconfig template for nstarter projects",
+  "version": "0.5.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiandaoyun/nstarter",
+    "directory": "development/tsconfig"
+  },
+  "main": "tsconfig.json",
+  "scripts": {
+    "upload": "npm-publish ./"
+  },
+  "keywords": [
+    "nstarter",
+    "tsconfig",
+    "typescript"
+  ]
 }

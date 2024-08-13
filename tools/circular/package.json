@@ -15,7 +15,8 @@
   "scripts": {
     "start": "node bin/cli.js",
     "eslint": "eslint --ext .js,.ts ./lib ./bin",
-    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html"
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "upload": "npm-publish ./"
   },
   "keywords": [
     "nstarter",

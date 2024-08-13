@@ -25,7 +25,8 @@
     "start": "node --no-warnings --import=extensionless/register ./dist/index.js",
     "eslint": "eslint --ext .js,.ts --config .eslintrc.cjs ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
-    "clean": "rimraf dist && rimraf lint"
+    "clean": "rimraf dist && rimraf lint",
+    "upload": "npm-publish ./"
   },
   "keywords": [
     "project starter",
