@@ -30,4 +30,4 @@ ARG TOKEN
 RUN npm config set registry "https://registry.npmjs.org" && \
     echo //registry.npmjs.org/:_authToken=${TOKEN} >> ./.npmrc && \
     npm whoami && \
-    npm run upload \
+    npm run upload
