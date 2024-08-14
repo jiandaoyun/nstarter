@@ -7,7 +7,7 @@ WORKDIR /var/opt/build
 
 COPY .npmrc package.json nx.json ./
 COPY --parents packages/*/package.json tools/*/package.json */package.json ./
-RUN #npm install
+RUN npm install
 
 # 编译
 FROM build-env as compile
