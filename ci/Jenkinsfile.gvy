@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        node { label 'aliyun' }
+        node { label 'default' }
     }
     options {
         disableConcurrentBuilds()
