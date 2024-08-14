@@ -2,7 +2,7 @@ TOKEN ?=
 
 docker-build:
 	docker buildx build \
-		--progress=plain --no-cache \
+		--progress=plain \
 		--file ci/Dockerfile \
 		--target=compile ./
 
