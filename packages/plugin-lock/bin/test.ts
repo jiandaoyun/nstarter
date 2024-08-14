@@ -10,7 +10,6 @@ import type { PluginFn} from '@japa/runner';
 import { configure, processCliArgs, run, TestContext } from '@japa/runner';
 import { specReporter } from '@japa/spec-reporter';
 import Redis from 'ioredis';
-import { pathToFileURL } from 'url';
 import { init } from '../src';
 
 const files: string[] = [];
@@ -33,7 +32,7 @@ configure({
         files,
         plugins: [assert(), runFailedTests()],
         reporters: [specReporter()],
-        importer: (filePath) => import(pathToFileURL(filePath).toString()),
+        importer: (filePath) => import(filePath),
         forceExit: true
     }
 });

@@ -8,13 +8,16 @@ WORKDIR /var/opt/build
 ENV HTTPS_PROXY=socks5://172.24.64.31:1080
 
 COPY .npmrc package.json nx.json ./
-COPY --parents packages/*/package.json tools/*/package.json development/*/package.json ci/*/package.json */package.json ./
+COPY --parents packages/*/package.json tools/*/package.json development/*/package.json ci/toolbox/*/package.json */package.json ./
 RUN npm install
 
 # 编译
 FROM build-env as compile
 
+ENV CI=build
 COPY . .
+
+RUN npm install     # 建立 workspace 关系
 
 RUN npm run build && \
     npm run eslint && \

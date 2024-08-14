@@ -8,6 +8,7 @@ docker-build:
 
 docker-release:
 	docker buildx build \
+		--file ci/Dockerfile \
 		--target=release \
 		--build-arg TOKEN="${TOKEN}" .
 
