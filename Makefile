@@ -7,7 +7,9 @@ docker-build:
 		--target=compile ./
 
 docker-release:
-	docker build --target=release --build-arg TOKEN="${TOKEN}" .
+	docker buildx build \
+		--target=release \
+		--build-arg TOKEN="${TOKEN}" .
 
 clean:
 	npm run clean
