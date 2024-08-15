@@ -22,5 +22,3 @@ RUN cd docs && \
 # 运行时
 FROM nginx:1.27.0-alpine
 COPY --from=build /var/opt/build/docs/build /usr/share/nginx/html
-
-RUN ls -lh /usr/share/nginx/html
