@@ -15,6 +15,7 @@
     "eslint:html": "npx nx run-many -t eslint:html",
     "test": "npx nx run-many -t test",
     "pack": "mkdirp ./build && npm pack --workspaces --pack-destination ./build",
+    "upload": "npx nx run-many -t upload",
     "clean": "npx nx run-many -t clean && rimraf .nx/cache && rmraf ./build"
   },
   "devDependencies": {

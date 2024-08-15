@@ -10,7 +10,7 @@ docker-release:
 	docker buildx build \
 		--file ci/Dockerfile \
 		--target=release \
-		--build-arg TOKEN="${TOKEN}" .
+		--build-arg TOKEN="${TOKEN}" ./
 
 clean:
 	npm run clean
