@@ -1,6 +1,6 @@
 # nstarter
 <p align="center">
-    <img src="./docs/static/img/logo.png"
+    <img src="https://nstarter-docs.jdydevelop.com/img/logo.png"
         height="128">
 </p>
 
