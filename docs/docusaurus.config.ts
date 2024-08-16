@@ -31,7 +31,7 @@ const config: Config = {
                     sidebarPath: './sidebars.ts',
                     sidebarCollapsed: false,
                     editUrl:
-                        'https://github.com/jiandaoyun/nstarter/tree/master/',
+                        'https://github.com/jiandaoyun/nstarter/tree/master/docs/',
                 },
                 theme: {
                     customCss: './src/css/custom.css',
