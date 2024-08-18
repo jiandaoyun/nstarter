@@ -1,5 +1,6 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
+import type { Options as DocsOptions } from '@docusaurus/plugin-content-docs';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
@@ -39,6 +40,17 @@ const config: Config = {
             } satisfies Preset.Options,
         ],
     ],
+    plugins: [
+        [
+            '@docusaurus/plugin-content-docs',
+            {
+                id: 'changes',
+                path: './changes',
+                routeBasePath: '/changes/',
+                sidebarPath: './sidebars.changes.ts'
+            } satisfies DocsOptions,
+        ],
+    ],
 
     themeConfig: {
         image: 'img/logo.png',
@@ -51,9 +63,15 @@ const config: Config = {
             items: [
                 {
                     type: 'docSidebar',
-                    sidebarId: 'docsSidebar',
+                    sidebarId: 'docs',
                     position: 'left',
                     label: '使用文档',
+                },
+                {
+                    to: '/changes/changelog',
+                    activeBaseRegex: `/changes`,
+                    position: 'left',
+                    label: '变更记录',
                 },
                 {
                     href: 'https://github.com/jiandaoyun/nstarter',
