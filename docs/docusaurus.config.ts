@@ -122,10 +122,10 @@ const config: Config = {
             darkTheme: prismThemes.dracula,
         },
         algolia: {
-            appId: 'EZDMYUN2HC',
-            apiKey: 'f7666a3729026d496df59f4b635355bb',
+            appId: 'UGXXXKVA9N',
+            apiKey: 'd90e0ab3f524b7fec58760ca0865ba4a',
 
-            indexName: 'nstarter_doc_index',
+            indexName: 'nstarter-jdydevelop',
             contextualSearch: true,
             externalUrlRegex: 'jiandaoyun\\.com',
             searchParameters: {},
