@@ -7,6 +7,7 @@ const config: Config = {
     title: 'NStarter Docs',
     tagline: '',
     favicon: 'img/favicon.ico',
+    trailingSlash: true,
 
     url: 'https://nstarter-docs.jdydevelop.com',
     baseUrl: '/',
