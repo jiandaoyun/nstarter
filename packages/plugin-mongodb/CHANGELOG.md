@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+* 移除已启用的连接配置 `keepAlive`, `keepAliveInitialDelay`
+
 ## 0.6.0
 
 * 升级 nstarter-core -> 1.2.0

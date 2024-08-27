@@ -91,8 +91,6 @@ export class MongodbConnector {
         const baseConf: ConnectOptions = {
             user,
             serverSelectionTimeoutMS: timeoutMs || 10000,
-            keepAlive: true,
-            keepAliveInitialDelay: 300000,
             socketTimeoutMS: 0,
             // @see https://github.com/mongodb/node-mongodb-native/blob/4.1/docs/CHANGES_4.0.0.md#connection-pool-options
             maxPoolSize: 10
@@ -117,11 +115,10 @@ export class MongodbConnector {
                 authMechanism: 'MONGODB-X509',
                 authSource: '$external',
                 ssl: true,
-                sslValidate: true,
+                tlsAllowInvalidCertificates: true,
                 // 加载证书，如出现异常，直接中断退出
-                sslCA: x509.ca,
-                sslCert: x509.cert,
-                sslKey: x509.key
+                tlsCAFile: x509.ca,
+                tlsCertificateKeyFile: x509.key
             };
         } else {
             // 用户名密码认证

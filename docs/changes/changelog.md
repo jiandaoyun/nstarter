@@ -12,7 +12,7 @@ title: "变更记录"
 - ![nstarter-grpc](https://img.shields.io/badge/nstarter--grpc-v0%2E5%2E0-orange?logo=npm&style=flat)
 - ![nstarter-lock](https://img.shields.io/badge/nstarter--lock-v0%2E3%2E0-orange?logo=npm&style=flat)
 - ![nstarter-metrics](https://img.shields.io/badge/nstarter--metrics-v0%2E4%2E0-orange?logo=npm&style=flat)
-- ![nstarter-mongodb](https://img.shields.io/badge/nstarter--mongodb-v0%2E6%2E0-orange?logo=npm&style=flat)
+- ![nstarter-mongodb](https://img.shields.io/badge/nstarter--mongodb-v0%2E6%2E1-orange?logo=npm&style=flat)
 - ![nstarter-rabbitmq](https://img.shields.io/badge/nstarter--rabbitmq-v0%2E9%2E0-orange?logo=npm&style=flat)
 - ![nstarter-redis](https://img.shields.io/badge/nstarter--redis-v0%2E3%2E0-orange?logo=npm&style=flat)
 - ![nstarter-circular](https://img.shields.io/badge/nstarter--circular-v0%2E4%2E0-orange?logo=npm&style=flat)
@@ -104,7 +104,7 @@ title: "变更记录"
     - `prom-client` -> 15.1.3
 
 
-### nstarter-mongodb v0.6.0
+### nstarter-mongodb v0.6.1
 
 * 升级 mongoose 依赖 -> 7.8.0
     - 主要影响
