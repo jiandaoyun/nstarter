@@ -6,7 +6,10 @@
 .editorconfig
 
 Makefile
-ci/
+ci/*.dockerignore
+ci/*.gvy
+ci/*.Dockerfile
+ci/Dockerfile
 Jenkinsfile.gvy
 
 
