@@ -24,9 +24,6 @@ coverage/
 
 resources/
 
-.mocharc.yml
-.nycrc
-
 *.tgz
 
 
