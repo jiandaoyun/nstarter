@@ -22,7 +22,7 @@ node_modules/
 
 dist/.build
 
-coverage/b
+coverage/
 .nyc_output/
 
 resources/
