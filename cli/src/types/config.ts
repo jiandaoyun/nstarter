@@ -1,5 +1,5 @@
 export interface IToolConf {
-    template: {
+    repos: {
         [key: string]: string | null
     };
 }

@@ -4,12 +4,14 @@ import type { PromptModule } from 'inquirer';
 import { createPromptModule } from 'inquirer';
 import { Logger } from 'nstarter-core';
 
-import { getDeployQuestions, getTemplateQuestions, getTemplateUpdateQuestions, npmInstallQuestions } from './questions';
+import { getDeployQuestions, getTemplateQuestions, getRepoUpdateQuestions, npmInstallQuestions } from './questions';
 import { ProjectInstaller } from '../installer';
 import type { IDeployArguments, IDeployConf, INpmInstallConf, ITemplateConf } from '../types/cli';
-import { prepareTemplate, updateTemplate } from './ops.template';
-import { gitCheckTemplateVersion } from './ops.git';
+import { prepareRepo, updateRepo } from './ops.repository';
+import { gitCheckRepoVersion } from './ops.git';
 import { config } from '../config';
+import { isTemplateExists } from './ops.template';
+import { DEFAULT_REPO_TAG } from '../constants';
 
 
 /**
@@ -34,28 +36,30 @@ export class DeployOperations {
      * 选定并初始化模板工程
      */
     public async selectTemplate() {
+        let repoTag = this._args.repo!;
         let templateTag = this._args.template;
-        if (templateTag && !config.isTemplateExisted(templateTag)) {
-            Logger.warn(`Template "${ templateTag }" is not defined.`);
+        if (templateTag && !await isTemplateExists(repoTag, templateTag)) {
+            Logger.warn(`Could not find template "${ templateTag } (${ repoTag })".`);
             templateTag = undefined;
         }
         if (!templateTag) {
             const answers = await this._prompt(getTemplateQuestions(this._args)) as ITemplateConf;
+            repoTag = answers.repo || DEFAULT_REPO_TAG;
             templateTag = answers.template;
         }
-        await prepareTemplate(templateTag);
+        await prepareRepo(repoTag);
         // 检查是否需要更新
-        const rev = await gitCheckTemplateVersion(config.getTemplatePath(templateTag));
+        const rev = await gitCheckRepoVersion(config.getRepoPath(repoTag));
         if (!rev) {
-            Logger.warn(`Template "${ templateTag }" is not up-to-date.`);
-            const answers = await this._prompt(getTemplateUpdateQuestions(this._args));
+            Logger.warn(`Repository "${ repoTag }" is not up-to-date.`);
+            const answers = await this._prompt(getRepoUpdateQuestions(this._args));
             if (answers.update) {
-                await updateTemplate(templateTag);
+                await updateRepo(repoTag);
             }
         } else {
-            Logger.debug(`Template "${ templateTag }" is up-to-date.`);
+            Logger.debug(`Repository "${ repoTag }" is up-to-date.`);
         }
-        this._project = new ProjectInstaller(templateTag);
+        this._project = new ProjectInstaller(repoTag, templateTag);
     }
 
     /**

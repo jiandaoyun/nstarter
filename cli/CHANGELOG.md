@@ -1,5 +1,10 @@
 # Changelog
 
+### v1.0.0
+
+**Breaking**
+* `1.x` 版本开始，仅支持 v2 版本模板工程。
+
 ### v0.7.0
 
 * 升级 nstarter-core -> 1.2.0

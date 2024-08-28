@@ -5,8 +5,8 @@ import { LogLevel } from 'nstarter-core';
 
 import { DeployOperations } from './ops.deploy';
 import { config } from '../config';
-import { ALL_TEMPLATE_TAG, CLI_NAME } from '../constants';
-import { clearTemplate, listTemplates, removeTemplate, updateTemplate } from './ops.template';
+import { ALL_REPO_TAG, CLI_NAME, DEFAULT_REPO_TAG } from '../constants';
+import { clearRepoStorage, listTemplates, removeRepo, updateRepo } from './ops.repository';
 import { upgradeProjectWithTemplate } from './ops.upgrade';
 import { setLogLevel } from '../logger';
 
@@ -28,6 +28,12 @@ export const runCli = () => {
                     name: {
                         alias: 'n',
                         describe: 'Project name.',
+                        type: 'string'
+                    },
+                    repo: {
+                        alias: 'r',
+                        describe: 'Template repository to use.',
+                        default: DEFAULT_REPO_TAG,
                         type: 'string'
                     },
                     template: {
@@ -70,21 +76,20 @@ export const runCli = () => {
             ['list', 'ls'],
             'List all templates configured.',
             (yargs) => yargs,
-            () => {
-                    listTemplates();
-                }
-            )
+            async () => {
+                await listTemplates();
+            })
         // 更新本地模板缓存
         .command(
-            ['update [template]', 'up [template]'],
-            'Update local template cache.',
+            ['update [repo]', 'up [repo]'],
+            'Update local repository cache.',
             (yargs) => yargs
-                .positional('template', {
-                    describe: 'Template to update.',
+                .positional('repo', {
+                    describe: 'Template repository to update.',
                     type: 'string'
                 }),
             async (argv) => {
-                await updateTemplate(argv.template);
+                await updateRepo(argv.repo);
             })
         .command(
             ['upgrade [target]'],
@@ -95,6 +100,12 @@ export const runCli = () => {
                     type: 'string'
                 })
                 .options({
+                    repo: {
+                        alias: 'r',
+                        describe: 'Template repository to use.',
+                        default: DEFAULT_REPO_TAG,
+                        type: 'string'
+                    },
                     template: {
                         alias: 't',
                         describe: 'Template to use.',
@@ -106,35 +117,35 @@ export const runCli = () => {
                         type: 'boolean'
                     }
                 }),
-            async (argv) => {
-                await upgradeProjectWithTemplate(argv.target, argv.template, argv.strict);
+            (argv) => {
+                upgradeProjectWithTemplate(argv.target, argv.repo, argv.template, argv.strict);
             }
         )
         // 清理模板
         .command(
-            'clean [template]',
-            'Clear local template cache.',
+            'clean [repo]',
+            'Clear local repository cache.',
             (yargs) => yargs
-                .positional('template', {
-                    describe: 'Template to clear. Use "all" to clear all templates.',
-                    default: ALL_TEMPLATE_TAG,
+                .positional('repo', {
+                    describe: 'Repository to clear. Use "all" to clear all repositories.',
+                    default: ALL_REPO_TAG,
                     type: 'string'
                 }),
             (argv) => {
-                clearTemplate(argv.template);
+                clearRepoStorage(argv.repo);
             })
         // 删除模板
         .command(
-            ['remove <template>', 'rm <template>'],
-            'Remove selected template.',
+            ['remove <repo>', 'rm <repo>'],
+            'Remove selected repository.',
             (yargs) => yargs
-                .positional('template', {
-                    describe: 'Template to remove.',
-                    default: ALL_TEMPLATE_TAG,
+                .positional('repo', {
+                    describe: 'Repository to remove.',
+                    default: ALL_REPO_TAG,
                     type: 'string'
                 }),
             (argv) => {
-                removeTemplate(argv.template);
+                removeRepo(argv.repo);
             })
         .options({
             verbose: {

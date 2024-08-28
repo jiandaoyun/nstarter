@@ -3,9 +3,9 @@ import path from 'path';
 import _ from 'lodash';
 import { Logger } from 'nstarter-core';
 
-import { DEFAULT_TEMPLATE_TAG } from '../constants';
-import { config } from '../config';
+import { DEFAULT_REPO_TAG } from '../constants';
 import type { IDependencyMap, IPackageConf, TDependencyType } from '../types/installer';
+import { getTemplatePath } from './ops.template';
 
 /**
  * 读取 package.json
@@ -91,11 +91,12 @@ export const upgradePkg = (tgtPkg: IPackageConf, tplPkg: IPackageConf, isStrict:
 /**
  * 基于模板工程更新目标工程
  * @param target - 目标工程目录位置
- * @param tag - 模板标签，默认为 default
+ * @param repoTag - 仓库标签，默认为 default
+ * @param tplTag - 模板标签
  * @param isStrict - 是否严格取代
  */
-export const upgradeProjectWithTemplate = (target = './', tag = DEFAULT_TEMPLATE_TAG, isStrict = false) => {
-    const templatePath = config.getTemplatePath(tag);
+export const upgradeProjectWithTemplate = (target = './', repoTag = DEFAULT_REPO_TAG, tplTag = '', isStrict = false) => {
+    const templatePath = getTemplatePath(repoTag, tplTag);
     if (!fs.pathExistsSync(templatePath) || _.isEmpty(fs.readdirSync(templatePath))) {
         Logger.error('Could not find local template cache');
         return;
@@ -103,7 +104,7 @@ export const upgradeProjectWithTemplate = (target = './', tag = DEFAULT_TEMPLATE
     try {
         const newPkg = upgradePkg(
             loadPkg(target),
-            loadPkg(path.join(templatePath, 'template')),
+            loadPkg(path.join(templatePath, './')),
             isStrict,
         );
         savePkg(target, newPkg);

@@ -4,15 +4,16 @@ import path from 'path';
 import { spawn } from 'child_process';
 import yaml from 'js-yaml';
 import moment from 'moment-timezone';
+import which from 'which';
 import { Logger } from 'nstarter-core';
 
 import { ProjectModuleGroup } from './module.group';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
 import type { IDeployConf } from '../types/cli';
-import { formatStdOutput } from '../utils';
 import type { IModuleConf, IModuleGroupType, IProjectConf } from '../types/installer';
-import { config } from '../config';
+import { formatStdOutput } from '../utils';
+import { getTemplatePath } from '../cli/ops.template';
 
 /**
  * 目标工程安装器
@@ -26,13 +27,14 @@ export class ProjectInstaller {
     private _moduleMap: Record<string, ProjectModule> = {};
 
     /**
-     * @param tag - 模板标签
+     * @param repoTag - 仓库标签
+     * @param tplTag - 模板标签
      * @constructor
      */
-    constructor(tag: string) {
-        const src = config.getTemplatePath(tag);
-        this._projectSrc = path.join(src, './template/');
-        const moduleConf = path.join(src, './module.conf.yml');
+    constructor(repoTag: string, tplTag: string) {
+        const src = getTemplatePath(repoTag, tplTag);
+        this._projectSrc = path.join(src, './');
+        const moduleConf = path.join(src, './.ns_template/module.conf.yml');
         if (!fs.pathExistsSync(moduleConf)) {
             Logger.error(`Module config file not found at "${ moduleConf }"`);
             this.isValid = false;
@@ -137,11 +139,18 @@ export class ProjectInstaller {
     }
 
     public npmInitialize(options: IDeployConf, callback: Callback) {
+        const npm = which.sync('npm', { nothrow: true });
+        if (!npm) {
+            Logger.error('npm command not found');
+            return callback();
+        }
         Logger.info('run npm install');
         const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
         const npmProc = spawn(npmCmd, ['install'], {
             cwd: options.workdir,
-            stdio: 'pipe'
+            stdio: 'pipe',
+            // https://github.com/nodejs/node/issues/52554
+            shell: true
         });
         npmProc.stdout.on('data', (data) => Logger.debug(formatStdOutput(data)));
         npmProc.stderr.on('data', (data) => Logger.warn(formatStdOutput(data)));

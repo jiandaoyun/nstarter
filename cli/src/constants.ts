@@ -1,6 +1,6 @@
 export const CLI_NAME = 'nstarter';
 
-export const ALL_TEMPLATE_TAG = 'all';
+export const ALL_REPO_TAG = 'all';
 
-export const DEFAULT_TEMPLATE_TAG = 'default';
-export const DEFAULT_TEMPLATE = 'https://github.com/jiandaoyun/nstarter-ts-express.git';
+export const DEFAULT_REPO_TAG = 'default';
+export const DEFAULT_REPO = 'https://github.com/jiandaoyun/nstarter-templates.git';
