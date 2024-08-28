@@ -8,7 +8,10 @@ try {
     runCli();
 } catch (err) {
     if (err) {
-        Logger.error((err as Error).message);
+        if (err instanceof Error) {
+            Logger.error(err.message);
+            err.stack && Logger.error(err.stack);
+        }
         process.exit(1);
     }
     process.exit(0);

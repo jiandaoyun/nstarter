@@ -9,7 +9,7 @@ import simplegit from 'simple-git';
 import { Logger } from 'nstarter-core';
 
 import { formatStdOutput } from '../utils';
-import type { IInitiatorConf } from '../types/installer';
+import type { IInitiatorConf } from './types';
 
 /**
  * 工程初始化
@@ -62,6 +62,7 @@ export class ProjectInitiator {
         const o = this._options;
         const isCodeFile = path.match(/(\.[tj]s|\.sh|makefile)$/i);
         const isBinaryFile = path.match(/\.(jpg|png|webp|zip)$/i);
+        Logger.debug(`copy: ${ path }`);
         if (_.isEmpty(o.params) || isCodeFile || isBinaryFile) {
             // 不替换代码文件中的模板参数
             fs.copyFileSync(
@@ -260,6 +261,7 @@ export class ProjectInitiator {
             root: o.source,
             mark: true,
             dot: true,
+            posix: true,
             ignore: [
                 'package.json',
                 'conf.d/*',

@@ -2,45 +2,17 @@ import _ from 'lodash';
 import fs from 'fs-extra';
 import type { ChoiceCollection, QuestionCollection } from 'inquirer';
 import inquirer from 'inquirer';
+
 import type { ProjectInstaller } from '../installer';
-import type { IDeployArguments, IDeployConf } from '../types/cli';
-import { config } from '../config';
-import { DEFAULT_TEMPLATE_TAG } from '../constants';
-
-/**
- * 获取模板选择交互问题
- * @param args
- */
-export const getTemplateQuestions = (args: IDeployArguments): QuestionCollection =>
-    [{
-        name: 'template',
-        type: 'list',
-        message: 'Template to use:',
-        default: DEFAULT_TEMPLATE_TAG,
-        when: !args.template || !config.isTemplateExisted(args.template),
-        choices: config.listTemplateTags(),
-        validate: (tag: string) => config.isTemplateExisted(tag)
-    }];
-
-/**
- * 获取模板更新确认交互问题
- * @param args
- */
-export const getTemplateUpdateQuestions = (args: IDeployArguments): QuestionCollection =>
-    [{
-        type: 'confirm',
-        name: 'update',
-        message: 'Update template cache now?',
-        when: !args.yes,
-        default: false
-    }];
+import type { IDeployArguments, IDeployConf, INpmInstallConf } from '../cli';
+import { prompt } from './prompt';
 
 /**
  * 生成部署交互问题
  * @param args
  * @param project
  */
-export const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): QuestionCollection => {
+const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): QuestionCollection => {
     const moduleChoices: ChoiceCollection = [];
     const moduleLabelMap: Record<string, string> = {};
     const moduleDependencyMap: Record<string, string[]> = {};
@@ -145,10 +117,32 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
 /**
  * npm 安装初始化提示选项
  */
-export const npmInstallQuestions = [{
+const npmInstallQuestions = [{
     // 确认执行 npm 初始化
     type: 'confirm',
     name: 'npm',
     message: 'Install npm packages now?',
     default: true
 }];
+
+
+/**
+ * 生成部署交互问题
+ * @param args
+ * @param project
+ */
+export const promptProjectDeploy = async (args: IDeployArguments, project: ProjectInstaller): Promise<IDeployConf> => {
+    const answers = await prompt(getDeployQuestions(args, project)) as IDeployConf;
+    return {
+        ...answers,
+        name: args.name!,
+        workdir: args.target!
+    };
+};
+
+/**
+ * 确认是否需要安装 npm
+ */
+export const promptNpmInstall = async () => {
+    return await prompt(npmInstallQuestions) as INpmInstallConf;
+};

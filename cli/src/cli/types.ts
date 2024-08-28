@@ -1,6 +1,7 @@
 import type { Arguments } from 'yargs';
 
 export interface ITemplateConf {
+    readonly repo: string;
     readonly template: string;
 }
 
@@ -17,6 +18,7 @@ export interface INpmInstallConf {
 
 export interface IDeployArguments extends Arguments<{
     name?: string,
+    repo?: string,
     template?: string,
     target?: string,
     verbose?: boolean,

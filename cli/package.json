@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Startup CLI tool for node projects with template.",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
@@ -45,6 +45,7 @@
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.45",
+    "which": "^4.0.0",
     "nstarter-core": "*",
     "simple-git": "^3.25.0",
     "winston": "^3.13.1",
@@ -58,7 +59,8 @@
     "@types/inquirer": "^9.0.7",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.7",
-    "@types/yargs": "^17.0.32"
+    "@types/yargs": "^17.0.32",
+    "@types/which": "^3.0.4"
   },
   "engines": {
     "node": ">=20.16.0",

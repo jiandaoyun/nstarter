@@ -6,8 +6,8 @@
 
 ## 环境要求
 
-* node.js >= 18.12.0
-* npm >= 8.19.0
+* node.js >= 20.16.0
+* npm >= 10.8.0
 * git
 
 
@@ -31,10 +31,10 @@ Commands:
                                                                        [default]
   nstarter config set <key> <value>  Config nstarter options.
   nstarter list                      List all templates configured.[aliases: ls]
-  nstarter update [template]         Update local template cache.  [aliases: up]
+  nstarter update [repo]             Update local repository cache.[aliases: up]
   nstarter upgrade [target]          Upgrade local project with template.
-  nstarter clean [template]          Clear local template cache.
-  nstarter remove <template>         Remove selected template.     [aliases: rm]
+  nstarter clean [repo]              Clear local repository cache.
+  nstarter remove <repo>             Remove selected repository.   [aliases: rm]
 
 Positionals:
   target  Target project deploy path.                                   [string]
@@ -44,11 +44,12 @@ Options:
   -v, --verbose   Show debug info.                                     [boolean]
       --version   Show version number                                  [boolean]
   -n, --name      Project name.                                         [string]
+  -r, --repo      Template repository to use.      [string] [default: "default"]
   -t, --template  Template to use.                                      [string]
   -y, --yes       Proceed deploy without confirm.     [boolean] [default: false]
 ```
 
-* 本地模板缓存 - `nstarter` 会将模板工程拉取到 `~/.nstarter/template/` 目录下，进行统一管理。目前支持 git 类型的模板工程，同时支持对模板工程支持更新，清理等维护性操作。
+* 本地模板缓存 - `nstarter` 会将模板工程拉取到 `~/.nstarter/repos/` 目录下，进行统一管理。目前支持 git 类型的模板工程，同时支持对模板工程支持更新，清理等维护性操作。
 
 
 ### 部署工程
@@ -83,9 +84,9 @@ Options:
 
 目前 `nstarter` 支持设置以下配置项：
 
-| 设置 | 类型 | 说明 |
-|:---:|:---:|:---|
-| `template.<tag>` | string | 设定制定标签模板工程的 git 版本库 url。 |
+|      设置      | 类型 | 说明 |
+|:------------:|:---:|:---|
+| `repo.<tag>` | string | 设定制定标签模板工程的 git 版本库 url。 |
 
 `nstarter` 默认配置文件存储在本地用户 HOME 路径下 `~/.nstarter/config.json`。
 
@@ -109,12 +110,12 @@ Options:
 通过 `nstarter update` 可以将指定工程模板的本地缓存更新到上游的最新状态。
 
 ```bash
-nstarter update [template]
+nstarter update [repo]
 
-Update local template cache.
+Update local repository cache.
 
 Positionals:
-  template  Template to update.                                         [string]
+  repo  Template repository to update.                                  [string]
 
 Options:
       --help     Show help                                             [boolean]
@@ -138,6 +139,7 @@ Options:
       --help      Show help                                            [boolean]
   -v, --verbose   Show debug info.                                     [boolean]
       --version   Show version number                                  [boolean]
+  -r, --repo      Template repository to use.      [string] [default: "default"]
   -t, --template  Template to use.                                      [string]
   -s, --strict    Use strict version rule to upgrade.                  [boolean]
 ```
@@ -149,12 +151,12 @@ Options:
 使用 `nstarter clean` 可对本地模板缓存进行清理操作，通过制定模板标签清理指定模板。默认情况下清理所有模板的本地缓存。
 
 ```bash
-nstarter clean [template]
+nstarter clean [repo]
 
-Clear local template cache.
+Clear local repository cache.
 
 Positionals:
-  template  Template to clear. Use "all" to clear all templates.
+  repo  Repository to clear. Use "all" to clear all repositories.
                                                        [string] [default: "all"]
 
 Options:
@@ -168,12 +170,12 @@ Options:
 通过 `nstarter remove` 操作可删除配置的模板。此操作会同时删除模板配置，并清楚缓存文件。
  
 ```bash
-nstarter remove <template>
+nstarter remove <repo>
 
-Remove selected template.
+Remove selected repository.
 
 Positionals:
-  template  Template to remove.             [string] [required] [default: "all"]
+  repo  Repository to remove.               [string] [required] [default: "all"]
 
 Options:
       --help     Show help                                             [boolean]
