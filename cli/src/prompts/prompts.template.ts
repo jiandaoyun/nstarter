@@ -26,10 +26,16 @@ const getTemplateQuestions = (): QuestionCollection =>
         default: '',
         choices: async (answers) => {
             const templates = await RepoActions.getRepoTemplates(answers.repo || DEFAULT_REPO_TAG);
-            return _.map(templates, (tpl) => ({
-                name: `${ tpl.template } (${ tpl.repo })`,
-                value: tpl.template
-            }));
+            return _.map(templates, (tpl) => {
+                let name = tpl.template;
+                if (tpl.repo !== DEFAULT_REPO_TAG) {
+                    name += ` (${ tpl.repo })`;
+                }
+                return {
+                    name,
+                    value: tpl.template
+                };
+            });
         },
         validate: async (tag: string, answers: ITemplateConf) =>
             TemplateActions.isTemplateExists(answers.repo || DEFAULT_REPO_TAG, tag)
