@@ -3,8 +3,17 @@ import path from 'path';
 import fs from 'fs-extra';
 import { Logger } from 'nstarter-core';
 import { CLI_NAME, DEFAULT_REPO, DEFAULT_REPO_TAG } from './constants';
-import type { configKey, configValue, IToolConf } from './types/config';
 import { pkg } from './pkg';
+
+export interface IToolConf {
+    repos: {
+        [key: string]: string | null
+    };
+}
+
+export type configKey = string | undefined;
+export type configValue = string | undefined;
+
 
 /**
  * 判定模板标签是否合法
@@ -20,7 +29,7 @@ class ToolConfig {
     private readonly _workDir: string;
     private readonly _confName = 'config.json';
     private readonly _confFile: string;
-    private readonly _conf: IToolConf = {
+    private _conf: IToolConf = {
         repos: {}
     };
     public readonly version = pkg.version;
@@ -40,6 +49,20 @@ class ToolConfig {
 
         // 初始化配置
         this._confFile = path.join(this._workDir, this._confName);
+        this.loadConfig();
+    }
+
+    /**
+     * 获取工作目录
+     */
+    public get workDir() {
+        return this._workDir;
+    }
+
+    /**
+     * 加载配置
+     */
+    public loadConfig() {
         if (fs.pathExistsSync(this._confFile)) {
             // 加载配置文件
             const conf = fs.readJSONSync(this._confFile);
@@ -55,17 +78,10 @@ class ToolConfig {
                 };
             }
         } else {
-            // 生成默认配置
-            Logger.warn(`Config file not found, new config created at "${ this._confFile }"`);
+            // 生成默认配置, 启动阶段 Logger 未初始化
+            console.log(`Config file not found, new config created at "${ this._confFile }"`);
             this.saveConfig();
         }
-    }
-
-    /**
-     * 获取工作目录
-     */
-    public get workDir() {
-        return this._workDir;
     }
 
     /**
@@ -76,6 +92,12 @@ class ToolConfig {
         fs.writeFileSync(this._confFile, conf);
     }
 
+    /**
+     * 获取配置内容
+     */
+    public getConfig(): IToolConf {
+        return this._conf;
+    }
 
     /**
      * 设定模板地址
@@ -125,29 +147,6 @@ class ToolConfig {
     }
 
     /**
-     * 获取模板仓库地址
-     * @param repoTag - 仓库标签
-     */
-    public getRepoSource(repoTag = DEFAULT_REPO_TAG): string | null {
-        return this._conf.repos[repoTag];
-    }
-
-    /**
-     * 获取模板仓库标签
-     */
-    public listRepoTags(): string[] {
-        return Object.keys(this._conf.repos);
-    }
-
-    /**
-     * 检查模板是否已配置
-     * @param repoTag - 仓库标签
-     */
-    public isRepoExisted(repoTag: string): boolean {
-        return !_.isEmpty(this._conf.repos[repoTag]);
-    }
-
-    /**
      * 删除制定标签模板
      * @param repoTag - 仓库标签
      */
@@ -159,14 +158,6 @@ class ToolConfig {
         Logger.info(`Remove repository "${ repoTag }".`);
         _.unset(this._conf.repos, repoTag);
         this.saveConfig();
-    }
-
-    /**
-     * 获取模板仓库工作目录路径
-     * @param repoTag - 仓库标签
-     */
-    public getRepoPath(repoTag: string): string {
-        return path.join(this._workDir, `repos/${ repoTag }`);
     }
 }
 

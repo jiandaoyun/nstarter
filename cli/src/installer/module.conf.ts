@@ -1,4 +1,4 @@
-import type { IModuleConf } from '../types/installer';
+import type { IModuleConf } from './types';
 
 export class ProjectModule implements IModuleConf {
     public readonly isValid: boolean;
@@ -21,7 +21,7 @@ export class ProjectModule implements IModuleConf {
         this.name = conf.name;
         this.label = conf.label;
         this.type = conf.type;
-        this.default = !!conf.default;
+        this.default = conf.default;
         this.files = conf.files || [];
         this.config = conf.config || [];
         this.packages = conf.packages || [];

@@ -9,7 +9,7 @@ import simplegit from 'simple-git';
 import { Logger } from 'nstarter-core';
 
 import { formatStdOutput } from '../utils';
-import type { IInitiatorConf } from '../types/installer';
+import type { IInitiatorConf } from './types';
 
 /**
  * 工程初始化

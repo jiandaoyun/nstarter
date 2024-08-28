@@ -3,6 +3,7 @@ import simpleGit from 'simple-git';
 import { Logger } from 'nstarter-core';
 import { formatStdOutput } from '../utils';
 
+
 /**
  * git 日志输出处理
  * @private
@@ -17,7 +18,7 @@ const _gitLogHandler: outputHandler = (cmd, stdout, stderr) => {
  * 初始化 git 操作对象
  * @param repoPath - 模板工程路径
  */
-const _initGit = async (repoPath?: string): Promise<SimpleGit|undefined> => {
+export const initRepo = async (repoPath?: string): Promise<SimpleGit|undefined> => {
     const git = simpleGit(repoPath).outputHandler(_gitLogHandler);
     if (!repoPath) {
         // 未创建 repo 无需校验有效性
@@ -36,8 +37,8 @@ const _initGit = async (repoPath?: string): Promise<SimpleGit|undefined> => {
  * @param repoPath - 模板工程路径
  * @param repoUri - 模板工程远端地址
  */
-export const gitCloneRepo = async (repoPath: string, repoUri: string) => {
-    const git = await _initGit();
+export const cloneRepo = async (repoPath: string, repoUri: string) => {
+    const git = await initRepo();
     git && await git.clone(repoUri, repoPath);
 };
 
@@ -45,17 +46,17 @@ export const gitCloneRepo = async (repoPath: string, repoUri: string) => {
  * 更新模板缓存
  * @param repoPath - 模板工程路径
  */
-export const gitUpdateRepo = async (repoPath: string) => {
-    const git = await _initGit(repoPath);
+export const updateRepo = async (repoPath: string) => {
+    const git = await initRepo(repoPath);
     git && await git.pull();
 };
 
 /**
  * 检查模板版本
- * @param templatePath - 模板工程路径
+ * @param repoPath - 模板工程路径
  */
-export const gitCheckRepoVersion = async (templatePath: string): Promise<string | undefined> => {
-    const git = await _initGit(templatePath);
+export const checkRepoVersion = async (repoPath: string): Promise<string | undefined> => {
+    const git = await initRepo(repoPath);
     if (!git) {
         return;
     }
@@ -69,3 +70,4 @@ export const gitCheckRepoVersion = async (templatePath: string): Promise<string 
     }
     return localRev;
 };
+

@@ -10,11 +10,12 @@ import { Logger } from 'nstarter-core';
 import { ProjectModuleGroup } from './module.group';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
-import type { IDeployConf } from '../types/cli';
-import type { IModuleConf, IModuleGroupType, IProjectConf } from '../types/installer';
+import { TemplateActions } from 'actions';
+import type { IModuleConf, IModuleGroupType, IProjectConf } from './types';
+import type { IDeployConf } from '../cli';
 import { formatStdOutput } from '../utils';
-import { getTemplatePath } from '../cli/ops.template';
 
+export * from './types';
 /**
  * 目标工程安装器
  */
@@ -32,7 +33,7 @@ export class ProjectInstaller {
      * @constructor
      */
     constructor(repoTag: string, tplTag: string) {
-        const src = getTemplatePath(repoTag, tplTag);
+        const src = TemplateActions.getTemplatePath(repoTag, tplTag);
         this._projectSrc = path.join(src, './');
         const moduleConf = path.join(src, './.ns_template/module.conf.yml');
         if (!fs.pathExistsSync(moduleConf)) {

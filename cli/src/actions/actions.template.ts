@@ -1,6 +1,7 @@
 import path from 'path';
-import { getRepoTemplates } from './ops.repository';
-import { config } from '../config';
+
+import * as RepoActions from './actions.repository';
+
 
 /**
  * 检查模板是否存在
@@ -8,7 +9,7 @@ import { config } from '../config';
  * @param tplTag - 模板标签
  */
 export const isTemplateExists = async (repoTag: string, tplTag: string): Promise<boolean> => {
-    const templates = await getRepoTemplates(repoTag);
+    const templates = await RepoActions.getRepoTemplates(repoTag);
     return templates.some((tpl) => tpl.template === tplTag);
 };
 
@@ -18,6 +19,6 @@ export const isTemplateExists = async (repoTag: string, tplTag: string): Promise
  * @param tplTag - 模板标签
  */
 export const getTemplatePath = (repoTag: string, tplTag: string) => {
-    const repoPath = config.getRepoPath(repoTag);
+    const repoPath = RepoActions.getRepoPath(repoTag);
     return path.join(repoPath, 'templates', tplTag);
 };

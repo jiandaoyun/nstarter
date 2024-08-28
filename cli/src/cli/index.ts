@@ -3,13 +3,12 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { LogLevel } from 'nstarter-core';
 
-import { DeployOperations } from './ops.deploy';
 import { config } from '../config';
 import { ALL_REPO_TAG, CLI_NAME, DEFAULT_REPO_TAG } from '../constants';
-import { clearRepoStorage, listTemplates, removeRepo, updateRepo } from './ops.repository';
-import { upgradeProjectWithTemplate } from './ops.upgrade';
+import { RepoActions, ProjectActions } from '../actions';
 import { setLogLevel } from '../logger';
 
+export * from './types';
 /**
  * 命令执行入口
  */
@@ -49,7 +48,7 @@ export const runCli = () => {
                     }
                 }),
             async (argv) => {
-                await new DeployOperations(argv).deployProject();
+                await ProjectActions.deployProject(argv);
             })
         // 修改配置
         .command(
@@ -77,7 +76,7 @@ export const runCli = () => {
             'List all templates configured.',
             (yargs) => yargs,
             async () => {
-                await listTemplates();
+                await RepoActions.printTemplates();
             })
         // 更新本地模板缓存
         .command(
@@ -89,7 +88,7 @@ export const runCli = () => {
                     type: 'string'
                 }),
             async (argv) => {
-                await updateRepo(argv.repo);
+                await RepoActions.updateRepo(argv.repo);
             })
         .command(
             ['upgrade [target]'],
@@ -118,7 +117,7 @@ export const runCli = () => {
                     }
                 }),
             (argv) => {
-                upgradeProjectWithTemplate(argv.target, argv.repo, argv.template, argv.strict);
+                ProjectActions.upgradeWithTemplate(argv.target, argv.repo, argv.template, argv.strict);
             }
         )
         // 清理模板
@@ -132,7 +131,7 @@ export const runCli = () => {
                     type: 'string'
                 }),
             (argv) => {
-                clearRepoStorage(argv.repo);
+                RepoActions.clearRepoStorage(argv.repo);
             })
         // 删除模板
         .command(
@@ -145,7 +144,7 @@ export const runCli = () => {
                     type: 'string'
                 }),
             (argv) => {
-                removeRepo(argv.repo);
+                RepoActions.removeRepo(argv.repo);
             })
         .options({
             verbose: {

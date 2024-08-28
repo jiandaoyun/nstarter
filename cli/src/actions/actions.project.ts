@@ -1,11 +1,16 @@
 import fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
+import { promisify } from 'util';
 import { Logger } from 'nstarter-core';
 
 import { DEFAULT_REPO_TAG } from '../constants';
-import type { IDependencyMap, IPackageConf, TDependencyType } from '../types/installer';
-import { getTemplatePath } from './ops.template';
+import type { IDependencyMap, IPackageConf, TDependencyType } from '../installer';
+import * as TemplateActions from './actions.template';
+import type { IDeployArguments } from '../cli';
+import { ProjectInstaller } from '../installer';
+import { promptNpmInstall, promptProjectDeploy, promptRepoPrepare, promptTemplateSelect } from '../prompts';
+
 
 /**
  * 读取 package.json
@@ -95,8 +100,8 @@ export const upgradePkg = (tgtPkg: IPackageConf, tplPkg: IPackageConf, isStrict:
  * @param tplTag - 模板标签
  * @param isStrict - 是否严格取代
  */
-export const upgradeProjectWithTemplate = (target = './', repoTag = DEFAULT_REPO_TAG, tplTag = '', isStrict = false) => {
-    const templatePath = getTemplatePath(repoTag, tplTag);
+export const upgradeWithTemplate = (target = './', repoTag = DEFAULT_REPO_TAG, tplTag = '', isStrict = false) => {
+    const templatePath = TemplateActions.getTemplatePath(repoTag, tplTag);
     if (!fs.pathExistsSync(templatePath) || _.isEmpty(fs.readdirSync(templatePath))) {
         Logger.error('Could not find local template cache');
         return;
@@ -111,4 +116,40 @@ export const upgradeProjectWithTemplate = (target = './', repoTag = DEFAULT_REPO
     } catch (err) {
         Logger.error((err as Error).message);
     }
+};
+
+/**
+ * 部署工程
+ * @param args 部署参数
+ */
+export const deployProject = async (args: IDeployArguments) => {
+    // 选择模板 & 初始化
+    const { repo, template } = await promptTemplateSelect(args);
+    await promptRepoPrepare({ ...args, repo });
+    const project = new ProjectInstaller(repo, template);
+
+    // 选择部署模块
+    const deployConf = await promptProjectDeploy(args, project);
+    if (!deployConf.confirm && !args.yes) {
+        return;
+    }
+    // 部署工程
+    await project.initializeProject(deployConf);
+
+    // npm 初始化
+    if (!args.yes) {
+        if (!deployConf.confirm) {
+            // 未部署直接跳过操作
+            return;
+        }
+        // 确认是否需要安装 npm
+        const answers = await promptNpmInstall();
+        if (!answers.npm) {
+            Logger.info('Skip npm install by user.');
+            return;
+        }
+    }
+    await promisify(project.npmInitialize)(deployConf);
+
+    Logger.info('deploy job finished.');
 };

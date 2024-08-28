@@ -4,10 +4,42 @@ import fs from 'fs-extra';
 import { glob } from 'glob';
 import { Logger } from 'nstarter-core';
 
-import { gitCheckRepoVersion, gitCloneRepo, gitUpdateRepo } from './ops.git';
+import * as GitActions from './actions.git';
 import { config } from '../config';
 import { ALL_REPO_TAG, DEFAULT_REPO, DEFAULT_REPO_TAG } from '../constants';
-import type { ITemplateConf } from '../types/cli';
+import type { ITemplateConf } from '../cli';
+
+
+/**
+ * 获取模板仓库地址
+ * @param repoTag - 仓库标签
+ */
+export const getRepoSource = (repoTag = DEFAULT_REPO_TAG): string | null => {
+    return config.getConfig().repos[repoTag];
+};
+
+/**
+ * 获取模板仓库标签
+ */
+export const listRepoTags = (): string[] => {
+    return Object.keys(config.getConfig().repos);
+};
+
+/**
+ * 检查模板是否已配置
+ * @param repoTag - 仓库标签
+ */
+export const isRepoExisted = (repoTag: string): boolean => {
+    return !_.isEmpty(config.getConfig().repos[repoTag]);
+};
+
+/**
+ * 获取模板仓库工作目录路径
+ * @param repoTag - 仓库标签
+ */
+export const getRepoPath = (repoTag: string): string => {
+    return path.join(config.workDir, `repos/${ repoTag }`);
+};
 
 
 /**
@@ -15,7 +47,7 @@ import type { ITemplateConf } from '../types/cli';
  * @param repoTag
  */
 export const getRepoTemplates = async (repoTag: string) => {
-    const repoPath = config.getRepoPath(repoTag);
+    const repoPath = getRepoPath(repoTag);
     const search = await glob(`${ path.join(repoPath, 'templates') }/*/.ns_template/module.conf.yml`, {
         mark: true,
         dot: true,
@@ -36,8 +68,8 @@ export const getRepoTemplates = async (repoTag: string) => {
  * 获取所有仓库中的所有模板
  */
 export const getAllTemplates = async () => {
-    const tags = config.listRepoTags();
-    const tplMap: { [tag: string]: ITemplateConf } = {}
+    const tags = listRepoTags();
+    const tplMap: { [tag: string]: ITemplateConf } = {};
     for (const tag of tags) {
         const templates = await getRepoTemplates(tag);
         for (const tpl of templates) {
@@ -52,7 +84,7 @@ export const getAllTemplates = async () => {
 /**
  * 获取所有仓库中的所有模板
  */
-export const listTemplates = async () => {
+export const printTemplates = async () => {
     const templates = await getAllTemplates();
     for (const tpl of Object.keys(templates)) {
         console.log(`${ tpl } (${ templates[tpl].repo })`);
@@ -64,7 +96,7 @@ export const listTemplates = async () => {
  * @param repoTag - 仓库标签，默认值为 default
  */
 export const prepareRepo = async (repoTag = DEFAULT_REPO_TAG) => {
-    const repoPath = config.getRepoPath(repoTag);
+    const repoPath = getRepoPath(repoTag);
     if (fs.pathExistsSync(repoPath) && !_.isEmpty(fs.readdirSync(repoPath))) {
         Logger.debug('Using cached repository');
         return;
@@ -73,59 +105,59 @@ export const prepareRepo = async (repoTag = DEFAULT_REPO_TAG) => {
     Logger.info(`Cloning project template repository into "${ repoPath }"`);
     fs.ensureDirSync(config.workDir);
     // 选择模板
-    let repoSrc = config.getRepoSource(repoTag);
+    let repoSrc = getRepoSource(repoTag);
     if (repoSrc) {
         Logger.info(`Using template repository "${ repoTag }" -> "${ repoSrc }"`);
     } else {
         Logger.warn(`Using default template repository "${ DEFAULT_REPO }"`);
         repoSrc = DEFAULT_REPO;
     }
-    await gitCloneRepo(repoPath, repoSrc);
+    await GitActions.cloneRepo(repoPath, repoSrc);
 };
 
 /**
  * 更新模板仓库
- * @param tag - 模板标签，默认值为 default
+ * @param repoTag - 仓库标签，默认值为 default
  */
-export const updateRepo = async (tag = DEFAULT_REPO_TAG) => {
-    const repoPath = config.getRepoPath(tag);
+export const updateRepo = async (repoTag = DEFAULT_REPO_TAG) => {
+    const repoPath = getRepoPath(repoTag);
     if (!fs.pathExistsSync(repoPath) || _.isEmpty(fs.readdirSync(repoPath))) {
         Logger.warn('Could not find local repository cache, try to initialize.');
-        await prepareRepo(tag);
+        await prepareRepo(repoTag);
         return;
     }
     // 验证是否最新
-    const rev = await gitCheckRepoVersion(repoPath);
+    const rev = await GitActions.checkRepoVersion(repoPath);
     if (rev) {
-        Logger.info(`Repository "${ tag }" is up-to-date.`);
+        Logger.info(`Repository "${ repoTag }" is up-to-date.`);
         return;
     }
     // 更新 repo
-    Logger.info(`Update template repository "${ tag }" at "${ repoPath }"`);
-    await gitUpdateRepo(repoPath);
+    Logger.info(`Update template repository "${ repoTag }" at "${ repoPath }"`);
+    await GitActions.updateRepo(repoPath);
 };
 
 /**
  * 删除指定标签模板仓库
- * @param tag - 模板仓库标签
+ * @param repoTag - 模板仓库标签
  */
-export const removeRepo = (tag: string) => {
-    config.removeRepo(tag);
-    clearRepoStorage(tag);
+export const removeRepo = (repoTag: string) => {
+    config.removeRepo(repoTag);
+    clearRepoStorage(repoTag);
 };
 
 /**
  * 清空模板仓库存储
- * @param tag - 模板标签，默认值为 all
+ * @param repoTag - 模板标签，默认值为 all
  */
-export const clearRepoStorage = (tag = ALL_REPO_TAG) => {
-    if (tag === ALL_REPO_TAG) {
+export const clearRepoStorage = (repoTag = ALL_REPO_TAG) => {
+    if (repoTag === ALL_REPO_TAG) {
         const repoDir = path.join(config.workDir, `repos/`);
         Logger.info(`Cleaning all template repository cache.`);
         fs.emptyDirSync(repoDir);
         return;
     }
-    const repoPath = config.getRepoPath(tag);
+    const repoPath = getRepoPath(repoTag);
     if (!fs.pathExistsSync(repoPath)) {
         return;
     }

@@ -2,61 +2,17 @@ import _ from 'lodash';
 import fs from 'fs-extra';
 import type { ChoiceCollection, QuestionCollection } from 'inquirer';
 import inquirer from 'inquirer';
+
 import type { ProjectInstaller } from '../installer';
-import type { IDeployArguments, IDeployConf, ITemplateConf } from '../types/cli';
-import { config } from '../config';
-import { DEFAULT_REPO_TAG } from '../constants';
-import { getRepoTemplates } from './ops.repository';
-import { isTemplateExists } from './ops.template';
-
-/**
- * 获取模板选择交互问题
- * @param args
- */
-export const getTemplateQuestions = (args: IDeployArguments): QuestionCollection =>
-    [{
-        name: 'repo',
-        type: 'list',
-        message: 'Template repository:',
-        default: DEFAULT_REPO_TAG,
-        when: config.listRepoTags().length > 1,
-        choices: config.listRepoTags(),
-        validate: (tag: string) => config.isRepoExisted(tag)
-    }, {
-        name: 'template',
-        type: 'list',
-        message: 'Template to use:',
-        default: '',
-        choices: async (answers) => {
-            const templates = await getRepoTemplates(answers.repo || DEFAULT_REPO_TAG);
-            return _.map(templates, (tpl) => ({
-                name: `${ tpl.template } (${ tpl.repo })`,
-                value: tpl.template
-            }));
-        },
-        validate: async (tag: string, answers: ITemplateConf) =>
-            isTemplateExists(answers.repo || DEFAULT_REPO_TAG, tag)
-    }];
-
-/**
- * 获取模板更新确认交互问题
- * @param args
- */
-export const getRepoUpdateQuestions = (args: IDeployArguments): QuestionCollection =>
-    [{
-        type: 'confirm',
-        name: 'update',
-        message: 'Update repository cache now?',
-        when: !args.yes,
-        default: false
-    }];
+import type { IDeployArguments, IDeployConf, INpmInstallConf } from '../cli';
+import { prompt } from './prompt';
 
 /**
  * 生成部署交互问题
  * @param args
  * @param project
  */
-export const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): QuestionCollection => {
+const getDeployQuestions = (args: IDeployArguments, project: ProjectInstaller): QuestionCollection => {
     const moduleChoices: ChoiceCollection = [];
     const moduleLabelMap: Record<string, string> = {};
     const moduleDependencyMap: Record<string, string[]> = {};
@@ -161,10 +117,32 @@ export const getDeployQuestions = (args: IDeployArguments, project: ProjectInsta
 /**
  * npm 安装初始化提示选项
  */
-export const npmInstallQuestions = [{
+const npmInstallQuestions = [{
     // 确认执行 npm 初始化
     type: 'confirm',
     name: 'npm',
     message: 'Install npm packages now?',
     default: true
 }];
+
+
+/**
+ * 生成部署交互问题
+ * @param args
+ * @param project
+ */
+export const promptProjectDeploy = async (args: IDeployArguments, project: ProjectInstaller): Promise<IDeployConf> => {
+    const answers = await prompt(getDeployQuestions(args, project)) as IDeployConf;
+    return {
+        ...answers,
+        name: args.name!,
+        workdir: args.target!
+    };
+};
+
+/**
+ * 确认是否需要安装 npm
+ */
+export const promptNpmInstall = async () => {
+    return await prompt(npmInstallQuestions) as INpmInstallConf;
+};
