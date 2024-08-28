@@ -10,10 +10,10 @@ import { Logger } from 'nstarter-core';
 import { ProjectModuleGroup } from './module.group';
 import { ProjectModule } from './module.conf';
 import { ProjectInitiator } from './initiator';
-import { TemplateActions } from 'actions';
 import type { IModuleConf, IModuleGroupType, IProjectConf } from './types';
 import type { IDeployConf } from '../cli';
 import { formatStdOutput } from '../utils';
+import { TemplateActions } from '../actions';
 
 export * from './types';
 /**

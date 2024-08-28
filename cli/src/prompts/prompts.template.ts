@@ -43,18 +43,18 @@ const getTemplateQuestions = (): QuestionCollection =>
  */
 export const promptTemplateSelect = async (args: IDeployArguments): Promise<ITemplateConf> => {
     let repoTag = args.repo!;
-    let templateTag = args.template;
-    if (templateTag && !await TemplateActions.isTemplateExists(repoTag, templateTag)) {
-        Logger.warn(`Could not find template "${ templateTag } (${ repoTag })".`);
-        templateTag = undefined;
+    let tplTag = args.template;
+    if (tplTag && !await TemplateActions.isTemplateExists(repoTag, tplTag)) {
+        Logger.warn(`Could not find template "${ tplTag } (${ repoTag })".`);
+        tplTag = undefined;
     }
-    if (!templateTag) {
+    if (!tplTag) {
         const answers = await prompt(getTemplateQuestions()) as ITemplateConf;
         repoTag = answers.repo || DEFAULT_REPO_TAG;
-        templateTag = answers.template;
+        tplTag = answers.template;
     }
     return {
         repo: repoTag,
-        template: templateTag
+        template: tplTag
     };
 };
