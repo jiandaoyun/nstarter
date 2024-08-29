@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Startup CLI tool for node projects with template.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "bin": {
-    "nstarter": "./dist/index.js"
+    "nstarter": "node --no-warnings --import=extensionless/register ./dist/index.js"
   },
   "type": "module",
   "files": [
