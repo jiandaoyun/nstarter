@@ -130,12 +130,15 @@ title: "变更记录"
 
 ## 开发工具升级
 
-### nstarter-cli v0.7.0
+### nstarter-cli v1.0.2
 
 * 升级 nstarter-core -> 1.2.0
     - 运行时环境 Node.js >= 20.16.0
     - TypeScript -> 5.x
 * CLI 基础依赖升级
+
+**Breaking**
+* `1.x` 版本开始，仅支持 v2 版本模板工程。
 
 
 ### nstarter-circular v0.4.0
