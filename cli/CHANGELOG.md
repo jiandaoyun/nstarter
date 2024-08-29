@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.0.2
+
+* fix: 移除用于解决 ESModule 加载问题的 extensionless 依赖，编译阶段解决引用问题
+
 ### v1.0.0
 
 **Breaking**
