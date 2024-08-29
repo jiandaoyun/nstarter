@@ -192,7 +192,7 @@ Options:
 
 可以根据工程的实际需要，定制自己的 `nstarter` 模板工程，以满足不同场景下，统一项目开发规范的需求。
 
-更多关于模板开发的详细信息，可以参考 [templating](./doc/templating.md).
+更多关于模板开发的详细信息，可以参考 [templating](./templating.md).
 
 
 ## 许可
