@@ -2,7 +2,6 @@
 title: "数据迁移框架 (Migrator)"
 sidebar_position: 2
 ---
-
 # nstarter-mongo-migrator
 
 **nstarter Mongodb 数据库结构迁移框架**
@@ -36,18 +35,18 @@ Options:
 ```
 
 * `migrate` - 执行数据库 schema 迁移，迁移工具默认行为
-   
-   当未指定 schema 版本时，使用 `schemas` 目录下提供的最新版本。当通过 `SCHEMA_VERSION` 环境变量指定了目标版本时，则最高升级至目标版本
+
+  当未指定 schema 版本时，使用 `schemas` 目录下提供的最新版本。当通过 `SCHEMA_VERSION` 环境变量指定了目标版本时，则最高升级至目标版本
 
 * `run <script>` - 执行 mongosh 脚本
 
 * `dump [collection]` - dump 指定数据库/表
-   
-   - 当不指定 `collection` 参数时，则 dump 整个数据库。
-   - 配置文件中可以通过 `dump.query` 参数配置 dump 过程中的查询条件 (JSON)
-  
-   > 参考 https://www.mongodb.com/docs/database-tools/mongodump/#syntax
-  
+
+    - 当不指定 `collection` 参数时，则 dump 整个数据库。
+    - 配置文件中可以通过 `dump.query` 参数配置 dump 过程中的查询条件 (JSON)
+
+  > 参考 https://www.mongodb.com/docs/database-tools/mongodump/#syntax
+
 **容器化使用**
 
 本工具建议通过容器化环境使用，使用过程中，只需要在挂载必要的配置/输入输出目录挂载点后，传递命令参数，即可执行对应的动作。
@@ -63,30 +62,59 @@ docker run -it -v $(shell pwd)/conf.d:/var/opt/migration/conf.d \
 
 ### 环境变量
 
-  - `APP_NAME` - 应用服务名称，可以作为配置文件中配置参数的替代
-  - `SCHEMA_VERSION` - 目标 schema 版本（可选）
-  - `NODE_OPTIONS` - 可用于控制 node.js & mongosh 运行时的环境参数
+- `APP_NAME` - 应用服务名称，可以作为配置文件中配置参数的替代
+- `SCHEMA_VERSION` - 目标 schema 版本（可选）
+- `NODE_OPTIONS` - 可用于控制 node.js & mongosh 运行时的环境参数
 
 ### 配置文件 `conf.d/config.yml`:
 
 ```yaml
-app_name: app       # 应用服务名称
+# 数据库连接配置
+databases:
+  - name: app-db
+    servers:
+      - host: localhost
+        port: 27017
+    db: database
+    username: db-user
+    password: pa5sw0rd
 
-mongodb:            # 数据库连接配置
-  servers:
-    - host: localhost
-      port: 27017
-  db: database
-  username: db-user
-  password: pa5sw0rd
-  
+  - name: log-db
+    servers:
+      - host: localhost
+    db: log
+    srv: true                     # 使用 srv 协议连接
+    authSource: admin             # 指定鉴权库，例如 Mongodb Atlas 账号通常都由 admin 库管理
+    username: db-user
+    password: pa5sw0rd
+
+# 数据结构迁移任务配置
+migrations:
+  - name: app-db
+    enabled: true                   # 迁移任务启用开关
+    db: app-db                      # 迁移任务上下文默认的 db
+    dbRefMappings:                  # 数据库引用映射
+      - name: log-db
+        as: logDb                   # (可选配置) 重映射规则，需满足 js 变量命名要求
+    schemaVersion: '20221201_001'   # 目标 schema 版本，需指定字符串类型，避免 yaml 自动转换
+
+# 脚本执行配置
+runner:
+  db: app-db
+  dbRefMappings:
+    - name: log-db
+      as: logDb
+
+# 数据导出配置
 dump:
+  db: app-db
   readPreference: primary
   gzip: true
   oplog: false
-  #pipe: tee output/test.out
   output: ./output/dump.gz
   query: ./conf.d/dump_query.json
+
+dryRun: false
 
 system:
   log:              # 日志输出配置
@@ -99,6 +127,10 @@ system:
       level: info
       dir: ./log/
 ```
+
+> ⚠️ 注意：
+> - MongoDB Atlas 服务提供的实例连接，通常使用 SRV 协议连接，需要在配置中指定 `srv: true` 参数。
+> - 对于 MongoDB Atlas 服务，需要指定 `authSource: admin`，用于指定鉴权库。
 
 **实验性功能**
 
@@ -142,22 +174,24 @@ system:
 > - 所有结构迁移与初始化操作，原则上仅使用不超过应用服务所使用数据库权限执行。诸如分片划分等针对特定部署实例，单独设定的配置，不在结构模型定义的维护范畴内。此工程仅用于维护数据库的本身的逻辑结构变更。
 
 ```text
-<app>
+<.>
 └── schemas/
-    ├── schema_0/                 # 初始结构定义 (最新状态表索引等初始结构)
-    │   ├── 01.xxx.js
-    │   ├── ...
-    │   ├── CHANGELOG.md          # 变更记录
-    │   └── README.md             # 结构说明
-    ├── schema_<YYYYMMDD_xxx>/    # 单次迁移变更 (日期命名，可使用计划的迭代上线时间作为日期基准)
-    │   ├── lib/                  # 迁移脚本依赖 (尽可能不使用，对于 mongoshell 需要按照容器内的绝对路径引用)
-    │   │   └── utils.js
-    │   ├── 01.xxx.js             # 结构迁移脚本 (顺序敏感，建议使用数字序号命名文件)
-    │   ├── 02.xxx.js
-    │   ├── ...
-    │   └── README.md             # 迁移说明 （关联 Issue，变更了什么，风险与影响）
-    ├── ...
-    └── README.md                 # 数据库实例说明
+    └── app-db/                       # 数据库实例结构迁移目录
+        ├── schema_0/                 # 初始结构定义 (最新状态表索引等初始结构)
+        │   ├── 01.xxx.js
+        │   ├── ...
+        │   ├── CHANGELOG.md          # 变更记录
+        │   └── README.md             # 结构说明
+        ├── schema_<YYYYMMDD_xxx>/    # 单次迁移变更 (日期命名，可使用计划的迭代上线时间作为日期基准)
+        │   ├── lib/                  # 迁移脚本依赖 (尽可能不使用，对于 mongoshell 需要按照容器内的绝对路径引用)
+        │   │   └── utils.js
+        │   ├── 01.xxx.js             # 结构迁移脚本 (顺序敏感，建议使用数字序号命名文件)
+        │   ├── 02.xxx.js
+        │   ├── ...
+        │   └── README.md             # 迁移说明 （关联 Issue，变更了什么，风险与影响）
+        ├── ...
+        ├── README.md                 # 数据库实例说明
+        └── migrator.json             # 实例迁移描述文件 (可选)
 ```
 
 
@@ -175,24 +209,70 @@ system:
 另外，node.js 标准库所提供能功能也均可以直接使用。
 
 
+### 实例迁移描述文件 (migrator.json)
+
+针对特定数据库实例的迁移任务，新增可选的任务描述文件 `migrator.json`。面向在脚本执行前，提供简单的环境约束预检功能。
+
+结构示例：
+
+```json
+{
+  "minSchemaVersion": "20201201_001",
+  "refDatabases": [
+    "logDb"
+  ]
+}
+```
+
+1. 约束执行增量迁移的最小支持 schema 版本。
+
+   避免如在独享版场景，因长期版本更新中断，导致出现预期外跳过中间版本的增量变更执行。为便于发现并拦截相关行为，增量迁移任务执行开始前，数据库内的 schema 版本必须满足大于等于规定的最小版本要求。
+
+2. 约束关联引用数据库实例的变量定义。
+
+   开发者规定实例迁移项目中，需要引用到的关联数据库实例，配合任务配置文件，进行预检，防止配置遗漏时，执行迁移任务。 迁移脚本的开发者，需要保证维护引用实例列表的准确性。
+
+`migrator.json` 属于可选配置文件，约束校验并非必须。如果不提供相关配置项，则默认跳过相关的预检行为。
+
+
 ### 连接多个数据实例
 
-迁移框架提供了脚本执行过程中，操作多个不同数据库实例的能力。通过在配置文件中，配置 `ref_db`，可以在迁移执行的上下文，自动注入独立的数据库连接对象。
+迁移框架提供了脚本执行过程中，操作多个不同数据库实例的能力。在 `migration` 或者 `runner` 任务中，都可以参照以下配置使用这一能力。
 
-示例：
+1. 在 `config.yml` 中，配置 `databases` 参数，定义多个数据库实例的连接信息
 
-* 在 `config.yml` 中配置 `ref_db`
+   ```yaml
+   databases:
+     - name: app-db
+       servers:
+         - host: localhost
+           port: 27017
+       db: database
+       username: db-user
+       password: pa5sw0rd
+ 
+     - name: test-db
+       servers:
+         - host: localhost
+           port: 27017
+       db: log
+       username: db-user
+       password: pa5sw0rd
+   ```
 
-  ```yaml
-  ref_db:
-    - name: testDb
-      servers:
-        - host: 127.0.0.1
-          port: 27017
-      db: test
-  ```
+2. 在 `config.yml` 中，对应场景的任务中，配置 `dbRefMappings` 参数，指定将 `databases` 中数据库实例配置，映射到上下文中的变量名，其中 `as` 作为可选参数，用于将实例名称重映射为上下文规定的实例命名。
 
-* 在迁移脚本中，使用前面 `name` 参数声明的变量 `testDb` 对象进行目标数据库操作
+   ```yaml
+   migrations:
+     - name: app-db
+       enabled: true
+       db: app-db
+       dbRefMappings:
+         - name: test-db
+           as: testDb
+   ```
+
+3. 在迁移脚本中，使用前面 `name` 参数声明的变量 `testDb` 对象进行目标数据库操作
 
   ```javascript
   testDb.collection.find({ key: 'key' })
@@ -204,8 +284,24 @@ system:
 > const testDb = connect('mongodb://127.0.0.1:27017/test')
 > ```
 
+另外，从操作安全的角度考虑，建议在有条件的情况下，对数据库层面的权限控制设计为单向只读，即仅允许每个任务的默认主库执行写操作，其他关联库执行读操作。
+
+
 
 ### 钩子脚本
 
 迁移框架在 `scripts/hooks/` 目录下，提供了 `pre_hook.sh`, `post_hook.sh` 两个默认的钩子脚本入口，用于实现在任务执行前/后的其他行为动作调度。例如，下游工程在使用迁移框架过程中，可以定义自己的钩子行为，将日志/输出结果上传至对象存储。
 
+
+### 工具组件
+
+migrator 容器中除了基础的 mongosh 脚本执行组件以外，还提供了其他的相关辅助工具。
+
+- `s5cmd` - 用于 s3 对象存储的命令行工具，可用于将生成的文件结果到对象存储。
+- `mongodb-tools` - mongodb 官方提供的数据库 CLI 工具合集，主要包含：
+    - `mongodump` - 用于 dump 数据库的工具，可以将数据库的数据导出到为文件或者管道流。
+    - `mongorestore` - 用于 restore 数据库的工具，可以将 dump 的数据导入到数据库中。
+    - `mongoexport` - 数据库数据导出工具。
+    - `mongoimport` - 数据库数据导入工具。
+    - `mongostat` - 数据库状态监控工具。
+    - `mongotop` - 数据库性能监控工具。
