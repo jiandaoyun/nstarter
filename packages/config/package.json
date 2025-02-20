@@ -1,6 +1,6 @@
 {
   "name": "nstarter-config",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "nstarter 配置加载管理器",
   "license": "MIT",
   "repository": {
