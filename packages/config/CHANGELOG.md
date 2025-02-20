@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1
+
+* fix: 修正 `nconf.reset()` 在特定存储类型上存在异步行为，且无法真正移除存储的问题。  
+
+
 ## v0.3.0
 
 * 支持 `commonJs` + `esModule`

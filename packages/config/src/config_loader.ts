@@ -73,11 +73,26 @@ export class ConfigLoader<T extends IConfig> extends EventEmitter {
     }
 
     /**
+     * 重置 nconf 存储
+     */
+    public resetConfig() {
+        for (const key of Object.keys(nconf.stores)) {
+            if (key === 'memory' || key === 'env') {
+                // 内存重置
+                nconf.stores[key].reset();
+            } else {
+                // 其他存储直接移除，避免异步等待
+                nconf.remove(key);
+            }
+        }
+    }
+
+    /**
      * 加载配置内容
      */
     public loadConfig() {
         const o = this._options;
-        nconf.reset();
+        this.resetConfig();
         // 加载环境变量
         if (o.useEnv) {
             nconf.env();
