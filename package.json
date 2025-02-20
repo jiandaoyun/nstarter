@@ -16,7 +16,7 @@
     "test": "npx nx run-many -t test",
     "pack": "mkdirp ./build && npm pack --workspaces --pack-destination ./build",
     "upload": "npx nx run-many -t upload",
-    "clean": "npx nx run-many -t clean && rimraf .nx/cache && rmraf ./build"
+    "clean": "npx nx run-many -t clean && rimraf .nx/cache && rimraf ./build"
   },
   "devDependencies": {
     "@types/chai": "^4.3.16",

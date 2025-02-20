@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.1
+
+* update: 适配 inversify 新版本类型编译检查
+
+
 ## v1.2.0
 
 * 基础框架组件升级
