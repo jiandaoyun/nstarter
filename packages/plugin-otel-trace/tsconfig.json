@@ -1,0 +1,7 @@
+{
+  "extends": "nstarter-tsconfig/cjs",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true
+  }
+}

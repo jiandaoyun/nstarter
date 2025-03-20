@@ -1,0 +1,41 @@
+{
+  "name": "nstarter-otel-trace",
+  "version": "0.1.0-alpha",
+  "description": "nstarter OpenTelemetry 链路跟踪观测组件",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-otel-trace"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
+    "test": "nyc --nycrc-path ../../.nycrc mocha --config ../../.mocharc.yml --require ts-node/register,test/setup.ts",
+    "eslint": "eslint --ext .js,.ts --config ../../.eslintrc.js ./src",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output",
+    "upload": "npm-publish ./"
+  },
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/instrumentation": "^0.57.2",
+    "@opentelemetry/sdk-node": "^0.57.2"
+  },
+  "peerDependencies": {
+    "nstarter-core": ">=1.2.0 <2.0.0"
+  },
+  "devDependencies": {
+    "nstarter-core": "*"
+  }
+}
