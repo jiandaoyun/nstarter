@@ -1,5 +1,6 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 import type { Span, Tracer } from '@opentelemetry/api';
+import { ISpanHook } from './types';
 
 /**
  * 跨度跟踪开始
@@ -36,6 +37,7 @@ export const endSpan = (
 
 export interface ISpanFunctionWrapOptions {
     traceCallback?: boolean;
+    onSpanStart?: ISpanHook;
 }
 
 /**
@@ -57,6 +59,7 @@ export const getSpanFunctionWrap = (
     };
     return function(this: any, ...args: any[]) {
         const span = startSpan(tracer, scope);
+        args.shift();
         if (opts.traceCallback
             && args.length > 0
             && typeof args[args.length - 1] === 'function'
@@ -69,7 +72,7 @@ export const getSpanFunctionWrap = (
                 } else {
                     endSpan(span);
                 }
-                return callback(...cbArgs);
+                return callback.apply(this, cbArgs);
             };
         }
         let result;
@@ -90,14 +93,17 @@ export const getSpanFunctionWrap = (
  * @param original 原始函数
  * @param tracer 跟踪器
  * @param scope 标识
+ * @param options 配置参数
  */
 export const getAsyncSpanFunctionWrap = (
     original: any,
     tracer: Tracer,
-    scope: string
+    scope: string,
+    options?: ISpanFunctionWrapOptions
 ) => {
     return async function(this: any, ...args: any[]) {
         const span = startSpan(tracer, scope);
+        args.shift();
         try {
             const result = await original.apply(this, args);
             endSpan(span);

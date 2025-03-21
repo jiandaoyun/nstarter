@@ -5,6 +5,7 @@ module.exports = {
     ],
     rules: {},
     globals: {
-        Constructor: "readable"
+        Constructor: "readable",
+        NodeJS: "readable"
     }
 };

@@ -5,7 +5,7 @@ import {
 } from '@opentelemetry/instrumentation';
 import type { InstrumentationModuleDefinition } from '@opentelemetry/instrumentation';
 
-import type { INStarterInstrumentationConfig } from './types';
+import type { INStarterInstrumentationConfig } from '../types';
 
 import { getAsyncSpanFunctionWrap, getSpanFunctionWrap } from '../utils';
 import { pkg } from '../pkg';
@@ -71,6 +71,7 @@ export class NStarterInstrumentation extends InstrumentationBase<INStarterInstru
      * @private
      */
     private _patchRegisterSvc(moduleVersion?: string) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const instrumentation = this;
         // registerSvc
         return (original: Function)=> {
@@ -107,15 +108,19 @@ export class NStarterInstrumentation extends InstrumentationBase<INStarterInstru
      * @private
      */
     private _patchSvcFunction(scope: string, moduleVersion?: string) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const instrumentation = this;
         const config = instrumentation.getConfig();
         return (original: any)=> {
             if (original[Symbol.toStringTag] === 'AsyncFunction') {
                 // AsyncFunction
-                return getAsyncSpanFunctionWrap(original, instrumentation.tracer, scope);
+                return getAsyncSpanFunctionWrap(original, instrumentation.tracer, scope, {
+                    onSpanStart: config.onSpanStart
+                });
             } else {
                 return getSpanFunctionWrap(original, instrumentation.tracer, scope, {
-                    traceCallback: config.traceCallback
+                    traceCallback: config.traceCallback,
+                    onSpanStart: config.onSpanStart
                 });
             }
         };
