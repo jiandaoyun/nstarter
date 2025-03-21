@@ -14,7 +14,7 @@ const checkRegistryVersion = (pkgName) => {
     } catch (err) {
         if (err.code === 'ETIMEDOUT') {
             throw new Error('npm registry timeout.');
-        } else if (err.code === 'E404') {
+        } else if (/npm error code E404/.test(err.message)) {
             // 首次发布默认版本
             return '0.0.0';
         } else {
