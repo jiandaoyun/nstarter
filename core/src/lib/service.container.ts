@@ -59,11 +59,19 @@ export const getSvcContainer = (scope?: string | symbol) => {
  * 服务对象注册方法
  * @param target - 被注册服务的构造函数
  */
-export const registerSvc = (target: Constructor) => {
+const registerSvc = (target: Constructor) => {
     const identifier: IServiceMeta = Reflect.getMetadata(serviceMetaKey, target);
     const serviceContainer = getSvcContainer(identifier.scope);
     serviceContainer.bind(identifier.id).to(injectable()(target));
 };
+// @note 允许被 patch 注入，用于跟踪等场景
+Object.defineProperty(exports, 'registerSvc', {
+    enumerable: true,
+    configurable: true,
+    get () {
+        return registerSvc;
+    }
+});
 
 /**
  * 服务对象实例的获取方法

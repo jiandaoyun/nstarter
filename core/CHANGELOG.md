@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.2
+
+* update: 允许 registerSvc 被动态 patch，用于性能观测
+
+
 ## v1.2.1
 
 * update: 适配 inversify 新版本类型编译检查
