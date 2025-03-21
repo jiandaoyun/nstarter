@@ -1,5 +1,7 @@
 # nstarter-apm
 
+> NOTE: Tracing with ElasticAPM is deprecated, please use `nstarter-otel-trace` with OpenTelemetry instead.
+
 `nstarter-apm` 是为 nstarter 框架工程提供的 APM 业务跟踪插件，用于业务方法的执行跟踪与性能分析，基于 ElasticAPM 方案实现。
 
 注意：
