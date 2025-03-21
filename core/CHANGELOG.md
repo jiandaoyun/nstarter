@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.3
+
+* fix: 修复 registerSvc 属性注册导致的类型定义问题
+
 ## v1.2.2
 
 * update: 允许 registerSvc 被动态 patch，用于性能观测

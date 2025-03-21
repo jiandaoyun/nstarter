@@ -64,6 +64,7 @@ const registerSvc = (target: Constructor) => {
     const serviceContainer = getSvcContainer(identifier.scope);
     serviceContainer.bind(identifier.id).to(injectable()(target));
 };
+export { registerSvc };
 // @note 允许被 patch 注入，用于跟踪等场景
 Object.defineProperty(exports, 'registerSvc', {
     enumerable: true,
@@ -72,6 +73,7 @@ Object.defineProperty(exports, 'registerSvc', {
         return registerSvc;
     }
 });
+
 
 /**
  * 服务对象实例的获取方法
