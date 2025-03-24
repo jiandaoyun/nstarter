@@ -18,11 +18,11 @@ export function span(name?: string, options?: ISpanFunctionWrapOptions) {
         if (original[Symbol.toStringTag] === 'AsyncFunction') {
             // AsyncFunction
             descriptor.value = async (...args: any[]) => {
-                return getAsyncSpanFunctionWrap(original, tracer, spanName, options)(target, ...args);
+                return getAsyncSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
             };
         } else {
             descriptor.value = (...args: any[])=> {
-                return getSpanFunctionWrap(original, tracer, spanName, options)(target, ...args);
+                return getSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
             };
         }
     };

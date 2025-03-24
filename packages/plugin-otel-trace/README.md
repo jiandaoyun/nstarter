@@ -5,6 +5,8 @@
 
 ## 安装
 
+> `nstarter-otel-trace` 需要配合 `nstarter-core` 版本 >= 1.2.3 使用
+
 ```bash
 npm install -S nstarter-otel-trace
 ```
