@@ -27,4 +27,10 @@ export class TestClass {
         console.log('run -> TestClass::callbackFunc');
         callback();
     }
+
+    @span()
+    public errorFunc() {
+        console.log('run -> TestClass::errorFunc');
+        throw new Error('Test Error');
+    }
 }

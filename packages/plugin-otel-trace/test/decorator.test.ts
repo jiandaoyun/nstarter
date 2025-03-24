@@ -25,4 +25,13 @@ describe('Span decorator test', () => {
             done();
         });
     });
+
+    it('errorFunc', async () => {
+        try {
+            testClass.errorFunc();
+        } catch (err) {
+            should.exist(err);
+            err.message.should.equals('Test Error');
+        }
+    });
 });

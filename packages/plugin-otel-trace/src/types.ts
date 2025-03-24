@@ -1,5 +1,5 @@
 import type { InstrumentationConfig } from "@opentelemetry/instrumentation";
-import type { Span } from '@opentelemetry/api';
+import type { Span } from '@opentelemetry/sdk-trace-node';
 
 /**
  * 跨度跟踪开始钩子
