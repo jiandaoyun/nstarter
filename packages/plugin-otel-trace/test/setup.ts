@@ -9,7 +9,7 @@ const instrumentation = new NStarterInstrumentation({
     }
 });
 
-// 使用 require-in-the-middle 拦截 nstarter-core 模块
+// 使用 instrumentation 自带的 require-in-the-middle 拦截 nstarter-core 模块
 // 默认行为不支持 npm workspace 中非 node_modules 下的软连接路径模块装载
 new Hook([require.resolve('nstarter-core')], {}, (exports, name, moduleDir) => {
     console.log(`Intercepted workspace module`);
