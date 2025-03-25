@@ -2,6 +2,24 @@
 title: "变更记录"
 ---
 
+# 2025-03 变更记录
+
+- ![nstarter-otel-trace](https://img.shields.io/badge/nstarter--core-v0%2E1%2E0-orange?logo=npm&style=flat)
+
+## 更新内容
+
+### nstarter-otel-trace v0.1.0
+
+* 基于 OpenTelemetry NodeSDK 提供 `TraceSDK` 用于观测组件管理
+* 提供 `span` 装饰器封装，用于标记跟踪类方法执行
+* 提供实验性 `NStarterInstrumentation` 对 nstarter 中的 service 方法实现自动跟踪观测
+
+
+### 其他变更
+
+* 移除基于 ElasticAPM 实现的观测组件 `nstarter-apm`，相关 npm 包标记为弃用状态，后续不再维护。
+
+
 # 2024-08 变更记录
 
 - ![nstarter-core](https://img.shields.io/badge/nstarter--core-v1%2E2%2E0-orange?logo=npm&style=flat)

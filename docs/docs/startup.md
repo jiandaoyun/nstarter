@@ -8,7 +8,7 @@ sidebar_position: 1
 使用 nstarter，需要预先安装 Node.js 环境和 npm 包管理器。
 
 - 操作系统：支持 Windows, macOS, Linux
-- 运行环境：建议选择 LTS 版本，最低要求 12.x
+- 运行环境：建议选择 LTS 版本，最低要求 20.x
 
 同时环境内还需要提供 git 版本控制管理工具。
 
