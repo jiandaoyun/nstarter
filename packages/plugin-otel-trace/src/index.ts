@@ -2,4 +2,4 @@ export * from './decorators';
 export * from './instrumentation';
 export * from './types';
 
-export { TraceSDK } from './tracer';
+export { TraceSDK } from './sdk';

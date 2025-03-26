@@ -1,6 +1,6 @@
 {
   "name": "nstarter-otel-trace",
-  "version": "0.1.0-beta2",
+  "version": "0.1.0",
   "description": "nstarter OpenTelemetry 链路跟踪观测组件",
   "license": "MIT",
   "repository": {
