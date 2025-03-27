@@ -1,6 +1,6 @@
 {
   "name": "nstarter-mongodb",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "nstarter Mongodb 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -16,6 +16,8 @@
     "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output",
     "upload": "npm-publish ./"
   },
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "default": "./dist/cjs/index.js",
