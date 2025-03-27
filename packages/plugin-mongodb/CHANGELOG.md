@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2
+
+* update: 提供 `directConnection` 连接配置参数
+
 ## 0.6.1
 
 * 移除已启用的连接配置 `keepAlive`, `keepAliveInitialDelay`

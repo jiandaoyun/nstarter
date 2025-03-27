@@ -87,7 +87,11 @@ export class MongodbConnector {
      * 获取数据库连接配置
      */
     private get connectionConf(): ConnectOptions {
-        const { user, password, db, x509, timeoutMs, ssl, retryWrites, authSource, authMechanism } = this._options;
+        const {
+            user, password, db, x509, timeoutMs,
+            ssl, directConnection, retryWrites,
+            authSource, authMechanism
+        } = this._options;
         const baseConf: ConnectOptions = {
             user,
             serverSelectionTimeoutMS: timeoutMs || 10000,
@@ -98,8 +102,11 @@ export class MongodbConnector {
         /**
          * Azure cosmosDB必须开启ssl
          */
-        if (ssl) {
+        if (ssl === true) {
             baseConf.ssl = true;
+        }
+        if (directConnection === true) {
+            baseConf.directConnection = true;
         }
         /**
          * Azure cosmosDB必须将retryWrites设置成false，否则insert操作将失败

@@ -28,6 +28,7 @@ export interface IMongodbConfig {
     readonly authSource?: string;
     readonly authMechanism?: AuthMechanism;
     readonly ssl?: boolean;
+    readonly directConnection?: boolean;
     readonly retryWrites?: boolean;
     readonly srv?: boolean;
 }
