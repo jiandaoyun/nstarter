@@ -7,16 +7,19 @@
 import { Mutex as DefaultMutex, RedlockMutex } from 'redis-semaphore';
 import { getRedis } from './redis';
 import type { ILock, ILockOptions } from './types';
+import { LockerInfoHelper } from './lockerInfo';
 
 export class DistributedLock implements ILock {
     readonly #key;
     readonly #mutex;
+    readonly #lockerHelper: LockerInfoHelper;
 
     constructor(
         key: string,
-        options?: ILockOptions
+        options?: ILockOptions,
     ) {
         this.#key = key;
+        this.#lockerHelper = new LockerInfoHelper(key, options?.locker);
         const provider = getRedis();
         if (provider.isCluster) {
             // use red-lock implementation for cluster.
@@ -28,15 +31,28 @@ export class DistributedLock implements ILock {
     }
 
     public async acquire(): Promise<void> {
-        return this.#mutex.acquire();
+        try {
+            await this.#mutex.acquire();
+            if (this.#lockerHelper.locker) {
+                await this.#lockerHelper.setLockerInfo(this.#lockerHelper.locker);
+            }
+        } catch (err: any) {
+            const locker = await this.#lockerHelper.getLockerInfo();
+            throw new Error(`${ err.message } (locker: ${ locker || 'unknow' })`);
+        }
     }
 
     public async tryAcquire(): Promise<boolean> {
-        return this.#mutex.tryAcquire();
+        const acquired = await this.#mutex.tryAcquire();
+        if (acquired && this.#lockerHelper.locker) {
+            await this.#lockerHelper.setLockerInfo(this.#lockerHelper.locker);
+        }
+        return acquired;
     }
 
     public async release(): Promise<void> {
-        return this.#mutex.release();
+        await this.#mutex.release();
+        await this.#lockerHelper.deleteLockerInfo();
     }
 
     public get key(): string {
