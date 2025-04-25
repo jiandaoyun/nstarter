@@ -10,5 +10,6 @@ export { DistributedLock } from './mutex';
 export { DistributedSemaphore } from './semaphore';
 export { LockGuard } from './guard';
 export { LockManager } from './manager';
+export { LockerInfoHelper } from './lockerInfo';
 
 export * from './types';

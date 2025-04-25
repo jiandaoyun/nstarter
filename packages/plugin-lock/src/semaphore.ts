@@ -7,17 +7,20 @@
 import { RedlockSemaphore, Semaphore as DefaultSemaphore } from 'redis-semaphore';
 import { getRedis } from './redis';
 import type { ISemaphoreOptions } from './types';
+import { LockerInfoHelper } from './lockerInfo';
 
 export class DistributedSemaphore {
     readonly #key;
     readonly #semaphore;
+    readonly #lockerHelper: LockerInfoHelper;
 
     constructor(
         key: string,
         limit: number,
-        options?: ISemaphoreOptions
+        options?: ISemaphoreOptions,
     ) {
         this.#key = key;
+        this.#lockerHelper = new LockerInfoHelper(key, options?.locker);
         const provider = getRedis();
         if (provider.isCluster) {
             const cluster = provider.client.nodes('master');
@@ -28,15 +31,28 @@ export class DistributedSemaphore {
     }
 
     public async acquire(): Promise<void> {
-        return this.#semaphore.acquire();
+        try {
+            await this.#semaphore.acquire();
+            if (this.#lockerHelper.locker) {
+                await this.#lockerHelper.setLockerInfo(this.#lockerHelper.locker);
+            }
+        } catch (err: any) {
+            const locker = await this.#lockerHelper.getLockerInfo();
+            throw new Error(`${ err.message } (locker: ${ locker || 'unknown' })`);
+        }
     }
 
     public async tryAcquire(): Promise<boolean> {
-        return this.#semaphore.tryAcquire();
+        const acquired = await this.#semaphore.tryAcquire();
+        if (acquired && this.#lockerHelper.locker) {
+            await this.#lockerHelper.setLockerInfo(this.#lockerHelper.locker);
+        }
+        return acquired;
     }
 
     public async release(): Promise<void> {
-        return this.#semaphore.release();
+        await this.#semaphore.release();
+        await this.#lockerHelper.deleteLockerInfo();
     }
 
     public get key(): string {

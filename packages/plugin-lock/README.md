@@ -34,17 +34,29 @@ const lock = new DistributedLock('key', {
     retryInterval: 10,								  // 上锁重试间隔, 毫秒.
     refreshInterval: 8000,							// 锁续期周期, 除非释放锁或手动停止刷新, 否则会持续尝试续期. 设置为 0 停用该特性.
     identifier: randomUUID(),						// 分布式锁标识符.
-    onLockLost: Logger.warn							// 续期失败导致锁丢失时的回调函数.
+    onLockLost: Logger.warn,							// 续期失败导致锁丢失时的回调函数.
+    locker: 'user-123'                               // 持有锁者信息，字符串类型
 });
 
 // 加锁.
 await lock.acquire();
+
+// 注意: getLockerInfo是类内部私有方法，不能直接调用
+// 当无法获取锁时，系统会自动检查锁的持有者并在错误信息中显示
+
 // 解锁.
 await lock.release();
 
 // 停止自动续期.
 await lock.stopRefresh();
 ```
+
+锁持有者信息与锁具有相同的生命周期：
+1. 当锁被成功获取时，锁持有者信息会被保存到 Redis 中
+2. 锁持有者信息的过期时间为24小时
+3. 当锁被释放时，锁持有者信息会被自动删除
+
+这确保了在出现锁争用问题时，通过错误信息可以了解到当前持有锁的用户信息，便于排查死锁等问题。
 
 ### 分布式信号量
 

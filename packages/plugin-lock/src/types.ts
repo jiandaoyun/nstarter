@@ -26,6 +26,10 @@ export interface ILock extends IKeyedResource {
 }
 
 export interface ILockOptions extends LockOptions {
+    /**
+     * 记录持有锁者的信息
+     */
+    locker?: string;
 }
 
 export interface ISemaphore extends IKeyedResource {
@@ -36,4 +40,8 @@ export interface ISemaphore extends IKeyedResource {
 }
 
 export interface ISemaphoreOptions extends LockOptions {
+    /**
+     * 记录持有信号量者的信息
+     */
+    locker?: string;
 }
