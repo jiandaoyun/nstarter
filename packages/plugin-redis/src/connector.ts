@@ -28,6 +28,7 @@ export class RedisConnector extends EventEmitter {
         super();
         this._isCluster = config.isCluster;
         const options: RedisOptions = {
+            name: config.name,
             username: config.username,
             password: config.password,
             host: config.host,
@@ -37,6 +38,7 @@ export class RedisConnector extends EventEmitter {
             lazyConnect: config.lazyConnect,
             sentinels: config.sentinels?.length === 0 ?
                 undefined : config.sentinels,
+            sentinelPassword: config.sentinelPassword,
             retryStrategy: () => 1000,
             enableReadyCheck: true,
         };

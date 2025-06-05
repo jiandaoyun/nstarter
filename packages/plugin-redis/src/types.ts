@@ -6,6 +6,9 @@ export interface IRedisConfig {
     readonly password?: string;
     readonly host?: string;
     readonly port?: number;
+
+    readonly name?: string;
+    readonly sentinelPassword?: string;
     readonly sentinels?: {
         readonly host: string,
 
@@ -16,12 +19,12 @@ export interface IRedisConfig {
          */
         readonly port: number
     }[];
+
     readonly db?: number;
     readonly ssl?: boolean;
     readonly lazyConnect?: boolean;
     readonly isCluster?: boolean;
 }
-
 /**
  * rua脚本
  */
