@@ -4,17 +4,17 @@
  * 单机配置：
  *   redis：
  *     name: jdy
- *     password: r49Uah83d14dYfqZR3tSYCZ4
+ *     password: ******
  *     db: 0
- *     host: redis.components.svc.cluster.local
+ *     host: localhost
  *     port: 6379
  * 哨兵配置
  *   redis：
  *     name: mymaster
- *     password: r49Uah83d14dYfqZR3tSYCZ4
- *     sentinelPassword: r49Uah83d14dYfqZR3tSYCZ4
+ *     password: ******
+ *     sentinelPassword: ******
  *     sentinels:
- *       - host: redis-session.components.svc.cluster.local
+ *       - host: localhost
  *         port: 26379
  *     db: 0
  */
