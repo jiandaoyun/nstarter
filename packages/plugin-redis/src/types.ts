@@ -20,7 +20,7 @@
  */
 export interface IRedisConfig {
     readonly username?: string;         // Redis 用户名（ACL 认证）
-    readonly password?: string;         // 主从节点访问密码
+    readonly password?: string;         // 单机密码 / 主从节点访问密码
     readonly host?: string;             // 单机模式主机地址
     readonly port?: number;             // 单机模式端口（默认 6379）
 
@@ -36,7 +36,7 @@ export interface IRedisConfig {
         readonly port: number
     }[];
 
-    readonly db?: number;               // 数据库索引（0-15）
+    readonly db?: number;               // 数据库编号
     readonly ssl?: boolean;             // 是否启用 SSL 加密
     readonly lazyConnect?: boolean;     // 是否延迟连接
     readonly isCluster?: boolean;       // 是否为集群模式
