@@ -6,7 +6,8 @@
 
 import { test } from '@japa/runner';
 import { randomUUID } from 'crypto';
-import { DistributedSemaphore, ILockOptions, LockerInfoHelper } from '../src';
+import type { ILockOptions } from '../src';
+import { DistributedSemaphore } from '../src';
 import { getRedis } from '../src/redis';
 import './types';
 
@@ -14,9 +15,9 @@ test.group('DistributedSemaphore', (group) => {
     const redis = getRedis().client;
     const key = `unit:${ randomUUID() }`;
     const o: ILockOptions = { acquireAttemptsLimit: 1 };
-    const semaphoreInfoKey = `${key}:locker`;
+    const semaphoreInfoKey = `${ key }:locker`;
 
-    group.each.setup(() => async () => {
+    group.each.setup(async () => {
         await redis.del(key);
         await redis.del(semaphoreInfoKey);
     });
@@ -30,19 +31,21 @@ test.group('DistributedSemaphore', (group) => {
         await assert.rejects(async () => semaphore3.acquire());
         await semaphore2.release();
         await semaphore3.acquire();
+        await semaphore1.release();
+        await semaphore3.release();
     });
-    
+
     test('lockerInfo - set and delete on acquire and release', async ({ assert }) => {
         const lockerId = 'test-user-123';
         const semaphore = new DistributedSemaphore(key, 2, { ...o, locker: lockerId });
         await semaphore.acquire();
-        
+
         // 验证信号量持有者信息已经设置
         const lockerInfo = await redis.get(semaphoreInfoKey);
         assert.equal(lockerInfo, lockerId);
-        
+
         await semaphore.release();
-        
+
         // 验证信号量持有者信息已经删除
         assert.equal(await redis.exists(semaphoreInfoKey), 0);
     });
@@ -50,16 +53,16 @@ test.group('DistributedSemaphore', (group) => {
     test('lockerInfo - set and delete on tryAcquire and release', async ({ assert }) => {
         const lockerId = 'test-user-456';
         const semaphore = new DistributedSemaphore(key, 2, { ...o, locker: lockerId });
-        
+
         const acquired = await semaphore.tryAcquire();
         assert.isTrue(acquired);
-        
+
         // 验证信号量持有者信息已经设置
         const lockerInfo = await redis.get(semaphoreInfoKey);
         assert.equal(lockerInfo, lockerId);
-        
+
         await semaphore.release();
-        
+
         // 验证信号量持有者信息已经删除
         assert.equal(await redis.exists(semaphoreInfoKey), 0);
     });
@@ -68,14 +71,14 @@ test.group('DistributedSemaphore', (group) => {
         const lockerId1 = 'test-user-789';
         const lockerId2 = 'test-user-987';
         const lockerId3 = 'test-user-555';
-        
+
         const semaphore1 = new DistributedSemaphore(key, 2, { ...o, locker: lockerId1 });
         const semaphore2 = new DistributedSemaphore(key, 2, { ...o, locker: lockerId2 });
         const semaphore3 = new DistributedSemaphore(key, 2, { ...o, locker: lockerId3 });
-        
+
         await semaphore1.acquire();
         await semaphore2.acquire();
-        
+
         try {
             await semaphore3.acquire();
             assert.fail('应该抛出错误');
@@ -84,7 +87,7 @@ test.group('DistributedSemaphore', (group) => {
             const hasLockerInfo = error.message.includes(lockerId1) || error.message.includes(lockerId2);
             assert.isTrue(hasLockerInfo);
         }
-        
+
         await semaphore1.release();
         await semaphore2.release();
     });
