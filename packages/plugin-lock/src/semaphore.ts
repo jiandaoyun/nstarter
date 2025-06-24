@@ -8,6 +8,7 @@ import { RedlockSemaphore, Semaphore as DefaultSemaphore } from 'redis-semaphore
 import { getRedis } from './redis';
 import type { ISemaphoreOptions } from './types';
 import { LockerInfoHelper } from './lockerInfo';
+import { getNsError } from './error';
 
 export class DistributedSemaphore {
     readonly #key;
@@ -38,7 +39,7 @@ export class DistributedSemaphore {
             }
         } catch (err: any) {
             const locker = await this.#lockerHelper.getLockerInfo();
-            throw new Error(`${ err.message } (locker: ${ locker || 'unknown' })`);
+            throw getNsError(err, { locker });
         }
     }
 

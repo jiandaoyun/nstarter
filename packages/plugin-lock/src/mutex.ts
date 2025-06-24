@@ -8,6 +8,7 @@ import { Mutex as DefaultMutex, RedlockMutex } from 'redis-semaphore';
 import { getRedis } from './redis';
 import type { ILock, ILockOptions } from './types';
 import { LockerInfoHelper } from './lockerInfo';
+import { getNsError } from './error';
 
 export class DistributedLock implements ILock {
     readonly #key;
@@ -38,7 +39,7 @@ export class DistributedLock implements ILock {
             }
         } catch (err: any) {
             const locker = await this.#lockerHelper.getLockerInfo();
-            throw new Error(`${ err.message } (locker: ${ locker || 'unknow' })`);
+            throw getNsError(err, { locker });
         }
     }
 
