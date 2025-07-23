@@ -119,3 +119,86 @@ export const getAsyncSpanFunctionWrap = (
         }
     };
 };
+
+
+/**
+ * 函数跨度跟踪方法生成器 (同步), 将span设为context
+ * @param original 原始函数
+ * @param tracer 跟踪器
+ * @param scope 标识
+ * @param options 配置参数
+ */
+export const getActiveSpanFunctionWrap = (
+    original: any,
+    tracer: Tracer,
+    scope: string,
+    options?: ISpanFunctionWrapOptions
+) => {
+    const opts = {
+        traceCallback: false,
+        ...options
+    };
+    return function(this: any, ...args: any[]) {
+        return tracer.startActiveSpan(scope, (span)=>{
+            if (options?.onSpanStart) {
+                options.onSpanStart.call(this, span as SpanClass);
+            }
+            if (opts.traceCallback
+                && args.length > 0
+                && typeof args[args.length - 1] === 'function'
+            ) {
+                // Callback Function
+                const callback = args[args.length - 1];
+                args[args.length - 1] = (...cbArgs: any[])=> {
+                    if (cbArgs[0] && cbArgs[0] instanceof Error) {
+                        endSpan(span, cbArgs[0]);
+                    } else {
+                        endSpan(span);
+                    }
+                    return callback.apply(this, cbArgs);
+                };
+            }
+            let result;
+            try {
+                result = original.apply(this, args);
+            } catch (error: any) {
+                endSpan(span, error);
+                throw error;
+            }
+            // @note sdk 允许重复调用 `span.end`
+            endSpan(span);
+            return result;
+        });
+    }
+};
+
+
+/**
+ * 函数跨度跟踪方法生成器 (异步), 将span设为context
+ * @param original 原始函数
+ * @param tracer 跟踪器
+ * @param scope 标识
+ * @param options 配置参数
+ */
+export const getAsyncActiveSpanFunctionWrap = (
+    original: any,
+    tracer: Tracer,
+    scope: string,
+    options?: ISpanFunctionWrapOptions
+) => {
+    return async function(this: any, ...args: any[]) {
+        return tracer.startActiveSpan(scope, async (span)=>{
+            if (options?.onSpanStart) {
+                options.onSpanStart.call(this, span as SpanClass);
+            }
+            try {
+                const result = await original.apply(this, args);
+                endSpan(span);
+                return result;
+            } catch (error: any) {
+                endSpan(span, error);
+                throw error;
+            }
+        })
+    };
+};
