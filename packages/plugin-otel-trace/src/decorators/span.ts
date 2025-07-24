@@ -1,6 +1,6 @@
 import type { ISpanFunctionWrapOptions } from '../utils';
 import { trace } from '@opentelemetry/api';
-import { getAsyncSpanFunctionWrap, getSpanFunctionWrap } from '../utils';
+import { getAsyncActiveSpanFunctionWrap, getActiveSpanFunctionWrap } from '../utils';
 
 import { pkg } from '../pkg';
 
@@ -18,11 +18,11 @@ export function span(name?: string, options?: ISpanFunctionWrapOptions) {
         if (original[Symbol.toStringTag] === 'AsyncFunction') {
             // AsyncFunction
             descriptor.value = async (...args: any[]) => {
-                return getAsyncSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
+                return getAsyncActiveSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
             };
         } else {
             descriptor.value = (...args: any[])=> {
-                return getSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
+                return getActiveSpanFunctionWrap(original, tracer, spanName, options).apply(target, args);
             };
         }
     };
