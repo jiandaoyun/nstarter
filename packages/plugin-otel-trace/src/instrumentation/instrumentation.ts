@@ -7,7 +7,7 @@ import type { InstrumentationModuleDefinition } from '@opentelemetry/instrumenta
 
 import type { INStarterInstrumentationConfig } from '../types';
 
-import { getAsyncSpanFunctionWrap, getSpanFunctionWrap } from '../utils';
+import { getAsyncActiveSpanFunctionWrap, getActiveSpanFunctionWrap } from '../utils';
 import { pkg } from '../pkg';
 
 const DEFAULT_CONFIG: INStarterInstrumentationConfig = {
@@ -114,11 +114,11 @@ export class NStarterInstrumentation extends InstrumentationBase<INStarterInstru
         return (original: any)=> {
             if (original[Symbol.toStringTag] === 'AsyncFunction') {
                 // AsyncFunction
-                return getAsyncSpanFunctionWrap(original, instrumentation.tracer, scope, {
+                return getAsyncActiveSpanFunctionWrap(original, instrumentation.tracer, scope, {
                     onSpanStart: config.onSpanStart
                 });
             } else {
-                return getSpanFunctionWrap(original, instrumentation.tracer, scope, {
+                return getActiveSpanFunctionWrap(original, instrumentation.tracer, scope, {
                     traceCallback: config.traceCallback,
                     onSpanStart: config.onSpanStart
                 });
