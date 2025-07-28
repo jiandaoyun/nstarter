@@ -62,7 +62,7 @@ export class MongodbComponent extends AbstractComponent {
   提供有 `transaction` 方法装饰器与 `repoSession` 参数装饰装饰器，来向服务的方法中自动注入数据库操作的上下文会话，以实现所有相关的业务操作都可以在同一个数据库事务中被提交。
 
   ```typescript
-  @provideSvc()
+  @service()
   export class UserService {
       @transaction()
       public async userCreateTransaction(

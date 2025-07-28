@@ -26,7 +26,7 @@ sidebar_position: 1
 * 配置模默认板工程
 
   ```bash
-  nstarter config set template.default ssh://git@code.fineres.com:7999/fx/nstarter-ts-express.git
+  nstarter config set repo.default ssh://git@code.fineres.com:7999/fx/nstarter-ts-express.git
   nstarter update
   ```
 
