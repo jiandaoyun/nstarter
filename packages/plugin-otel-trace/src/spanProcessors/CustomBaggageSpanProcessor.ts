@@ -20,10 +20,16 @@ export class CustomBaggageSpanProcessor implements SpanProcessor {
      * data that gets attached to spans, especially in production environments
      * where you might want to avoid logging sensitive or unnecessary information.
      */
-    private readonly _filter: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean;
+    private _filter: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean;
 
-    constructor(filter: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean) {
-        this._filter = filter;
+    /**
+     * Default filter function that accepts all baggage entries.
+     * This can be overridden by passing a custom filter function to the constructor.
+     */
+    private static defaultFilter = (entry: [key: string, baggageEntry: BaggageEntry]) => true;
+
+    constructor(filter?: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean) {
+        this._filter = filter || CustomBaggageSpanProcessor.defaultFilter;
     }
 
     /**
