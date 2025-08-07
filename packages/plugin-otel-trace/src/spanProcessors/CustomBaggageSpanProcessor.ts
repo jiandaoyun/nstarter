@@ -7,17 +7,19 @@ import type { Span, ReadableSpan, SpanProcessor } from '@opentelemetry/sdk-trace
  * and sets it as attributes on the span.
  */
 export class CustomBaggageSpanProcessor implements SpanProcessor {
-    // The filter function to determine which baggage entries to include
-    // in the span attributes.
-    // It takes a tuple of [key, baggageEntry] and returns a boolean.
-    // If it returns true, the baggage entry will be included in the span attributes.
-    // If it returns false, the baggage entry will be ignored.
-    // This allows for selective inclusion of baggage entries based on custom logic.
-    // For example, you could filter out sensitive information or only include
-    // specific keys that are relevant to the span.
-    // This is useful for scenarios where you want to control the amount of baggage
-    // data that gets attached to spans, especially in production environments
-    // where you might want to avoid logging sensitive or unnecessary information.
+    /**
+     * The filter function to determine which baggage entries to include
+     * in the span attributes.
+     * It takes a tuple of [key, baggageEntry] and returns a boolean.
+     * If it returns true, the baggage entry will be included in the span attributes.
+     * If it returns false, the baggage entry will be ignored.
+     * This allows for selective inclusion of baggage entries based on custom logic.
+     * For example, you could filter out sensitive information or only include
+     * specific keys that are relevant to the span.
+     * This is useful for scenarios where you want to control the amount of baggage
+     * data that gets attached to spans, especially in production environments
+     * where you might want to avoid logging sensitive or unnecessary information.
+     */
     private readonly _filter: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean;
 
     constructor(filter: (entry: [key: string, baggageEntry: BaggageEntry]) => boolean) {
