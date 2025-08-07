@@ -1,7 +1,7 @@
-import { SpanStatusCode } from '@opentelemetry/api';
-import type { Span, Tracer } from '@opentelemetry/api';
+import { context, propagation, SpanStatusCode } from '@opentelemetry/api';
+import type { Attributes, Span, SpanOptions, Tracer } from '@opentelemetry/api';
 import type { Span as SpanClass } from '@opentelemetry/sdk-trace-node';
-import type { ISpanHook } from './types';
+import type { ISpanHook } from './types';;
 
 /**
  * 跨度跟踪结束
@@ -25,6 +25,8 @@ export const endSpan = (
 export interface ISpanFunctionWrapOptions {
     traceCallback?: boolean;
     onSpanStart?: ISpanHook;
+    baggage?: Record<string, string>;
+    attributes?: Attributes;
 }
 
 
@@ -46,11 +48,25 @@ export const getActiveSpanFunctionWrap = (
         ...options
     };
     return function(this: any, ...args: any[]) {
-        return tracer.startActiveSpan(scope, (span)=>{
-            if (options?.onSpanStart) {
-                options.onSpanStart.call(this, span as SpanClass);
-            }
-            if (opts.traceCallback
+        const parentContext = context.active();
+        let currentContext = parentContext;
+        if (opts.baggage) {
+            let baggage = propagation.getBaggage(parentContext) || propagation.createBaggage();
+            Object.entries(opts.baggage).forEach(([key, value]) => {
+                baggage = baggage.setEntry(key, { value });
+            });
+            currentContext = propagation.setBaggage(parentContext, baggage);
+        }
+        
+        const spanOptions: SpanOptions = {};
+        if (opts.attributes) {
+            spanOptions.attributes = opts.attributes;
+        }
+        return tracer.startActiveSpan(scope, spanOptions, currentContext, (span)=>{
+                if (options?.onSpanStart) {
+                    options.onSpanStart.call(this, span as SpanClass);
+                }
+                if (opts.traceCallback
                 && args.length > 0
                 && typeof args[args.length - 1] === 'function'
             ) {
@@ -93,8 +109,25 @@ export const getAsyncActiveSpanFunctionWrap = (
     scope: string,
     options?: ISpanFunctionWrapOptions
 ) => {
+    const opts = {
+        ...options
+    };
     return async function(this: any, ...args: any[]) {
-        return tracer.startActiveSpan(scope, async (span)=>{
+        const parentContext = context.active();
+        let currentContext = parentContext;
+        if (opts.baggage) {
+            let baggage = propagation.getBaggage(parentContext) || propagation.createBaggage();
+            Object.entries(opts.baggage).forEach(([key, value]) => {
+                baggage = baggage.setEntry(key, { value });
+            });
+            currentContext = propagation.setBaggage(parentContext, baggage);
+        }
+        
+        const spanOptions: SpanOptions = {};
+        if (opts.attributes) {
+            spanOptions.attributes = opts.attributes;
+        }
+        return tracer.startActiveSpan(scope, spanOptions, currentContext, async (span)=>{
             if (options?.onSpanStart) {
                 options.onSpanStart.call(this, span as SpanClass);
             }

@@ -9,3 +9,6 @@
 ## 0.1.1
 - 修复 `span` 创建后未设置上下文导致无法正确形成父子关系的问题
 
+## 0.1.2
+- feature: 丰富 `span` 装饰器的功能，支持传入 `baggage` 和 `attributes`
+- feature: 添加 `CustomBaggageSpanProcessor` 用于baggage到span attributes的传播
