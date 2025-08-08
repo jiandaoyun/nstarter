@@ -27,7 +27,7 @@ const logger = winston.loggers.add('default', {
     levels: levelConf.levels,
     exitOnError: false
 });
-let metaKeyWhitelist: string[] = [];
+let metaKeyWhitelist: Set<string> = new Set();
 let isWhitelistInitialized = false;
 
 /**
@@ -42,21 +42,12 @@ export class Logger {
      * @param meta - 日志元数据
      */
     private static _log(level: string, msg: LogMessage, meta?: object) {
-        const whitelistMeta: Record<string, any> = {};
-        const extra: Record<string, any> = {};
-        for (const [key, value] of Object.entries(meta ?? {})) {
-            if (metaKeyWhitelist.includes(key)) {
-                // 白名单key才允许记录为顶层字段，其他key转储到extra字段
-                whitelistMeta[key] = value;
-            } else {
-                extra[key] = value;
-            }
-        }
+        const { logMeta, extra } = Logger.normalizeMetaKey(meta);
         if (typeof msg === 'string') {
             // log string
             logger.log(level, msg, {
                 metadata: {
-                    ...whitelistMeta,
+                    ...logMeta,
                     extra
                 }
             });
@@ -64,7 +55,7 @@ export class Logger {
             // log error
             logger.log(level, msg.message, {
                 metadata: {
-                    ...whitelistMeta,
+                    ...logMeta,
                     error: msg,
                     extra: {
                         ...msg.meta,
@@ -76,6 +67,30 @@ export class Logger {
     }
 
     /**
+     * 规范化日志元数据key，将非白名单key转储到extra字段
+     * @param meta - 日志元数据
+     * @returns - 规范化后的日志元数据和额外字段
+     */
+    private static normalizeMetaKey(meta: object | undefined) {
+        let logMeta = { ...meta };
+        const extra: Record<string, any> = {};
+        // 启用白名单控制.
+        if (isWhitelistInitialized) {
+            const whitelistMeta: Record<string, any> = {};
+            for (const [key, value] of Object.entries(logMeta)) {
+                if (metaKeyWhitelist.has(key)) {
+                    // 白名单key才允许记录为顶层字段，其他key转储到extra字段
+                    whitelistMeta[key] = value;
+                } else {
+                    extra[key] = value;
+                }
+            }
+            logMeta = whitelistMeta;
+        }
+        return { logMeta, extra };
+    }
+
+    /**
      * 注册日志元数据key白名单
      * @param keyList - 日志元数据key白名单
      * @throws {Error} 如果已经初始化过
@@ -84,7 +99,7 @@ export class Logger {
         if (isWhitelistInitialized) {
             throw new Error('Meta key whitelist is already initialized, cannot register again.');
         }
-        metaKeyWhitelist = keyList;
+        metaKeyWhitelist = new Set(keyList);
         isWhitelistInitialized = true;
     }
 

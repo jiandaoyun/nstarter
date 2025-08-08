@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.4
+* feature:支持业务注册白名单metaKey列表来规范化日志meta字段.
+
 ## v1.2.3
 
 * fix: 修复 registerSvc 属性注册导致的类型定义问题
