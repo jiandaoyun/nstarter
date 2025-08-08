@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import type { Logger as WinstonLogger } from 'winston';
 import winston from 'winston';
 import type Transport from 'winston-transport';
@@ -46,11 +45,9 @@ export class Logger {
         const whitelistMeta: Record<string, any> = {};
         const extra: Record<string, any> = {};
         for (const [key, value] of Object.entries(meta ?? {})) {
-            // 将key统一兼容为蛇形，避免原来驼峰型的key被转储到extra中，影响日志查询效率
-            const snakeKey = _.snakeCase(key);
             if (metaKeyWhitelist.includes(key)) {
                 // 白名单key才允许记录为顶层字段，其他key转储到extra字段
-                whitelistMeta[snakeKey] = value;
+                whitelistMeta[key] = value;
             } else {
                 extra[key] = value;
             }
