@@ -1,7 +1,7 @@
 import { context, propagation, SpanStatusCode } from '@opentelemetry/api';
 import type { Attributes, Span, SpanOptions, Tracer } from '@opentelemetry/api';
 import type { Span as SpanClass } from '@opentelemetry/sdk-trace-node';
-import type { ISpanHook } from './types';;
+import type { ISpanHook } from './types';
 
 /**
  * 跨度跟踪结束
