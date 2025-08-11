@@ -69,7 +69,7 @@ nstarter 是一套面向 Node.js + TypeScript 工程开发，设计的工程治�
   npm run test
   ```
 
-* 代码质量检擦
+* 代码质量检查
 
   ```bash
   npm run eslint
