@@ -120,9 +120,82 @@ class ExampleService {
 }
 ```
 
+除指定`spanName`之外，`span` 装饰器可以接受更多的参数配置。Attributes 和 Baggage 是 OpenTelemetry 中的两个重要概念，分别用于标记跟踪跨度的属性和携带跨服务传递的元数据。
+
+```typescript
+import { span } from 'nstarter-otel-trace';
+
+class ExampleService {
+    @span('<traceName>', {
+        baggage: {        // 跨度跟踪包裹 (可选)
+            'example.baggage': 'value'
+        },
+        attributes: {            // 跨度跟踪属性标记 (可选)
+            'example.attribute': 'value'
+        }
+    })
+    public async doSomeThing() {
+        // doing
+    }
+}
+```
+
 > ℹ️ 受限于 Typescript 装饰器的使用限制，目前仅限于对类方法使用装饰器跟踪。
 > 其他场景下，需要依赖 OpenTelemetry 中的原生跟踪方法。
 > https://opentelemetry.io/docs/languages/js/instrumentation/#create-spans
+
+Baggage 的信息只存在于上下文中，并不会直接出现在Span 的属性中。要在 Span 中查看 Baggage 信息，需要通过 `propagation.getBaggage` 方法获取当前上下文中的 Baggage，并手动将其添加到 Span 的属性中。或者通过`CustomBaggageSpanProcessor` 来实现自动添加。`CustomBaggageSpanProcessor` 从父上下文读取存储在 Baggage 中的条目，并在跨度开始时将行李条目的键和值作为属性添加到跨度中。如下示例：
+
+```typescript
+import { span, CustomBaggageSpanProcessor } from 'nstarter-otel-trace';
+
+import { SimpleSpanProcessor, ConsoleSpanExporter } from '@opentelemetry/sdk-trace-base';
+import { TraceSDK } from 'nstarter-otel-trace';
+import { propagation, context, trace as otelTrace } from '@opentelemetry/api';
+
+// 配置 trace exporter 为 console exporter
+const traceExporter = new ConsoleSpanExporter();
+
+const trace = new TraceSDK({
+    // 其他配置
+    spanProcessors: [
+        new CustomBaggageSpanProcessor(),   // 自动将 Baggage 信息添加到 Span 属性中
+        new SimpleSpanProcessor(traceExporter)
+    ]
+});
+
+trace.start();
+
+class ExampleService {
+    @span('f1')
+    public async f1() {
+        this.f2();
+    }
+
+    @span('f2', {
+        baggage: {
+            'baggage.f2': 'message from f2'
+        }
+    })
+    public f2() {
+        this.f3();
+    }
+
+    @span('f3')
+    public f3() {
+        // get current span
+        const span = otelTrace.getActiveSpan();
+        if (span) {
+            console.log('Current span:', span); // 输出当前 Span 信息, span.attributes['baggage.f2'] 为 undefined 如果没有 CustomBaggageSpanProcessor
+        }
+        console.log(propagation.getBaggage(context.active())?.getEntry('baggage.f2')?.value); // 总是输出 message from f2
+    }
+}
+
+let service = new ExampleService();
+service.f1();
+
+```
 
 
 ### 自动注册可观测仪表 (Instrumentation)
