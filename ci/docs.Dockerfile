@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs
-ARG NODE_IMAGE=node:20.16.0-alpine
+ARG NODE_IMAGE=node:22.19.0-alpine
 
 # 基础构建环境
 FROM ${NODE_IMAGE} as build-env
