@@ -5,12 +5,11 @@
  */
 
 import type { NextFunction, Request, Response } from 'express';
-import { Container, injectable } from 'inversify';
+import { bindingScopeValues, Container, injectable } from 'inversify';
 import 'reflect-metadata';
 
 export const controllerContainer = new Container({
-    defaultScope: 'Singleton',
-    autoBindInjectable: false
+    defaultScope: bindingScopeValues.Singleton
 });
 
 export const controllerMetaKey = Symbol.for('ioc#controller');
@@ -23,7 +22,7 @@ export const registerCtl = (target: Constructor) => {
     const identifier = Reflect.getMetadata(controllerMetaKey, target);
     controllerContainer
         .bind<object>(identifier.id)
-        .to(injectable()(target))
+        .to(injectable()(target) as Constructor)
         .onActivation((context, target: object) => {
             return new Proxy(target, {
                 get(
@@ -44,14 +43,14 @@ export const registerCtl = (target: Constructor) => {
                                     next(...args);
                                 }
                             };
-                            Promise
-                                .resolve(value(req, res, nextOnlyNTimes))
-                                .catch(nextOnlyNTimes);
+                            Promise.resolve(
+                                value(req, res, nextOnlyNTimes)
+                            ).catch(nextOnlyNTimes);
                         };
                     } else {
                         return value;
                     }
-                }
+                },
             });
         });
 };

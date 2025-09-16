@@ -1,4 +1,4 @@
-import { Container, injectable } from 'inversify';
+import { bindingScopeValues, Container } from "inversify";
 import 'reflect-metadata';
 import type { IServiceMeta } from './types';
 
@@ -16,8 +16,7 @@ export const serviceMetaKey = Symbol.for('ioc#service');
  * 默认全局服务注册容
  */
 const defaultSvcContainer = new Container({
-    defaultScope: 'Singleton',
-    autoBindInjectable: false
+    defaultScope: bindingScopeValues.Singleton,
 });
 
 /**
@@ -47,8 +46,7 @@ export const getSvcContainer = (scope?: string | symbol) => {
     if (!svcContainer && scope !== defaultSvcScope) {
         // 创建新的服务注册容器
         svcContainer = new Container({
-            defaultScope: 'Singleton',
-            autoBindInjectable: false
+            defaultScope: bindingScopeValues.Singleton,
         });
         svcContainerMap[svcScope] = svcContainer;
     }
@@ -62,7 +60,9 @@ export const getSvcContainer = (scope?: string | symbol) => {
 const registerSvc = (target: Constructor) => {
     const identifier: IServiceMeta = Reflect.getMetadata(serviceMetaKey, target);
     const serviceContainer = getSvcContainer(identifier.scope);
-    serviceContainer.bind(identifier.id).to(injectable()(target));
+    serviceContainer
+        .bind(identifier.id)
+        .to(target);
 };
 export { registerSvc };
 // @note 允许被 patch 注入，用于跟踪等场景

@@ -1,4 +1,4 @@
-import type { interfaces } from 'inversify';
+import type { BindingScope } from 'inversify';
 import getDecorators from 'inversify-inject-decorators';
 import { componentContainer, componentMetaKey } from '../lib';
 import { camelCase } from '../utils';
@@ -11,7 +11,7 @@ const { lazyInject } = getDecorators(componentContainer);
  * @param scope
  */
 export function component<T extends Constructor>(
-    scope?: interfaces.BindingScope,
+    scope?: BindingScope,
     identifier?: string
 ) {
     return (constructor: T) => {

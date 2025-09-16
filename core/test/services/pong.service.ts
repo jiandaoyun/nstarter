@@ -1,5 +1,5 @@
 import type { PingService } from './ping.service';
-import { injectService, service } from 'nstarter-core';
+import { injectService, service } from '../../src';
 
 @service()
 export class PongService {
@@ -10,7 +10,7 @@ export class PongService {
         console.log('pong');
     }
 
-    public ping() {
-        this.pingService.ping();
+    public async ping() {
+        await this.pingService.ping();
     }
 }

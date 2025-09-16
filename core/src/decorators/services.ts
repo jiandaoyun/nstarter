@@ -1,8 +1,8 @@
 import getDecorators from 'inversify-inject-decorators';
+import { injectable } from 'inversify';
 import type { IServiceMeta } from '../lib';
 import { serviceMetaKey, getSvcContainer, defaultSvcScope } from '../lib';
 import { camelCase } from '../utils';
-
 /**
  * 服务注册装饰器生成方法
  * @param scope - 服务注册域
@@ -27,6 +27,7 @@ export const getScopedServiceDecorators = (scope?: string | symbol) => {
                     scope
                 };
                 Reflect.defineMetadata(serviceMetaKey, serviceMeta, constructor);
+                injectable()(constructor);
             };
         },
         /**
