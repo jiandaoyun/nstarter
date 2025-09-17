@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+* 升级 ioredis -> 5.7.0
+  - 兼容 redis 版本 2.6.12 ~ latest
+
+
 ## 0.3.1
 
 * 支持连接哨兵模式redis

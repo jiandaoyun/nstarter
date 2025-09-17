@@ -1,6 +1,6 @@
 {
   "name": "nstarter-redis",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "nstarter redis 数据库连接管理组件",
   "license": "MIT",
   "repository": {
@@ -25,6 +25,6 @@
     }
   },
   "dependencies": {
-    "ioredis": "5.4.0"
+    "ioredis": "5.7.0"
   }
 }
