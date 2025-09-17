@@ -1,6 +1,6 @@
 {
   "name": "nstarter-mongodb",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "nstarter Mongodb 数据库连接管理组件",
   "license": "MIT",
   "repository": {
