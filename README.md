@@ -54,7 +54,7 @@ nstarter 是一套面向 Node.js + TypeScript 工程开发，设计的工程治�
 * 依赖安装
 
   ```bash
-  npm run install
+  npm install
   ```
 
 * 编译构建

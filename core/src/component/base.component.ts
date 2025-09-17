@@ -5,7 +5,7 @@ import { Logger } from '../loggers';
 import { ComponentEvents, ComponentState } from './types';
 
 @injectable()
-export class BaseComponent extends injectable()(EventEmitter) {
+export class BaseComponent extends EventEmitter {
     protected _name: string;
     protected _state: ComponentState = ComponentState.inactive;
 

@@ -4,6 +4,7 @@
  * @date  2020/07/08
  */
 
+import { injectable } from 'inversify';
 import getDecorators from 'inversify-inject-decorators';
 import { controllerContainer, controllerMetaKey } from '../lib';
 
@@ -23,6 +24,7 @@ export const controller: (
             id: idOrLowerConstructorName,
             originName: constructorName
         }, constructor);
+        injectable()(constructor);
     };
 
 /**
