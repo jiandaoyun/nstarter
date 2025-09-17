@@ -1,16 +1,23 @@
 import chai from 'chai';
-import { testComponent } from '../example/components';
+import { barComponent, fooComponent } from '../example/components';
 
 const should = chai.should();
 
-describe('Component Call', () => {
-    it('getStatus', async () => {
-        testComponent.getStatus().should.equal('not_ready');
+describe('Component', () => {
+    it('foo.getStatus()', async () => {
+        fooComponent.getStatus().should.equal('not_ready');
 
-        await testComponent.init();
-        testComponent.getStatus().should.equal('ready');
+        await fooComponent.init();
+        fooComponent.getStatus().should.equal('ready');
 
-        await testComponent.shutdown();
-        testComponent.getStatus().should.equal('not_ready');
+        await fooComponent.shutdown();
+        fooComponent.getStatus().should.equal('not_ready');
+    });
+
+    it('bar.getStatus()', async () => {
+        barComponent.getStatus().should.equal('not_ready');
+
+        await barComponent.init();
+        barComponent.getStatus().should.equal('not_ready');
     });
 });

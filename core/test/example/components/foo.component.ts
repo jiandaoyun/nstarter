@@ -1,7 +1,7 @@
 import { BaseComponent, component } from '../../../src';
 
 @component()
-export class TestComponent extends BaseComponent {
+export class FooComponent extends BaseComponent {
 
     public async init() {
         this.setReady(true);
