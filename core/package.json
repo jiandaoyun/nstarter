@@ -28,7 +28,6 @@
     }
   },
   "dependencies": {
-    "http-status": "^1.8.1",
     "inversify": "^7.9.1",
     "inversify-inject-decorators": "^3.1.0",
     "reflect-metadata": "^0.2.2",

@@ -7,7 +7,8 @@ import type { IMongodbConfig, IMongodbQueryParams } from './types';
 import { promisify } from 'util';
 import { RECONNECT_DELAY } from './constants';
 
-const _isObjectEmpty = (obj: {}) => !Object.keys(obj).length;
+const _isObjectEmpty = (obj: {}) =>
+    !Object.keys(obj).length;
 
 export let defaultConnection: Connection;
 
@@ -22,6 +23,7 @@ export class MongodbConnector {
             this._name = name;
         }
         this.connection = mongoose.createConnection();
+        // @see https://github.com/Automattic/mongoose/issues/5929
         this.connection.plugin(mongooseAsyncHooks);
         // 关闭 mongoose 严格查询，保留 non-schema 过滤条件
         mongoose.set('strictQuery', false);
@@ -89,7 +91,7 @@ export class MongodbConnector {
     private get connectionConf(): ConnectOptions {
         const {
             user, password, db, x509, timeoutMs,
-            ssl, directConnection, retryWrites,
+            tls, directConnection, retryWrites,
             authSource, authMechanism
         } = this._options;
         const baseConf: ConnectOptions = {
@@ -100,10 +102,10 @@ export class MongodbConnector {
             maxPoolSize: 10
         };
         /**
-         * Azure cosmosDB必须开启ssl
+         * Azure cosmosDB 必须开启ssl
          */
-        if (ssl === true) {
-            baseConf.ssl = true;
+        if (tls === true) {
+            baseConf.tls = true;
         }
         if (directConnection === true) {
             baseConf.directConnection = true;
@@ -121,7 +123,7 @@ export class MongodbConnector {
                 ...baseConf,
                 authMechanism: 'MONGODB-X509',
                 authSource: '$external',
-                ssl: true,
+                tls: true,
                 tlsAllowInvalidCertificates: true,
                 // 加载证书，如出现异常，直接中断退出
                 tlsCAFile: x509.ca,

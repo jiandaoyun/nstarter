@@ -2,6 +2,12 @@
 
 ### 2025
 
+* 0.4.0
+  * 组件依赖升级
+    - ioredis -> 5.7.0
+    - redis-semaphore -> 5.6.2
+      > changelog: https://github.com/swarthy/redis-semaphore/blob/master/CHANGELOG.md
+
 * 0.3.2:
   * 封装抛出错误类型
 

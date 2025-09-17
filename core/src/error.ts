@@ -1,4 +1,3 @@
-import httpStatus from 'http-status';
 import { LogLevel } from './constants';
 
 interface ErrorOptions {
@@ -16,6 +15,11 @@ const errorMessages: Record<number, string> = {};
 export const registerErrorMessages = (messages: Record<number, string>) => {
     Object.assign(errorMessages, messages);
 };
+
+/**
+ * Http error code
+ */
+export const BAD_REQUEST = 400;
 
 export class NsError extends Error {
     public readonly isNsError = true;
@@ -35,7 +39,7 @@ export class NsError extends Error {
             message;
         if (options) {
             this.meta = options.meta;
-            this.httpCode = options.httpCode || httpStatus.BAD_REQUEST;
+            this.httpCode = options.httpCode || BAD_REQUEST;
             trace = options.wrapper || this.constructor;
             message = options.message;
         }

@@ -82,7 +82,7 @@ export const mongodbConfigSchema = {
                 "integer"
             ]
         },
-        "ssl": {
+        "tls": {
             "type": [
                 "boolean"
             ]

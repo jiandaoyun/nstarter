@@ -84,13 +84,13 @@ mongodb:
   replicaSet: rs
   user: user
   password: passw0rd
-  x509: 
-    ca: ./conf.d/mongodb-ca.crt
-    cert: ./conf.d/mongodb.crt
-    key: ./conf.d/mongodb.key
   timeoutMs: 10000
   db: database
-  ssl: true
+  tls: true
+  x509:
+      ca: ./conf.d/mongodb-ca.crt
+      cert: ./conf.d/mongodb.crt
+      key: ./conf.d/mongodb.key
   retryWrites: true
 ```
 

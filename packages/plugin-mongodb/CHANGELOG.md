@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+* 升级 nstarter-core -> 1.3.0
+  - 运行时环境 Node.js >= 22.19.0
+
+* 升级 mongoose 依赖 -> 8.18.0
+  - 驱动升级至 6.x, 支持 Mongodb 8.0 新特性
+  - 主要影响
+    - 移除 `count()` 方法，使用 `countDocuments()` 替代
+    - 移除过时的 `ssl` 系列配置参数，使用 `tls` 配置替代
+  > 兼容说明 https://mongoosejs.com/docs/migrating_to_8.html
+
 ## 0.6.2
 
 * update: 提供 `directConnection` 连接配置参数
