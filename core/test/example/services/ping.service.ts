@@ -1,5 +1,5 @@
+import { injectService, service } from '../../../src';
 import type { PongService } from './pong.service';
-import { injectService, service } from '../../src';
 
 @service()
 export class PingService {

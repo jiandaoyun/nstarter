@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { pingService, pongService } from '../services';
+import { pingService, pongService } from '../example/services';
 
 const should = chai.should();
 

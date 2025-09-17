@@ -5,7 +5,7 @@
  */
 
 import type { NextFunction, Request, Response } from 'express';
-import { bindingScopeValues, Container, injectable } from 'inversify';
+import { bindingScopeValues, Container } from 'inversify';
 import 'reflect-metadata';
 
 export const controllerContainer = new Container({
@@ -22,7 +22,7 @@ export const registerCtl = (target: Constructor) => {
     const identifier = Reflect.getMetadata(controllerMetaKey, target);
     controllerContainer
         .bind<object>(identifier.id)
-        .to(injectable()(target) as Constructor)
+        .to(target)
         .onActivation((context, target: object) => {
             return new Proxy(target, {
                 get(

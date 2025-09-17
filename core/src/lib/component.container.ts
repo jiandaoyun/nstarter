@@ -1,4 +1,4 @@
-import { bindingScopeValues, Container, injectable } from 'inversify';
+import { bindingScopeValues, Container } from 'inversify';
 import 'reflect-metadata';
 
 export const componentContainer = new Container({
@@ -17,27 +17,27 @@ export function registerComponent(target: Constructor) {
         case bindingScopeValues.Request:
             componentContainer
                 .bind(id)
-                .to(injectable()(target) as Constructor)
+                .to(target)
                 .inRequestScope();
             break;
         case bindingScopeValues.Singleton:
             // 单例
             componentContainer
                 .bind(id)
-                .to(injectable()(target) as Constructor)
+                .to(target)
                 .inSingletonScope();
             break;
         case bindingScopeValues.Transient:
             componentContainer
                 .bind(id)
-                .to(injectable()(target) as Constructor)
+                .to(target)
                 .inTransientScope();
             break;
         default:
             // 使用 componentContainer 初始化时候的 scope，默认：Singleton
             componentContainer
                 .bind(id)
-                .to(injectable()(target) as Constructor);
+                .to(target);
             break;
     }
 }

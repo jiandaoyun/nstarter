@@ -1,4 +1,5 @@
 import type { BindingScope } from 'inversify';
+import { injectable } from 'inversify';
 import getDecorators from 'inversify-inject-decorators';
 import { componentContainer, componentMetaKey } from '../lib';
 import { camelCase } from '../utils';
@@ -27,6 +28,7 @@ export function component<T extends Constructor>(
             originName: constructor.name,
             scope
         }, constructor);
+        injectable()(constructor);
     };
 }
 

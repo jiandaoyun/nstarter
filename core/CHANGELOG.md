@@ -8,6 +8,7 @@
 * update: inversify 升级 v7.x
   - 变更说明：https://inversify.io/docs/guides/migrating-from-v6/
   - 对于 inject 过程，默认不再带有对基类的隐式逻辑
+  - injectable 行为变更，注入时机调整为在 service / component / controller 装饰器执行过程
 
 * update: uuid 升级 v11.1.0
 
