@@ -11,8 +11,8 @@ sidebar_position: 1
 
 ## 环境要求
 
-* node.js >= 20.16.0
-* npm >= 10.8.0
+* node.js >= 22.19.0
+* npm >= 10.9.0
 * git
 
 
@@ -89,8 +89,8 @@ Options:
 
 目前 `nstarter` 支持设置以下配置项：
 
-|      设置      |   类型   | 说明                       |
-|:------------:|:------:|:-------------------------|
+|      设置      | 类型 | 说明 |
+|:------------:|:---:|:---|
 | `repo.<tag>` | string | 设定制定标签模板工程的 git 版本库 url。 |
 
 `nstarter` 默认配置文件存储在本地用户 HOME 路径下 `~/.nstarter/config.json`。
@@ -172,7 +172,7 @@ Options:
 
 ### 删除模板配置
 
-通过 `nstarter remove` 操作可删除配置的模板。此操作会同时删除模板配置，并清楚缓存文件。
+通过 `nstarter remove` 操作可删除配置的模板。此操作会同时删除模板配置，并清除缓存文件。
 
 ```bash
 nstarter remove <repo>
