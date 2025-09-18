@@ -3,8 +3,6 @@ title: "工程启动器 (CLI)"
 sidebar_position: 1
 ---
 
-# nstarter - Node.js 模板项目启动工具
-
 `nstarter` 是一个用来基于工程模板初始化 Node.js 项目的命令行工具。允许将各种预定义的 `包依赖`, `代码块`, `工具方法`, `业务模块` 等封装在项目模板中，来统一不同项目的开发规范。
 
 > ⚠ 本工具当前仅适用于私有项目内部测试使用.
@@ -192,7 +190,7 @@ Options:
 
 可以根据工程的实际需要，定制自己的 `nstarter` 模板工程，以满足不同场景下，统一项目开发规范的需求。
 
-更多关于模板开发的详细信息，可以参考 [templating](./templating.md).
+更多关于模板开发的详细信息，可以参考 [templating](../extension/develop/templating.md).
 
 
 ## 许可

@@ -26,13 +26,13 @@ nstarter 是一套面向 Node.js + TypeScript 工程开发，设计的工程治�
 ### 扩展包
 
 - [`nstartre-config`](./packages/config) - 配置装载管理器
-- [`nstarter-apm`](./packages/plugin-apm) - APM 业务跟踪插件，用于业务方法的执行跟踪与性能分析，基于 ElasticAPM 实现
 - [`nstarter-cache`](./packages/plugin-cache) - 缓存管理
 - [`nstarter-entity`](./packages/plugin-entity) - 数据传输结构实体化管理工具
 - [`nstarter-grpc`](./packages/plugin-grpc) - GRPC 通信插件
 - [`nstarter-lock`](./packages/plugin-lock) - 分布式锁插件，基于 Redis 实现
 - [`nstarter-metrics`](./packages/plugin-metrics) - 监控指标采集跟踪组件，基于 prometheus 规范
 - [`nstarter-mongodb`](./packages/plugin-mongodb) - mongodb 连接管理组件
+- [`nstarter-otel-trace`](./packages/plugin-otel-trace) - OpenTelemetry 分布式链路跟踪插件，用于业务方法的执行跟踪与性能分析
 - [`nstarter-rabbitmq`](./packages/plugin-rabbitmq) - rabbitmq 连接管理组件
 - [`nstarter-redis`](./packages/plugin-redis) - redis 连接管理组件
 - [`nstarter-utils`](./packages/utils) - 通用工具包

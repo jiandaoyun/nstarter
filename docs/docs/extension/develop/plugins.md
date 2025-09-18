@@ -1,6 +1,6 @@
 ---
 title: "插件开发"
-weight: 10
+sidebar_position: 1
 ---
 
 # 插件包规范
@@ -10,31 +10,21 @@ weight: 10
 
 ## 目录结构
 
-```
-. nstarter-plugin-<name>
-├── package.json
-├── tsconfig.json
-├── readme.md
-├── typings (可选)
+对于统一在 nstarter 仓库内，以 monorepo 方式维护的插件包，其工程目录通常以 `plugin-<name>` 的方式命名，并在 `packages/` 目录下统一管理。对于相关插件的开发，通过 npm workspace 机制，能自动实现各插件包之间可以自动进行依赖解析和引用，实现本地开发调试。
+
+```bash
+plugin-<name>/
+├── package.json        # 插件 npm 包属性声明
+├── tsconfig.json       # Typescript 配置文件
+├── readme.md           # 说明文件
+├── changelog.md        # 变更记录文件，记录版本更新日志
+├── typings             # 插件全局使用的类型定义声明 (可选)
 ├── src
-│   ├── lib
-│   ├── decorators.ts (可选)
-│   ├── constants.ts (可选)
-│   ├── types.ts (可选)
-│   └── index.ts 
-└── test (可选)
+│   └── index.ts        # 插件组件入口
+└── test                # 自动化测试 (可选)
 ```
 
-* `package.json` - 插件 npm 包属性声明
-* `tsconfig.json` - Typescript 配置文件
-* `readme.md` - 说明文件
-* `src/lib` - 插件提供的功能方法实现，其内部结构不作具体规范限定
-* `src/decorators.ts` - 插件向外部提供等装饰器，根据实际提供的情况，可以调整为目录结构
-* `src/constants.ts` - 插件包中自带，或者允许被外部引用的常量定义
-* `src/types.ts` - 插件内部使用的类型接口结构定义
-* `src/index.ts` - 插件组件入口
-* `typings` - 插件全局使用的类型定义声明
-* `test` - 自动化测试
+同时也可以通过单独的 npm 包项目工程来管理，并使用 npm link 进行开发联调。
 
 
 ## 插件开发配置
@@ -60,8 +50,6 @@ weight: 10
   }
   ```
 
-  一般规定，nstarter 插件工程以 `nstarter-plugin-<name>` 的方式命名，但是为了引用上的方便，npm 包的名称定义可以采用 `nstarter-<name>` 的方式进行简化。
-
   将 types 定义为 src 目录，可以使得插件包在被引用开发的过程中，直接在 IDE 编辑器中链接被引用的对象到源码定义中，而不是 `d.ts` 的类型接口定义。插件在进行 npm 发布过程中，可以带上 src 文件一起发布。
 
 * `.npmrc`
@@ -72,30 +60,6 @@ weight: 10
   registry=https://registry.npmjs.org
   ```
 
-
-## 插件的本地引用开发
-
-本地开发过程中，可能会需要在引用插件的工程中对开发版本的插件进行调试。推荐采用 npm link 的方式管理本地开发过程中的插件依赖。
-
-首先在插件工程下执行 npm link 将插件包本身链接到本地全局的 npm 环境中。
-
-```bash
-npm link
-```
-
-随后便可以在目标工程中，直接来链接引用 npm 插件：
-
-```bash
-npm link nstarter-<name>
-```
-
-注意其链接的名称为 npm 包的名称，而不是工程的名称。
-
-除了上述方式以外，也可以直接采用本地相对路径或者绝对路径来进行引用，只需要一步操作即可完成。
-
-```bash
-npm link ../nstarter-plugin-<name>
-```
 
 
 ## 插件开发注意事项
