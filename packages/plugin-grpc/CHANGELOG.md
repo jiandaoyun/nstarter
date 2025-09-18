@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.0
+* 组件升级
+    - @grpc/proto-loader -> 0.8.0
+    - @grpc/grpc-js -> 1.14.0
+
+
 ## v0.5.0
 * 升级 nstarter-core -> 1.2.0
   - 运行时环境 Node.js >= 20.16.0

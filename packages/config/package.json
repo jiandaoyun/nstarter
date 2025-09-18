@@ -1,6 +1,6 @@
 {
   "name": "nstarter-config",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "nstarter 配置加载管理器",
   "license": "MIT",
   "repository": {
@@ -26,14 +26,14 @@
     }
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
+    "chokidar": "^4.0.3",
     "js-yaml": "4.1.0",
     "lodash": "^4.17.21",
-    "nconf": "0.12.1"
+    "nconf": "0.13.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "^4.17.7",
+    "@types/lodash": "^4.17.20",
     "@types/nconf": "^0.10.7"
   }
 }

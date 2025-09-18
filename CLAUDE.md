@@ -47,6 +47,8 @@ nstarter 是一套面向 Node.js + TypeScript 工程开发，设计的工程治�
 ├── development/                # 开发组件
 │   └── tsconfig/               # TypeScript 配置模板 (nstarter-tsconfig)
 ├── docs/                       # 文档
+│   ├── changes/                # 变更说明
+│   └── docs/                   # 使用文档
 ├── packages/                   # 扩展组件包
 │   ├── config                  # 配置装载管理 (nstarter-config)
 │   ├── package-*/              # 插件包

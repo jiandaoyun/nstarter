@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.1.0
+
+* 升级 nstarter-core -> 1.3.0
+    - 运行时环境 Node.js >= 22.19.0
+* CLI 基础依赖升级
+
+
 ### v1.0.3
 
 * update: 适配 winston logger 类型检查问题

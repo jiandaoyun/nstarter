@@ -1,7 +1,7 @@
 {
   "name": "nstarter",
   "description": "Startup CLI tool for node projects with template.",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jiandaoyun/nstarter.git",
@@ -38,30 +38,30 @@
     "template"
   ],
   "dependencies": {
-    "async": "^3.2.5",
-    "fs-extra": "^11.2.0",
-    "glob": "^11.0.0",
-    "inquirer": "^9.3.5",
+    "async": "^3.2.6",
+    "fs-extra": "^11.3.2",
+    "glob": "^11.0.3",
+    "inquirer": "^9.3.8",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "moment-timezone": "^0.5.45",
+    "moment-timezone": "^0.6.0",
     "nstarter-core": "*",
-    "simple-git": "^3.25.0",
-    "which": "^4.0.0",
-    "winston": "^3.13.1",
+    "simple-git": "^3.28.0",
+    "which": "^5.0.0",
+    "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "winston-transport": "^4.7.1",
-    "yargs": "^17.7.2"
+    "winston-transport": "^4.9.0",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@types/async": "^3.2.24",
+    "@types/async": "^3.2.25",
     "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^9.0.7",
+    "@types/inquirer": "^9.0.9",
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "^4.17.7",
+    "@types/lodash": "^4.17.20",
     "@types/which": "^3.0.4",
-    "@types/yargs": "^17.0.32",
-    "tsc-esm-fix": "^3.0.2"
+    "@types/yargs": "^17.0.33",
+    "tsc-esm-fix": "^3.1.2"
   },
   "engines": {
     "node": ">=22.19.0 <23.0",
