@@ -1,58 +1,80 @@
 ---
-title: "搭建工程模板"
+title: "模板管理"
+sidebar_position: 2
 ---
 
-# Templating
 
-`nstarter` templates defines the basic structure and components of your project to base on. The table below shows the file organization of a template project.
+# 模板开发
 
-| Path | Required | Description |
-|---|:---:|---|
-| `package.json` | ✔ | Npm package config for template itself to be released to npm registry. |
-| `module.conf.yml` | ✔ | Module description file of the template project. |
-| `template/` | ✔ | Template project root directory. |
-| `template/package.json` | ✔ | Npm package description for template. |
-| `template/conf.d/*` || Project configuration files. (optional) |
-| `template/config.schema.json` || Project configuration shema. (optional) |
-| `template/README.md` || Template `README` file. (opitonal) |
-| `template/.editorconfig` || Template editor configuration. (opitonal) |
-| `template/.gitignore` || Template ignore files for a git repository. (opitonal) |
-| `template/tsconfig.json` || Project Typescript config file. (opitonal) |
+### 模板仓库结构
 
-You can always create a new custom template project following the templating rule of `nstarter`. A template project could pack whatever *libraries*/*stack*/*code*/*document*/*structure* which you need to start with, and can be build into your personal swiss army knife to generate new projects.
+`nstarter` 支持通过 monorepo 的方式管理多个模板工程，允许在单个仓库中统一维护不同类型的项目模板，例如 web 服务 / npm 包 / 函数计算 等。这种组织方式便于版本管理、依赖共享和统一发布。
+
+```
+<template-repository>
+├── package.json                    # 仓库根目录的 npm 包配置
+├── README.md                       # 仓库说明文档
+├── LICENSE                         # 许可证文件
+└── templates/                      # 模板集合目录
+    ├── <project-1>/                # 第一个项目模板
+    │   ├── .ns_template/           # 模板配置目录
+    │   │   ├── module.conf.yml     # 模块配置文件
+    │   │   └── CHANGELOG.md        # 模板变更日志（可选）
+    │   ├── package.json            # 项目的 npm 包描述文件
+    │   ├── README.md               # 模板的 README 文件（可选）
+    │   ├── .editorconfig           # 模板编辑器配置（可选）
+    │   ├── .gitignore              # Git 仓库忽略文件模板（可选）
+    │   └── tsconfig.json           # 项目 TypeScript 配置文件（可选）
+    ├── <project-2>/                # 第二个项目模板
+    │   ├── .ns_template/           # 模板配置目录
+    │   ├── README.md               # 模板的 README 文件（可选）
+    │   ├── .gitignore              # Git 仓库忽略文件模板（可选）
+    │   └── ...                     # 其他项目文件
+    └── <project-n>/                # 更多项目模板
+        ├── .ns_template/           # 模板配置目录
+        ├── README.md               # 模板的 README 文件（可选）
+        ├── .gitignore              # Git 仓库忽略文件模板（可选）
+        └── ...                     # 其他项目文件
+```
 
 
-## Module Config
+你可以按照 `nstarter` 的模板规则创建自定义模板项目。模板项目可以打包任何你需要的*库*/*技术栈*/*代码*/*文档*/*结构*，构建成你的个人瑞士军刀来生成新项目。
 
-A template project should contains a simple `module.conf.yml` file which contains the following opitons to describe the modules in the base project. When deploying with a template project, this module config would help pick components which the user want to use. Only the corresponding modules selected by users would be initialized into generated project.
+> ⚠ Breaking
+> 从 nstarter-cli 1.x 版本起，仅支持 v2 版本模板工程。
+
+
+## 模块配置
+
+模板项目在 `.ns_template/` 目录中，应包含一个简单的 `module.conf.yml` 文件，该文件包含以下选项来描述基础项目中的模块。使用模板项目部署时，此模块配置将帮助选择用户想要使用的组件。只有用户选择的相应模块才会被初始化到生成的项目中。
 
 * `module_types`
 
-  `module_types` defines the first level module category to group different modules in current template project.
+  `module_types` 定义第一级模块类别，用于对当前模板项目中的不同模块进行分组。
 
   ```yaml
   module_types:
     - name: basic
-      label: Basic Modules
+      label: 基础模块
   ```
 
   - `name`: `string`
 
-    The name used as referral key of the module type.
+    用作模块类型引用键的名称。
 
   - `label`: `string`
 
-    Readable name of current module category.
+    当前模块类别的可读名称。
 
 
 * `modules`
 
-  Module is the basic unit to organize items in a template project. A module definition could contain resource descriptions like *code/resource files*, *config files*, *module dependencies*... For example:
+  模块是组织模板项目中项目的基本单位。模块定义可以包含*代码/资源文件*、*配置文件*、*模块依赖*等资源描述。例如：
 
   ```yaml
   modules:
     - name: example
-      label: Example Module
+      label: 示例模块
       type: basic
       default: true
       files:
@@ -69,62 +91,62 @@ A template project should contains a simple `module.conf.yml` file which contain
 
   - `name`: `string`
 
-    The name of current module used as referral key.
+    当前模块的名称，用作引用键。
 
   - `label`: `string`
 
-    Semantic name for current module to be listed when using `nstarter`.
+    当前模块的语义名称，在使用 `nstarter` 时显示。
 
   - `type`: `string`
 
-    Category of current module which is declared in `module_types`.
+    当前模块的类别，在 `module_types` 中声明。
 
   - `default`: `boolean`
 
-    Whether the module would be selected by default or not. Default: `false`.
+    模块是否默认被选中。默认值：`false`。
 
   - `files`: `string[]`
 
-    Project file paths which are used by this module only.
+    仅此模块使用的项目文件路径。
 
   - `config`: `string[]`
 
-    Path of configuration options defined in the template project config files which are only used by current module.
+    在模板项目配置文件中定义的配置选项路径，仅供当前模块使用。
 
   - `packages`: `string[]`
 
-    Npm packages required by current module only.
+    仅当前模块所需的 npm 包。
 
   - `dependencies`: `string[]`
 
-    Module names of other template modules required by this module.
+    此模块所需的其他模板模块的模块名称。
 
   - `scripts`: `string[]`
 
-    Scripts keys defined in the `scripts` section from project's npm `package.json` file, which are only used in current module.
+    在项目 npm `package.json` 文件的 `scripts` 部分中定义的脚本键，仅在当前模块中使用。
 
 
 * `ignore_files`
 
-  A template project could also config files to be ignored when deploying in glob format in this section.
+  模板项目也可以在此部分配置部署时要忽略的文件，使用 glob 格式。
 
   ```yaml
   ignore_files:
     - .git/**
   ```
 
-**NOTE:** All paths from the module config file starts from the template root directory which is `template/` in the project.
+**注意：** 模块配置文件中的所有路径都从模板根目录开始，即项目中的 `templates/<project>/`。
 
 
-## Code Modularization
+## 代码模块化
 
-When starting a new project with custom modules, the implementations of excluded modules should not be initialized into the project. Because of a module code not only could be used in standalone source code files, but also could be used with other modules such as in a "main" file, `nstarter` provides rules to declare multiple module code blocks.
+使用自定义模块启动新项目时，被排除模块的实现不应被初始化到项目中。由于模块代码不仅可以在独立的源代码文件中使用，还可以与其他模块一起使用（如在"main"文件中），`nstarter` 提供了声明多个模块代码块的规则。
 
-A module code block start with a double-slash comment line with a `#module` prefix following by module `name` declared in `module.conf.yml`. And the module code block should be end with a similar comment line with a `#endmodule` prefix.
+模块代码块以双斜杠注释行开始，带有 `#module` 前缀，后跟在 `module.conf.yml` 中声明的模块 `name`。模块代码块应以类似的注释行结束，带有 `#endmodule` 前缀。
 
-In addition, module code block could be nested with each other.
+此外，模块代码块可以相互嵌套。
 
-The code below is an example for code modularization in a single file.
+下面的代码是单个文件中代码模块化的示例。
 
 ```typescript
 export const app = express();
@@ -179,7 +201,7 @@ app.use('/', router);
 export const server = http.createServer(app);
 ```
 
-The alternative code block to replace the module code block could be declared with comment lines enclosed by `//#alt` and `//#endalt`. When module code block is not used in the target project, it will be replaced with the alternative code.
+替代代码块可以用 `//#alt` 和 `//#endalt` 包围的注释行声明，用于替换模块代码块。当模块代码块在目标项目中未使用时，它将被替代代码替换。
 
 ```typescript
 return res.render('welcome', {
@@ -192,22 +214,22 @@ return res.render('welcome', {
 });
 ```
 
-## Template Parameters
+## 模板参数
 
-`nstarter` also supports to initialze project with document files such as markdown. And provides some template paramters to make creating new projects more convenient. You can use `${PARAM}` to declare string to be replaced by corresponding template paramters in any non-code files.
+`nstarter` 还支持使用文档文件（如 Markdown）初始化项目，并提供一些模板参数使创建新项目更加便捷。你可以在任何非代码文件中使用 `${PARAM}` 声明要被相应模板参数替换的字符串。
 
-Here are template parameters currently provided by `nstarter`.
+以下是 `nstarter` 当前提供的模板参数。
 
-| Key | Description |
+| 键 | 说明 |
 |:---:|---|
-| `APP_NAME` | The project name configured by `nstarter`. |
-| `YEAR` | The year of initialzing project with `nstarter`. |
+| `APP_NAME` | 由 `nstarter` 配置的项目名称。 |
+| `YEAR` | 使用 `nstarter` 初始化项目的年份。 |
 
-More template parameters would be provided in the future.
+未来将提供更多模板参数。
 
 
-## Template Example
+## 模板示例
 
-A much more specified template project `@nstarter/ts-express` which is used as default template can be found on Github.
+在 Github 上找到更具体的模板项目 `nstarter-templates` 参考，该项目也是 `nstarter-cli` 工具的默认模板。
 
-[https://github.com/jiandaoyun/nstarter-ts-express](https://github.com/jiandaoyun/nstarter-ts-express)
+[https://github.com/jiandaoyun/nstarter-templates](https://github.com/jiandaoyun/nstarter-templates)
