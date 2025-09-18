@@ -7,5 +7,8 @@ module.exports = {
     globals: {
         Constructor: "readable",
         NodeJS: "readable"
+    },
+    parserOptions: {
+        warnOnUnsupportedTypeScriptVersion: false
     }
 };
