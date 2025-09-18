@@ -2,6 +2,76 @@
 title: "变更记录"
 ---
 
+# 2025-09 变更记录
+
+- ![nstarter-core](https://img.shields.io/badge/nstarter--core-v1%2E3%2E0-orange?logo=npm&style=flat)
+- ![nstarter-cli](https://img.shields.io/badge/nstarter--cli-v1%2E1%2E0-orange?logo=npm&style=flat)
+- ![nstarter-mongodb](https://img.shields.io/badge/nstarter--mongodb-v0%2E7%2E0-orange?logo=npm&style=flat)
+- ![nstarter-grpc](https://img.shields.io/badge/nstarter--grpc-v0%2E6%2E0-orange?logo=npm&style=flat)
+- ![nstarter-rabbitmq](https://img.shields.io/badge/nstarter--rabbitmq-v0%2E10%2E0-orange?logo=npm&style=flat)
+- ![nstarter-redis](https://img.shields.io/badge/nstarter--redis-v0%2E4%2E0-orange?logo=npm&style=flat)
+- ![nstarter-lock](https://img.shields.io/badge/nstarter--lock-v0%2E4%2E0-orange?logo=npm&style=flat)
+
+## 核心变更
+
+* 基础框架组件升级
+    - 升级 Node.js 版本要求 >= 22.19.0
+    - inversify 升级至 v7.x
+    - uuid 升级至 v11.1.0
+
+### nstarter-core v1.3.0
+
+* 基础框架组件升级
+  - 升级 Node.js 版本要求 >= 22.19.0
+* inversify 升级至 v7.x
+  - 变更说明：https://inversify.io/docs/guides/migrating-from-v6/
+  - 对于 inject 过程，默认不再带有对基类的隐式逻辑
+  - injectable 行为变更，注入时机调整为在 service / component / controller 装饰器执行过程
+* uuid 升级至 v11.1.0
+
+### nstarter-cli v1.1.0
+
+* 升级 nstarter-core -> 1.3.0
+    - 运行时环境 Node.js >= 22.19.0
+* CLI 基础依赖升级
+
+## 扩展包升级
+
+### nstarter-mongodb v0.7.0
+
+* 升级 nstarter-core -> 1.3.0
+  - 运行时环境 Node.js >= 22.19.0
+* 升级 mongoose 依赖 -> 8.18.0
+  - 驱动升级至 6.x, 支持 Mongodb 8.0 新特性
+  - 主要影响
+    - 移除 `count()` 方法，使用 `countDocuments()` 替代
+    - 移除过时的 `ssl` 系列配置参数，使用 `tls` 配置替代
+  > 兼容说明 https://mongoosejs.com/docs/migrating_to_8.html
+
+### nstarter-grpc v0.6.0
+
+* 组件升级
+    - @grpc/proto-loader -> 0.8.0
+    - @grpc/grpc-js -> 1.14.0
+
+### nstarter-rabbitmq v0.10.0
+
+* 组件升级
+    - amqplib -> 0.10.9
+
+### nstarter-redis v0.4.0
+
+* 升级 ioredis -> 5.7.0
+  - 兼容 redis 版本 2.6.12 ~ latest
+
+### nstarter-lock v0.4.0
+
+* 组件依赖升级
+  - ioredis -> 5.7.0
+  - redis-semaphore -> 5.6.2
+    > changelog: https://github.com/swarthy/redis-semaphore/blob/master/CHANGELOG.md
+
+
 # 2025-03 变更记录
 
 - ![nstarter-otel-trace](https://img.shields.io/badge/nstarter--core-v0%2E1%2E0-orange?logo=npm&style=flat)
