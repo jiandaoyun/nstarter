@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0
+
+* 组件升级
+    - amqplib -> 0.10.9
+
+
 ## 0.9.0
 
 * 升级 nstarter-core -> 1.2.0
