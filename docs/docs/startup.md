@@ -8,9 +8,8 @@ sidebar_position: 1
 使用 nstarter，需要预先安装 Node.js 环境和 npm 包管理器。
 
 - 操作系统：支持 Windows, macOS, Linux
-- 运行环境：建议选择 LTS 版本，最低要求 20.x
-
-同时环境内还需要提供 git 版本控制管理工具。
+- 运行环境：Node.js >= 22.19.0, npm >= 10.9.0
+- git 版本控制管理工具
 
 
 ## 安装/配置启动器
@@ -23,10 +22,10 @@ sidebar_position: 1
   npm install -g nstarter
   ```
 
-* 配置模默认板工程（可选）
+* 配置模板工程（可选）
 
   ```bash
-  nstarter config set template.default <REPO_URI>
+  nstarter config set repo.default <REPO_URI>
   nstarter update
   ```
   > 默认使用公共仓库 `https://github.com/jiandaoyun/nstarter-templates.git`
@@ -35,10 +34,33 @@ sidebar_position: 1
 * 基于模板工程部署
 
   ```bash
-  nstarter deploy -n demo ./demo
+  # 交互式部署（推荐）
+  nstarter deploy ./demo
+
+  # 非交互式部署
+  nstarter deploy -t default -n demo -y ~/projects/demo
   ```
 
   按照交互引导选择需要安装的组件，并可按步骤提示选择是否执行 npm 依赖包以及 git 工作目录初始化的动作。
+
+* 常用 CLI 命令
+
+  ```bash
+  # 查看已配置的模板
+  nstarter list
+
+  # 更新本地模板缓存
+  nstarter update [repo]
+
+  # 基于模板升级现有工程
+  nstarter upgrade [target]
+
+  # 清除本地模板缓存
+  nstarter clean [repo]
+
+  # 删除模板配置
+  nstarter remove <repo>
+  ```
 
 工程启动器本身也提供了不同模板管理的能力，方便基于不同模板，创建初始化不同类型的工程目录。有关 CLI 的详细功能参数用法说明，可参考 [工程启动器](/docs/tools/starter).
 
