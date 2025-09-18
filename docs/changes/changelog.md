@@ -2,7 +2,7 @@
 title: "变更记录"
 ---
 
-# 2025-09 变更记录
+## 2025-09 变更记录
 
 - ![nstarter-core](https://img.shields.io/badge/nstarter--core-v1%2E3%2E0-orange?logo=npm&style=flat)
 - ![nstarter-cli](https://img.shields.io/badge/nstarter--cli-v1%2E1%2E0-orange?logo=npm&style=flat)
@@ -12,14 +12,23 @@ title: "变更记录"
 - ![nstarter-redis](https://img.shields.io/badge/nstarter--redis-v0%2E4%2E0-orange?logo=npm&style=flat)
 - ![nstarter-lock](https://img.shields.io/badge/nstarter--lock-v0%2E4%2E0-orange?logo=npm&style=flat)
 
-## 核心变更
+### 核心变更
 
 * 基础框架组件升级
     - 升级 Node.js 版本要求 >= 22.19.0
     - inversify 升级至 v7.x
     - uuid 升级至 v11.1.0
 
-### nstarter-core v1.3.0
+:::info
+
+- 关于对 eslint v9 的兼容性说明
+
+   EsLint v9.x 已经将配置格式调整为新的 flat config 形式，移除了对 legacy 版本的兼容性。
+   但上游项目 eslint-config-alloy 似乎并没有计划适配 eslint v9。
+   因此，eslint-config-nstarter` 继续维持 v8 版本逻辑，暂不支持 v9 版本。
+:::
+
+#### nstarter-core v1.3.0
 
 * 基础框架组件升级
   - 升级 Node.js 版本要求 >= 22.19.0
@@ -29,15 +38,20 @@ title: "变更记录"
   - injectable 行为变更，注入时机调整为在 service / component / controller 装饰器执行过程
 * uuid 升级至 v11.1.0
 
-### nstarter-cli v1.1.0
+
+### 开发工具升级
+
+
+#### nstarter-cli v1.1.0
 
 * 升级 nstarter-core -> 1.3.0
     - 运行时环境 Node.js >= 22.19.0
 * CLI 基础依赖升级
 
-## 扩展包升级
 
-### nstarter-mongodb v0.7.0
+### 扩展包升级
+
+#### nstarter-mongodb v0.7.0
 
 * 升级 nstarter-core -> 1.3.0
   - 运行时环境 Node.js >= 22.19.0
@@ -48,23 +62,23 @@ title: "变更记录"
     - 移除过时的 `ssl` 系列配置参数，使用 `tls` 配置替代
   > 兼容说明 https://mongoosejs.com/docs/migrating_to_8.html
 
-### nstarter-grpc v0.6.0
+#### nstarter-grpc v0.6.0
 
 * 组件升级
     - @grpc/proto-loader -> 0.8.0
     - @grpc/grpc-js -> 1.14.0
 
-### nstarter-rabbitmq v0.10.0
+#### nstarter-rabbitmq v0.10.0
 
 * 组件升级
     - amqplib -> 0.10.9
 
-### nstarter-redis v0.4.0
+#### nstarter-redis v0.4.0
 
 * 升级 ioredis -> 5.7.0
   - 兼容 redis 版本 2.6.12 ~ latest
 
-### nstarter-lock v0.4.0
+#### nstarter-lock v0.4.0
 
 * 组件依赖升级
   - ioredis -> 5.7.0
@@ -72,25 +86,26 @@ title: "变更记录"
     > changelog: https://github.com/swarthy/redis-semaphore/blob/master/CHANGELOG.md
 
 
-# 2025-03 变更记录
+
+## 2025-03 变更记录
 
 - ![nstarter-otel-trace](https://img.shields.io/badge/nstarter--core-v0%2E1%2E0-orange?logo=npm&style=flat)
 
-## 更新内容
+### 更新内容
 
-### nstarter-otel-trace v0.1.0
+#### nstarter-otel-trace v0.1.0
 
 * 基于 OpenTelemetry NodeSDK 提供 `TraceSDK` 用于观测组件管理
 * 提供 `span` 装饰器封装，用于标记跟踪类方法执行
 * 提供实验性 `NStarterInstrumentation` 对 nstarter 中的 service 方法实现自动跟踪观测
 
 
-### 其他变更
+#### 其他变更
 
 * 移除基于 ElasticAPM 实现的观测组件 `nstarter-apm`，相关 npm 包标记为弃用状态，后续不再维护。
 
 
-# 2024-08 变更记录
+## 2024-08 变更记录
 
 - ![nstarter-core](https://img.shields.io/badge/nstarter--core-v1%2E2%2E0-orange?logo=npm&style=flat)
 - ![nstarter-tsconfig](https://img.shields.io/badge/nstarter--tsconfig-v0%2E5%2E0-orange?logo=npm&style=flat)
@@ -108,7 +123,7 @@ title: "变更记录"
 - ![nstarter](https://img.shields.io/badge/nstarter-v0%2E7%2E0-orange?logo=npm&style=flat)
 
 
-## 核心变更
+### 核心变更
 
 * 基础框架组件升级
     - 升级 Node.js 版本要求 >= 20.16.0
@@ -116,12 +131,12 @@ title: "变更记录"
 * 支持 `commonJs` + `esModule`
 
 
-### nstarter-core v1.2.0
+#### nstarter-core v1.2.0
 
 * 基础框架依赖组件升级
 
 
-### nstarter-tsconfig v0.5.0
+#### nstarter-tsconfig v0.5.0
 
 * 引入 `${configDir}` 模板变量，支持注入上下文工程实际路径
 * 面向 `esModule` 与 `commonJs` 场景分别提供模板配置，支撑 Hybrid package 生成
@@ -138,7 +153,7 @@ title: "变更记录"
 
 
 
-## 工程治理
+### 工程治理
 
 * 各框架主要组件统一至 `nstarter` 工程仓库中，采用 monorepo 形式管理，不再拆分各自工程维护
   - 统一并简化 CI 编排，相关调度尽可能实现复用
@@ -146,22 +161,22 @@ title: "变更记录"
 * 支持所有 npm 包的同步发布
 
 
-## 扩展包升级
+### 扩展包升级
 
-### nstarter-config v0.3.0
+#### nstarter-config v0.3.0
 
 * 升级基础组件依赖
     - `nconf` -> `0.12.1`
     - `chokidar` -> `3.6.0`
 
 
-### nstarter-apm v0.4.0
+#### nstarter-apm v0.4.0
 
 * 升级基础组件依赖
     - `elastic-apm-node` -> `4.7.2`
 
 
-### nstarter-entity v0.4.0
+#### nstarter-entity v0.4.0
 
 * 基础组件升级
     - `ajv` -> 8.17.1
@@ -169,7 +184,7 @@ title: "变更记录"
     - `reflect-metadata` -> 0.2.2
 
 
-### nstarter-grpc v0.5.0
+#### nstarter-grpc v0.5.0
 
 * 组件升级
     - `@grpc/proto-loader` -> 0.7.13
@@ -178,7 +193,7 @@ title: "变更记录"
 * 移除已被废弃的 `server.start()` 调用
 
 
-### nstarter-lock v0.3.0
+#### nstarter-lock v0.3.0
 
 * 组件升级
     - `ioredis` - 5.4.0
@@ -186,13 +201,13 @@ title: "变更记录"
       > changelog: https://github.com/swarthy/redis-semaphore/releases/tag/v5.6.0
 
 
-### nstarter-metrics v0.4.0
+#### nstarter-metrics v0.4.0
 
 * 组件升级
     - `prom-client` -> 15.1.3
 
 
-### nstarter-mongodb v0.6.1
+#### nstarter-mongodb v0.6.1
 
 * 升级 mongoose 依赖 -> 7.8.0
     - 主要影响
@@ -203,22 +218,22 @@ title: "变更记录"
   > 其他兼容性说明 https://mongoosejs.com/docs/7.x/docs/migrating_to_7.html
   
 
-### nstarter-rabbitmq v0.9.0
+#### nstarter-rabbitmq v0.9.0
 
 * 组件升级
     - `amqp-connection-manager` -> 4.1.14
     - `amqplib` -> 0.10.4
 
 
-### nstarter-redis v0.3.0
+#### nstarter-redis v0.3.0
 
 * 组件升级
     - `ioredis` -> 5.4.0
 
 
-## 开发工具升级
+### 开发工具升级
 
-### nstarter-cli v1.0.2
+#### nstarter-cli v1.0.2
 
 * 升级 nstarter-core -> 1.2.0
     - 运行时环境 Node.js >= 20.16.0
@@ -229,7 +244,7 @@ title: "变更记录"
 * `1.x` 版本开始，仅支持 v2 版本模板工程。
 
 
-### nstarter-circular v0.4.0
+#### nstarter-circular v0.4.0
 
 * 组件升级
     - `chalk` -> 5.3.0
@@ -238,7 +253,7 @@ title: "变更记录"
     - `ora` -> 8.0.1
 
 
-### nstarter-eslint-config v4.0.1
+#### nstarter-eslint-config v4.0.1
 
 * 升级上游 alloy 规则 -> 5.1.2
     - 兼容 Typescript >= 5.0, < 5.6
