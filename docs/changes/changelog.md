@@ -32,6 +32,7 @@ title: "变更记录"
 
 * 基础框架组件升级
   - 升级 Node.js 版本要求 >= 22.19.0
+  - 兼容 express 4.x & 5.x
 * inversify 升级至 v7.x
   - 变更说明：https://inversify.io/docs/guides/migrating-from-v6/
   - 对于 inject 过程，默认不再带有对基类的隐式逻辑
