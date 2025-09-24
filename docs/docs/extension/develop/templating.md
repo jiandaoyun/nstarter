@@ -54,18 +54,9 @@ sidebar_position: 2
 
   ```yaml
   module_types:
-    - name: basic
-      label: 基础模块
+    - name: basic           # 引用名称
+      label: 基础模块           # 显示名称
   ```
-
-  - `name`: `string`
-
-    用作模块类型引用键的名称。
-
-  - `label`: `string`
-
-    当前模块类别的可读名称。
-
 
 * `modules`
 
@@ -73,58 +64,21 @@ sidebar_position: 2
 
   ```yaml
   modules:
-    - name: example
+    - name: example         # 当前模块的名称，用作引用标识
       label: 示例模块
-      type: basic
-      default: true
-      files:
+      type: basic           # 当前模块的类别，在 `module_types` 中声明
+      default: true         # 是否默认启用
+      files:                # 仅此模块使用的项目文件路径
         - src/example.ts
-      config:
+      config:               # 当前模块，在模板项目配置文件中定义的配置选项路径
         - server.example
-      packages:
+      packages:             # 当前模块所需的 npm 包
         - lodash
-      dependencies:
+      dependencies:         # 此模块所需的其他模板模块的模块名称
         - http
-      scripts:
+      scripts:              # 当前模板私有的脚本
         - example
   ```
-
-  - `name`: `string`
-
-    当前模块的名称，用作引用键。
-
-  - `label`: `string`
-
-    当前模块的语义名称，在使用 `nstarter` 时显示。
-
-  - `type`: `string`
-
-    当前模块的类别，在 `module_types` 中声明。
-
-  - `default`: `boolean`
-
-    模块是否默认被选中。默认值：`false`。
-
-  - `files`: `string[]`
-
-    仅此模块使用的项目文件路径。
-
-  - `config`: `string[]`
-
-    在模板项目配置文件中定义的配置选项路径，仅供当前模块使用。
-
-  - `packages`: `string[]`
-
-    仅当前模块所需的 npm 包。
-
-  - `dependencies`: `string[]`
-
-    此模块所需的其他模板模块的模块名称。
-
-  - `scripts`: `string[]`
-
-    在项目 npm `package.json` 文件的 `scripts` 部分中定义的脚本键，仅在当前模块中使用。
-
 
 * `ignore_files`
 
