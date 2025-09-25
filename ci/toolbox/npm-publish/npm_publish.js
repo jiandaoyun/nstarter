@@ -25,6 +25,10 @@ const checkRegistryVersion = (pkgName) => {
 };
 
 const publishPackage = (pkgDir) => {
+    if (!fs.existsSync(path.join(pkgDir, './dist'))) {
+        console.error(`Invalid package directory [${ pkgDir }]`);
+        process.exit(1);
+    }
     execSync('npm publish', {
         cwd: pkgDir,
         stdio: 'inherit'
