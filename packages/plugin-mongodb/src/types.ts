@@ -31,6 +31,7 @@ export interface IMongodbConfig {
     readonly directConnection?: boolean;
     readonly retryWrites?: boolean;
     readonly srv?: boolean;
+    readonly useStableAPI?: boolean;
 }
 
 export const ObjectId = Types.ObjectId;

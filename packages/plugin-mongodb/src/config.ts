@@ -106,6 +106,11 @@ export const mongodbConfigSchema = {
             "type": [
                 "string"
             ]
+        },
+        "useStableAPI": {
+            "type": [
+                "boolean"
+            ]
         }
     }
 };

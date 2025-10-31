@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1
+
+* 启用 stable API 支持 (非严格模式)
+  - 支持通过 `useStableAPI` 配置参数控制是否使用 stable API 
+  - 此功能需配合 Mongodb 5.0+ 版本使用
+
+
 ## 0.7.0
 
 * 升级 nstarter-core -> 1.3.0

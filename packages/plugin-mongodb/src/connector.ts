@@ -92,7 +92,8 @@ export class MongodbConnector {
         const {
             user, password, db, x509, timeoutMs,
             tls, directConnection, retryWrites,
-            authSource, authMechanism
+            authSource, authMechanism,
+            useStableAPI
         } = this._options;
         const baseConf: ConnectOptions = {
             user,
@@ -109,6 +110,14 @@ export class MongodbConnector {
         }
         if (directConnection === true) {
             baseConf.directConnection = true;
+        }
+        // 启用 stable API
+        if (useStableAPI === true) {
+            baseConf.serverApi = {
+                version: '1',
+                strict: false,
+                deprecationErrors: false
+            };
         }
         /**
          * Azure cosmosDB必须将retryWrites设置成false，否则insert操作将失败
