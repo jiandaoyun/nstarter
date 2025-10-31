@@ -2,6 +2,19 @@
 title: "变更记录"
 ---
 
+## 2025-10 变更记录
+
+- ![nstarter-mongodb](https://img.shields.io/badge/nstarter--mongodb-v0%2E7%2E1-orange?logo=npm&style=flat)
+
+### 扩展包升级
+
+#### nstarter-mongodb v0.7.1
+
+* 启用 stable API 支持 (非严格模式)
+    - 支持通过 `useStableAPI` 配置参数控制是否使用 stable API
+    - 此功能需配合 Mongodb 5.0+ 版本使用
+
+
 ## 2025-09 变更记录
 
 - ![nstarter-core](https://img.shields.io/badge/nstarter--core-v1%2E3%2E0-orange?logo=npm&style=flat)
