@@ -1,5 +1,5 @@
 // 请求和响应
-export * from './request-response';
+export * from './request_response';
 
 // 配置相关
 export * from './config';

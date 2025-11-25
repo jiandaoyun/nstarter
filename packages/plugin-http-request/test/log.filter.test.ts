@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { LogFilter } from '../src/logger/log-filter';
+import { LogFilter } from '../src/logger/log.filter';
 import type { IResSuccessOptions, IResFailedOptions } from '../src/types';
 
 describe('LogFilter', () => {

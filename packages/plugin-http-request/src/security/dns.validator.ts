@@ -4,7 +4,7 @@
 
 import { promises as dns } from 'node:dns';
 import type { DnsResult } from '../types';
-import { IpValidator } from './ip-validator';
+import { IpValidator } from './ip.validator';
 
 /**
  * DNS 缓存条目

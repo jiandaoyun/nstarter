@@ -7,7 +7,7 @@ import {
     isIPv6
 } from 'node:net';
 import type { IpValidationResult } from '../types';
-import { isIpInAnyRange } from '../utils/ip-range';
+import { isIpInAnyRange } from '../utils/ip.range';
 
 /**
  * 私有 IP 地址范围（RFC 1918）

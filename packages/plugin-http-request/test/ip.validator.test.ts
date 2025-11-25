@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { IpValidator } from '../src/security/ip-validator';
+import { IpValidator } from '../src/security/ip.validator';
 
 describe('IpValidator', () => {
   describe('IPv4 validation', () => {

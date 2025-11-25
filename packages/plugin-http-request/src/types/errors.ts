@@ -2,7 +2,7 @@
  * 错误类型定义
  */
 
-import type { HttpRequestOptions, HttpResponse } from './request-response';
+import type { HttpRequestOptions, HttpResponse } from './request_response';
 
 /**
  * HTTP 错误

@@ -2,7 +2,7 @@
  * 日志相关类型定义
  */
 
-import type { HttpRequestOptions, HttpResponse } from './request-response';
+import type { HttpRequestOptions, HttpResponse } from './request_response';
 
 /**
  * 日志记录器接口

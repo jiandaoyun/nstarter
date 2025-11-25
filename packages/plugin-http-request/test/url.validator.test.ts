@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { UrlValidator } from '../src/security/url-validator';
+import { UrlValidator } from '../src/security/url.validator';
 
 describe('UrlValidator', () => {
   describe('Basic validation', () => {

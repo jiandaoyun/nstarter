@@ -3,8 +3,8 @@
  */
 
 import { expect } from 'chai';
-import { HttpClientLogger } from '../src/logger/http-client-logger';
-import { LogFilter } from '../src/logger/log-filter';
+import { HttpClientLogger } from '../src/logger/http_client.logger';
+import { LogFilter } from '../src/logger/log.filter';
 import type { ILogger, IResSuccessOptions, IResFailedOptions } from '../src/types';
 
 describe('HttpClientLogger', () => {

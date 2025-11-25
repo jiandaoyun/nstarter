@@ -9,9 +9,9 @@ import type {
     SecurityConfig,
 } from '../types';
 import { SecurityError } from '../types';
-import { DnsValidator } from './dns-validator';
-import { IpValidator } from './ip-validator';
-import { UrlValidator } from './url-validator';
+import { DnsValidator } from './dns.validator';
+import { IpValidator } from './ip.validator';
+import { UrlValidator } from './url.validator';
 
 /**
  * SSRF 防护结果

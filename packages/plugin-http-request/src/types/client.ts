@@ -3,7 +3,7 @@
  */
 
 import type { EHttpRequestClientAdapter } from '../enum';
-import type { HttpRequestOptions, HttpResponse } from './request-response';
+import type { HttpRequestOptions, HttpResponse } from './request_response';
 
 /**
  * 正向代理配置

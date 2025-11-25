@@ -16,10 +16,10 @@ import {
     mergeConfig,
     validateConfig
 } from './config';
-import { SsrfGuard } from './security/ssrf-guard';
-import { AxiosAdapter } from './adapters/axios-adapter';
-import { UndiciAdapter } from './adapters/undici-adapter';
-import { ConsoleLogger } from './logger/console-logger';
+import { SsrfGuard } from './security/ssrf.guard';
+import { AxiosAdapter } from './adapters/axios.adapter';
+import { UndiciAdapter } from './adapters/undici.adapter';
+import { ConsoleLogger } from './logger/console.logger';
 import { NullLogger } from './logger/base';
 import { EHttpRequestClientAdapter } from './enum';
 import { createRegExpsByDomains } from 'utils/forward.proxy';

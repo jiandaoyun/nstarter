@@ -10,7 +10,7 @@ import type {
     IResSuccessOptions,
     LogFilterConfig
 } from '../types';
-import { LogFilter } from './log-filter';
+import { LogFilter } from './log.filter';
 
 /**
  * HTTP 客户端日志记录器配置
