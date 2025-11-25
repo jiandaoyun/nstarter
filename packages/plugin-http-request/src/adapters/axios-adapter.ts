@@ -12,6 +12,7 @@ import { BaseHttpAdapter } from './base';
 import axios from 'axios';
 import { EHttpRequestClientAdapter } from '../enum';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import * as https from 'https';
 
 
 /**
@@ -47,7 +48,11 @@ export class AxiosAdapter extends BaseHttpAdapter {
             maxRedirects: this.requestConfig.maxRedirects,
             maxContentLength: this.requestConfig.maxBodySize,
             maxBodyLength: this.requestConfig.maxBodySize,
-            validateStatus: () => true // 不自动抛出错误，我们自己处理
+            validateStatus: () => true, // 不自动抛出错误，我们自己处理
+            // 设置 HTTPS Agent 以支持证书校验配置
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            })
         };
 
         // 设置请求体

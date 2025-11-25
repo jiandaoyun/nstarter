@@ -42,7 +42,11 @@ export class UndiciAdapter extends BaseHttpAdapter {
             headers: options.headers || {},
             bodyTimeout: options.timeout ?? this.requestConfig.timeout,
             headersTimeout: options.timeout ?? this.requestConfig.timeout,
-            maxRedirections: this.requestConfig.maxRedirects
+            maxRedirections: this.requestConfig.maxRedirects,
+            // 设置 TLS 连接选项以支持证书校验配置
+            connect: {
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            }
         };
 
         // 设置请求体

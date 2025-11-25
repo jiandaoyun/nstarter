@@ -109,8 +109,8 @@ export class HttpClient implements IHttpClient {
      */
     private initAdapter(): IHttpAdapter {
         const adapter = this.config.adapter === EHttpRequestClientAdapter.axios
-            ? new AxiosAdapter(this.config.request, this.logger)
-            : new UndiciAdapter(this.config.request, this.logger);
+            ? new AxiosAdapter(this.config.request, this.config.security, this.logger)
+            : new UndiciAdapter(this.config.request, this.config.security, this.logger);
 
         if (!adapter.isAvailable()) {
             throw new Error(

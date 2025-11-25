@@ -7,6 +7,7 @@ import type {
     HttpRequestOptions,
     HttpResponse,
     RequestConfig,
+    SecurityConfig,
     ILogger
 } from '../types';
 import type { EHttpRequestClientAdapter } from '../enum';
@@ -62,10 +63,12 @@ export function delay(ms: number): Promise<void> {
  */
 export abstract class BaseHttpAdapter implements IHttpAdapter {
     protected requestConfig: RequestConfig;
+    protected securityConfig: SecurityConfig;
     protected logger?: ILogger;
 
-    constructor(requestConfig: RequestConfig, logger?: ILogger) {
+    constructor(requestConfig: RequestConfig, securityConfig: SecurityConfig, logger?: ILogger) {
         this.requestConfig = requestConfig;
+        this.securityConfig = securityConfig;
         this.logger = logger;
     }
 
