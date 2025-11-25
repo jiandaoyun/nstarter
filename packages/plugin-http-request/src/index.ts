@@ -12,6 +12,11 @@ export type {
     ProxyConfig,
     SecurityConfig,
     ILogger,
+    IHttpClientLogger,
+    ILogFilter,
+    LogFilterConfig,
+    IResFailedOptions,
+    IResSuccessOptions,
     LoggingConfig,
     RequestConfig,
     HttpClientConfig,
@@ -55,6 +60,9 @@ export {
     LogLevel
 } from './logger/base';
 export { ConsoleLogger } from './logger/console-logger';
+export { LogFilter } from './logger/log-filter';
+export { HttpClientLogger } from './logger/http-client-logger';
+export type { HttpClientLoggerConfig } from './logger/http-client-logger';
 
 // 适配器
 export { BaseHttpAdapter } from './adapters/base';

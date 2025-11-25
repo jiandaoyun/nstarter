@@ -3,7 +3,7 @@
  */
 
 import type { EHttpRequestClientAdapter } from '../enum';
-import type { ILogger } from './logger';
+import type { ILogger, IHttpClientLogger, LogFilterConfig } from './logger';
 
 /**
  * 代理配置
@@ -44,14 +44,18 @@ export interface SecurityConfig {
 export interface LoggingConfig {
     /** 启用日志 */
     enabled: boolean;
-    /** 自定义日志记录器 */
+    /** 自定义日志记录器（通用） */
     logger?: ILogger;
+    /** 自定义 HTTP 客户端日志记录器 */
+    httpLogger?: IHttpClientLogger;
     /** 记录请求体 */
     logRequestBody: boolean;
     /** 记录响应体 */
     logResponseBody: boolean;
     /** 响应体最大记录长度（字节） */
     bodyMaxLength: number;
+    /** 日志过滤器配置 */
+    filter?: LogFilterConfig;
 }
 
 /**
