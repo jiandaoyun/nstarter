@@ -304,7 +304,7 @@ export class HttpClient implements IHttpClient {
           for (const noProxyRegex of noProxyRegExps) {
             if (noProxyRegex.test(hostname)) {
               this.logger.debug('Skip proxy for no_proxy matched host', {
-                hostname: hostname,
+                hostname,
                 pattern: noProxyRegex.source
               });
               return;

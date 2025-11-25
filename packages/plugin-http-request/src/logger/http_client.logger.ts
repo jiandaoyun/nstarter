@@ -67,7 +67,7 @@ export class HttpClientLogger implements IHttpClientLogger {
         const meta = this.buildLogMeta(fullOptions);
         
         this.logger.error(
-            `HTTP request failed: ${fullOptions.request.method} ${fullOptions.request.url}`,
+            `HTTP request failed: ${ fullOptions.request.method } ${ fullOptions.request.url }`,
             meta
         );
     }
@@ -92,7 +92,7 @@ export class HttpClientLogger implements IHttpClientLogger {
         const meta = this.buildLogMeta(fullOptions);
         
         this.logger.info(
-            `HTTP request succeeded: ${fullOptions.request.method} ${fullOptions.request.url}`,
+            `HTTP request succeeded: ${ fullOptions.request.method } ${ fullOptions.request.url }`,
             meta
         );
     }
@@ -185,9 +185,9 @@ export class HttpClientLogger implements IHttpClientLogger {
         logger: ILogger,
         filterConfig?: LogFilterConfig,
         options?: {
-            logRequestBody?: boolean;
-            logResponseBody?: boolean;
-            bodyMaxLength?: number;
+            logRequestBody?: boolean,
+            logResponseBody?: boolean,
+            bodyMaxLength?: number
         }
     ): HttpClientLogger {
         return new HttpClientLogger({

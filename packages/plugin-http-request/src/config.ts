@@ -86,7 +86,7 @@ export function mergeConfig(userConfig: PartialHttpClientConfig = {}): HttpClien
 export function validateConfig(config: HttpClientConfig): void {
   // 验证适配器
   if (!['axios', 'undici'].includes(config.adapter)) {
-    throw new Error(`Invalid adapter: ${config.adapter}. Must be 'axios' or 'undici'.`);
+    throw new Error(`Invalid adapter: ${ config.adapter }. Must be 'axios' or 'undici'.`);
   }
 
   // 验证安全配置

@@ -65,7 +65,7 @@ export interface ILogFilter {
      * @param options 日志选项（成功或失败）
      * @returns 是否应该记录
      */
-    shouldLog(options: IResSuccessOptions | IResFailedOptions): boolean;
+    shouldLog: (options: IResSuccessOptions | IResFailedOptions) => boolean;
 }
 
 /**
@@ -81,7 +81,7 @@ export interface LogFilterConfig {
     /** 只记录特定状态码 */
     statusCodes?: number[];
     /** 只记录特定状态码范围 */
-    statusCodeRanges?: Array<{ min: number; max: number }>;
+    statusCodeRanges?: Array<{ min: number, max: number }>;
     /** 只记录失败的请求 */
     onlyFailed?: boolean;
     /** 只记录成功的请求 */

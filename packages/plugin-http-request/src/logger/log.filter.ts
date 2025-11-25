@@ -25,78 +25,108 @@ export class LogFilter implements ILogFilter {
      * @returns 是否应该记录
      */
     public shouldLog(options: IResSuccessOptions | IResFailedOptions): boolean {
-        const { config } = this;
+        return (
+            this.checkSuccessOrFailedFilter(options) &&
+            this.checkMethodFilter(options) &&
+            this.checkUrlPatternFilter(options) &&
+            this.checkScenarioFilter(options) &&
+            this.checkStatusCodeFilter(options) &&
+            this.checkDurationFilter(options) &&
+            this.checkCustomFilter(options)
+        );
+    }
 
-        // 1. 检查成功/失败过滤
-        if (config.onlyFailed && options.isSuccess) {
+    /**
+     * 检查成功/失败过滤
+     */
+    private checkSuccessOrFailedFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.onlyFailed && options.isSuccess) {
             return false;
         }
-        if (config.onlySuccess && !options.isSuccess) {
+        if (this.config.onlySuccess && !options.isSuccess) {
             return false;
         }
+        return true;
+    }
 
-        // 2. 检查 HTTP 方法
-        if (config.methods && config.methods.length > 0) {
-            if (!config.methods.includes(options.request.method)) {
-                return false;
-            }
+    /**
+     * 检查 HTTP 方法过滤
+     */
+    private checkMethodFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.methods && this.config.methods.length > 0) {
+            return this.config.methods.includes(options.request.method);
         }
+        return true;
+    }
 
-        // 3. 检查 URL 模式
-        if (config.urlPatterns && config.urlPatterns.length > 0) {
-            const matched = config.urlPatterns.some(pattern => {
+    /**
+     * 检查 URL 模式过滤
+     */
+    private checkUrlPatternFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.urlPatterns && this.config.urlPatterns.length > 0) {
+            return this.config.urlPatterns.some(pattern => {
                 if (typeof pattern === 'string') {
                     return options.request.url.includes(pattern);
                 }
                 return pattern.test(options.request.url);
             });
-            if (!matched) {
-                return false;
-            }
         }
+        return true;
+    }
 
-        // 4. 检查场景
-        if (config.scenarios && config.scenarios.length > 0) {
-            if (!options.request.scenario || !config.scenarios.includes(options.request.scenario)) {
-                return false;
-            }
+    /**
+     * 检查场景过滤
+     */
+    private checkScenarioFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.scenarios && this.config.scenarios.length > 0) {
+            return !!options.request.scenario && this.config.scenarios.includes(options.request.scenario);
         }
+        return true;
+    }
 
-        // 5. 检查状态码（仅对成功的请求或有响应的失败请求）
+    /**
+     * 检查状态码过滤
+     */
+    private checkStatusCodeFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
         const status = options.isSuccess ? options.response.status : options.status;
-        if (status !== undefined) {
-            // 检查特定状态码
-            if (config.statusCodes && config.statusCodes.length > 0) {
-                if (!config.statusCodes.includes(status)) {
-                    return false;
-                }
-            }
-
-            // 检查状态码范围
-            if (config.statusCodeRanges && config.statusCodeRanges.length > 0) {
-                const inRange = config.statusCodeRanges.some(
-                    range => status >= range.min && status <= range.max
-                );
-                if (!inRange) {
-                    return false;
-                }
-            }
+        if (status === undefined) {
+            return true;
         }
 
-        // 6. 检查请求耗时
-        if (config.minDuration !== undefined && options.duration !== undefined) {
-            if (options.duration < config.minDuration) {
+        // 检查特定状态码
+        if (this.config.statusCodes && this.config.statusCodes.length > 0) {
+            if (!this.config.statusCodes.includes(status)) {
                 return false;
             }
         }
 
-        // 7. 自定义过滤函数
-        if (config.customFilter) {
-            if (!config.customFilter(options)) {
-                return false;
-            }
+        // 检查状态码范围
+        if (this.config.statusCodeRanges && this.config.statusCodeRanges.length > 0) {
+            return this.config.statusCodeRanges.some(
+                range => status >= range.min && status <= range.max
+            );
         }
 
+        return true;
+    }
+
+    /**
+     * 检查请求耗时过滤
+     */
+    private checkDurationFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.minDuration !== undefined && options.duration !== undefined) {
+            return options.duration >= this.config.minDuration;
+        }
+        return true;
+    }
+
+    /**
+     * 检查自定义过滤函数
+     */
+    private checkCustomFilter(options: IResSuccessOptions | IResFailedOptions): boolean {
+        if (this.config.customFilter) {
+            return this.config.customFilter(options);
+        }
         return true;
     }
 
