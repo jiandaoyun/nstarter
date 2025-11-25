@@ -8,7 +8,7 @@ import type {
 } from '../types';
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
-import undici from 'undici';
+import undici, { ProxyAgent } from 'undici';
 import { EHttpRequestClientAdapter } from '../enum';
 
 
@@ -56,6 +56,15 @@ export class UndiciAdapter extends BaseHttpAdapter {
             } else {
                 undiciOptions.body = options.body;
             }
+        }
+
+        // 设置正向代理（如果请求元数据中包含代理信息）
+        const forwardProxyMeta = options.meta?.__forwardProxy;
+        if (forwardProxyMeta) {
+            const { proxyUrl } = forwardProxyMeta;
+            // Undici 使用 ProxyAgent 处理代理
+            undiciOptions.dispatcher = new ProxyAgent(proxyUrl);
+            this.logger?.debug('Using ProxyAgent for request', { proxyUrl });
         }
 
         try {

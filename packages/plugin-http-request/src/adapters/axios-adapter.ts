@@ -11,6 +11,7 @@ import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
 import axios from 'axios';
 import { EHttpRequestClientAdapter } from '../enum';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 
 /**
@@ -59,9 +60,42 @@ export class AxiosAdapter extends BaseHttpAdapter {
             axiosConfig.responseType = this.mapResponseType(options.responseType);
         }
 
-        // 设置代理
+        // 设置代理（全局配置）
         if (this.requestConfig.proxy) {
             axiosConfig.proxy = this.buildProxyConfig(this.requestConfig.proxy);
+        }
+
+        // 设置正向代理（如果请求元数据中包含代理信息）
+        const forwardProxyMeta = options.meta?.__forwardProxy;
+        if (forwardProxyMeta) {
+            const { proxyUrl, isHttps } = forwardProxyMeta;
+            
+            if (isHttps) {
+                // HTTPS 请求使用 HttpsProxyAgent
+                axiosConfig.proxy = new HttpsProxyAgent(proxyUrl);
+                this.logger?.debug('Using HttpsProxyAgent for HTTPS request', { proxyUrl });
+            } else {
+                // HTTP 请求直接设置 proxy
+                const parsedProxyUrl = new URL(proxyUrl);
+                axiosConfig.proxy = {
+                    host: parsedProxyUrl.hostname,
+                    port: Number(parsedProxyUrl.port),
+                    protocol: 'http'
+                };
+
+                // 处理代理认证
+                if (parsedProxyUrl.username && parsedProxyUrl.password) {
+                    axiosConfig.proxy.auth = {
+                        username: decodeURIComponent(parsedProxyUrl.username),
+                        password: decodeURIComponent(parsedProxyUrl.password)
+                    };
+                }
+                
+                this.logger?.debug('Using proxy for HTTP request', { 
+                    host: axiosConfig.proxy.host,
+                    port: axiosConfig.proxy.port 
+                });
+            }
         }
 
         try {

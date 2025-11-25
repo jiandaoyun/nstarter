@@ -22,6 +22,7 @@ import { UndiciAdapter } from './adapters/undici-adapter';
 import { ConsoleLogger } from './logger/console-logger';
 import { NullLogger } from './logger/base';
 import { EHttpRequestClientAdapter } from './enum';
+import { createRegExpsByDomains } from 'utils/forward.proxy';
 
 /**
  * HTTP 客户端
@@ -31,6 +32,7 @@ export class HttpClient implements IHttpClient {
     private adapter: IHttpAdapter;
     private ssrfGuard: SsrfGuard;
     private logger: ILogger;
+    private forwardProxy?: IForwardProxy;
 
     constructor(userConfig: PartialHttpClientConfig = {}) {
         // 合并配置
@@ -81,8 +83,13 @@ export class HttpClient implements IHttpClient {
      * @param proxy
      */
     public withForwardProxy(proxy: IForwardProxy): this {
-        // TODO: 实现正向代理逻辑
-        this.logger.warn('Forward proxy is not yet implemented', { proxy });
+        this.forwardProxy = proxy;
+        this.logger.info('Forward proxy configured', {
+            enabled: proxy.enabled,
+            http_proxy: proxy.http_proxy,
+            https_proxy: proxy.https_proxy,
+            no_proxy_count: proxy.no_proxy?.length || 0
+        });
         return this;
     }
 
@@ -146,6 +153,11 @@ export class HttpClient implements IHttpClient {
                     ...safeOptions.headers,
                     Host: ssrfResult.hostname
                 };
+            }
+
+            // 应用正向代理配置
+            if (this.forwardProxy) {
+                this.applyForwardProxy(safeOptions);
             }
 
             // 记录请求日志
@@ -268,6 +280,63 @@ export class HttpClient implements IHttpClient {
             error: error instanceof Error ? error.message : String(error),
             scenario: options.scenario,
             meta: options.meta
+        });
+    }
+
+    /**
+     * 应用正向代理配置
+     * @param options 请求选项
+     */
+    private applyForwardProxy(options: HttpRequestOptions): void {
+        if (!this.forwardProxy || !this.forwardProxy.enabled) {
+            return;
+        }
+
+        const { https_proxy, http_proxy, no_proxy } = this.forwardProxy;
+
+        // 解析目标 URL
+        const targetUrl = new URL(options.url);
+        const hostname = targetUrl.hostname;
+
+        // 检查 no_proxy 规则
+        const noProxyRegExps = createRegExpsByDomains(no_proxy ?? []);
+        if (noProxyRegExps.length > 0 && hostname) {
+          for (const noProxyRegex of noProxyRegExps) {
+            if (noProxyRegex.test(hostname)) {
+              this.logger.debug('Skip proxy for no_proxy matched host', {
+                hostname: hostname,
+                pattern: noProxyRegex.source
+              });
+              return;
+            }
+          }
+        }
+
+        const protocol = targetUrl.protocol || 'http:';
+        const isHttps = /https:?/.test(protocol);
+        const proxyUrl = isHttps ? https_proxy : http_proxy;
+
+        if (!proxyUrl) {
+            this.logger.warn('Forward proxy enabled but proxy URL not configured', {
+                protocol
+            });
+            return;
+        }
+
+        // 将代理信息附加到请求元数据中，由适配器处理
+        options.meta = {
+            ...options.meta,
+            __forwardProxy: {
+                proxyUrl,
+                isHttps,
+                protocol
+            }
+        };
+
+        this.logger.debug('Applied forward proxy', {
+            url: options.url,
+            proxyUrl,
+            isHttps
         });
     }
 
