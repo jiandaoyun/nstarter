@@ -2,8 +2,7 @@
  * URL 验证器测试
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { UrlValidator } from '../src/security/url-validator';
 
 describe('UrlValidator', () => {
@@ -11,20 +10,20 @@ describe('UrlValidator', () => {
     it('should accept valid HTTP URLs', () => {
       const validator = new UrlValidator();
       const result = validator.validate('http://example.com');
-      assert.strictEqual(result.valid, true);
+      expect(result.valid).to.be.true;
     });
 
     it('should accept valid HTTPS URLs', () => {
       const validator = new UrlValidator();
       const result = validator.validate('https://example.com');
-      assert.strictEqual(result.valid, true);
+      expect(result.valid).to.be.true;
     });
 
     it('should reject invalid URLs', () => {
       const validator = new UrlValidator();
       const result = validator.validate('not-a-url');
-      assert.strictEqual(result.valid, false);
-      assert.match(result.reason!, /invalid url/i);
+      expect(result.valid).to.be.false;
+      expect(result.reason).to.match(/invalid url/i);
     });
 
     it('should reject non-HTTP protocols', () => {
@@ -33,8 +32,8 @@ describe('UrlValidator', () => {
       
       for (const url of protocols) {
         const result = validator.validate(url);
-        assert.strictEqual(result.valid, false);
-        assert.match(result.reason!, /protocol/i);
+        expect(result.valid).to.be.false;
+        expect(result.reason).to.match(/protocol/i);
       }
     });
   });
@@ -43,24 +42,24 @@ describe('UrlValidator', () => {
     it('should accept URLs in whitelist', () => {
       const validator = new UrlValidator(['example.com']);
       const result = validator.validate('https://example.com/path');
-      assert.strictEqual(result.valid, true);
-      assert.strictEqual(result.inWhitelist, true);
+      expect(result.valid).to.be.true;
+      expect(result.inWhitelist).to.be.true;
     });
 
     it('should reject URLs not in whitelist', () => {
       const validator = new UrlValidator(['example.com']);
       const result = validator.validate('https://other.com');
-      assert.strictEqual(result.valid, false);
-      assert.match(result.reason!, /not in whitelist/i);
+      expect(result.valid).to.be.false;
+      expect(result.reason).to.match(/not in whitelist/i);
     });
 
     it('should support wildcard patterns', () => {
       const validator = new UrlValidator(['*.example.com']);
       
-      assert.strictEqual(validator.validate('https://api.example.com').valid, true);
-      assert.strictEqual(validator.validate('https://www.example.com').valid, true);
-      assert.strictEqual(validator.validate('https://example.com').valid, true);
-      assert.strictEqual(validator.validate('https://other.com').valid, false);
+      expect(validator.validate('https://api.example.com').valid).to.be.true;
+      expect(validator.validate('https://www.example.com').valid).to.be.true;
+      expect(validator.validate('https://example.com').valid).to.be.true;
+      expect(validator.validate('https://other.com').valid).to.be.false;
     });
   });
 
@@ -68,24 +67,24 @@ describe('UrlValidator', () => {
     it('should reject URLs in blacklist', () => {
       const validator = new UrlValidator([], ['bad.com']);
       const result = validator.validate('https://bad.com');
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.inBlacklist, true);
-      assert.match(result.reason!, /blacklist/i);
+      expect(result.valid).to.be.false;
+      expect(result.inBlacklist).to.be.true;
+      expect(result.reason).to.match(/blacklist/i);
     });
 
     it('should accept URLs not in blacklist', () => {
       const validator = new UrlValidator([], ['bad.com']);
       const result = validator.validate('https://good.com');
-      assert.strictEqual(result.valid, true);
-      assert.strictEqual(result.inBlacklist, false);
+      expect(result.valid).to.be.true;
+      expect(result.inBlacklist).to.be.false;
     });
 
     it('should support wildcard patterns in blacklist', () => {
       const validator = new UrlValidator([], ['*.bad.com']);
       
-      assert.strictEqual(validator.validate('https://api.bad.com').valid, false);
-      assert.strictEqual(validator.validate('https://bad.com').valid, false);
-      assert.strictEqual(validator.validate('https://good.com').valid, true);
+      expect(validator.validate('https://api.bad.com').valid).to.be.false;
+      expect(validator.validate('https://bad.com').valid).to.be.false;
+      expect(validator.validate('https://good.com').valid).to.be.true;
     });
   });
 
@@ -93,7 +92,7 @@ describe('UrlValidator', () => {
     it('should prioritize whitelist over blacklist', () => {
       const validator = new UrlValidator(['example.com'], ['*.example.com']);
       const result = validator.validate('https://example.com');
-      assert.strictEqual(result.valid, true);
+      expect(result.valid).to.be.true;
     });
   });
 
@@ -103,7 +102,7 @@ describe('UrlValidator', () => {
       validator.addToWhitelist('example.com');
       
       const result = validator.validate('https://example.com');
-      assert.strictEqual(result.valid, true);
+      expect(result.valid).to.be.true;
     });
 
     it('should allow removing from whitelist', () => {
@@ -111,7 +110,7 @@ describe('UrlValidator', () => {
       validator.removeFromWhitelist('example.com');
       
       const result = validator.validate('https://example.com');
-      assert.strictEqual(result.valid, true); // No whitelist, so allowed
+      expect(result.valid).to.be.true; // No whitelist, so allowed
     });
 
     it('should allow clearing lists', () => {
@@ -119,8 +118,8 @@ describe('UrlValidator', () => {
       validator.clearWhitelist();
       validator.clearBlacklist();
       
-      assert.strictEqual(validator.getWhitelist().length, 0);
-      assert.strictEqual(validator.getBlacklist().length, 0);
+      expect(validator.getWhitelist()).to.have.lengthOf(0);
+      expect(validator.getBlacklist()).to.have.lengthOf(0);
     });
   });
 });

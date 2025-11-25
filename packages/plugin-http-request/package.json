@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
-    "test": "nyc --nycrc-path ../../.nycrc node --require ts-node/register --test ./test",
+    "test": "nyc --nycrc-path ../../.nycrc mocha --config ../../.mocharc.yml",
     "eslint": "eslint --ext .js,.ts --config ../../.eslintrc.js ./src",
     "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
     "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output",

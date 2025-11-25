@@ -2,17 +2,16 @@
  * IP 验证器测试
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { IpValidator } from '../src/security/ip-validator';
 
 describe('IpValidator', () => {
   describe('IPv4 validation', () => {
     it('should reject loopback addresses', () => {
       const result = IpValidator.validate('127.0.0.1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isLoopback, true);
-      assert.match(result.reason!, /loopback/i);
+      expect(result.valid).to.be.false;
+      expect(result.isLoopback).to.be.true;
+      expect(result.reason).to.match(/loopback/i);
     });
 
     it('should reject private IP addresses when not allowed', () => {
@@ -20,9 +19,9 @@ describe('IpValidator', () => {
       
       for (const ip of privateIps) {
         const result = IpValidator.validate(ip, false);
-        assert.strictEqual(result.valid, false);
-        assert.strictEqual(result.isPrivate, true);
-        assert.match(result.reason!, /private/i);
+        expect(result.valid).to.be.false;
+        expect(result.isPrivate).to.be.true;
+        expect(result.reason).to.match(/private/i);
       }
     });
 
@@ -31,23 +30,23 @@ describe('IpValidator', () => {
       
       for (const ip of privateIps) {
         const result = IpValidator.validate(ip, true);
-        assert.strictEqual(result.valid, true);
-        assert.strictEqual(result.isPrivate, true);
+        expect(result.valid).to.be.true;
+        expect(result.isPrivate).to.be.true;
       }
     });
 
     it('should reject link-local addresses', () => {
       const result = IpValidator.validate('169.254.1.1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isLinkLocal, true);
-      assert.match(result.reason!, /link-local/i);
+      expect(result.valid).to.be.false;
+      expect(result.isLinkLocal).to.be.true;
+      expect(result.reason).to.match(/link-local/i);
     });
 
     it('should reject multicast addresses', () => {
       const result = IpValidator.validate('224.0.0.1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isMulticast, true);
-      assert.match(result.reason!, /multicast/i);
+      expect(result.valid).to.be.false;
+      expect(result.isMulticast).to.be.true;
+      expect(result.reason).to.match(/multicast/i);
     });
 
     it('should accept public IP addresses', () => {
@@ -55,9 +54,9 @@ describe('IpValidator', () => {
       
       for (const ip of publicIps) {
         const result = IpValidator.validate(ip, false);
-        assert.strictEqual(result.valid, true);
-        assert.strictEqual(result.isPrivate, false);
-        assert.strictEqual(result.isLoopback, false);
+        expect(result.valid).to.be.true;
+        expect(result.isPrivate).to.be.false;
+        expect(result.isLoopback).to.be.false;
       }
     });
 
@@ -66,8 +65,8 @@ describe('IpValidator', () => {
       
       for (const ip of invalidIps) {
         const result = IpValidator.validate(ip, false);
-        assert.strictEqual(result.valid, false);
-        assert.match(result.reason!, /invalid/i);
+        expect(result.valid).to.be.false;
+        expect(result.reason).to.match(/invalid/i);
       }
     });
   });
@@ -75,8 +74,8 @@ describe('IpValidator', () => {
   describe('IPv6 validation', () => {
     it('should reject loopback addresses', () => {
       const result = IpValidator.validate('::1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isLoopback, true);
+      expect(result.valid).to.be.false;
+      expect(result.isLoopback).to.be.true;
     });
 
     it('should reject private IPv6 addresses when not allowed', () => {
@@ -84,21 +83,21 @@ describe('IpValidator', () => {
       
       for (const ip of privateIps) {
         const result = IpValidator.validate(ip, false);
-        assert.strictEqual(result.valid, false);
-        assert.strictEqual(result.isPrivate, true);
+        expect(result.valid).to.be.false;
+        expect(result.isPrivate).to.be.true;
       }
     });
 
     it('should reject link-local IPv6 addresses', () => {
       const result = IpValidator.validate('fe80::1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isLinkLocal, true);
+      expect(result.valid).to.be.false;
+      expect(result.isLinkLocal).to.be.true;
     });
 
     it('should reject multicast IPv6 addresses', () => {
       const result = IpValidator.validate('ff00::1', false);
-      assert.strictEqual(result.valid, false);
-      assert.strictEqual(result.isMulticast, true);
+      expect(result.valid).to.be.false;
+      expect(result.isMulticast).to.be.true;
     });
 
     it('should accept public IPv6 addresses', () => {
@@ -106,7 +105,7 @@ describe('IpValidator', () => {
       
       for (const ip of publicIps) {
         const result = IpValidator.validate(ip, false);
-        assert.strictEqual(result.valid, true);
+        expect(result.valid).to.be.true;
       }
     });
   });
@@ -116,18 +115,18 @@ describe('IpValidator', () => {
       const ips = ['8.8.8.8', '127.0.0.1', '192.168.1.1'];
       const results = IpValidator.validateMany(ips, false);
       
-      assert.strictEqual(results.length, 3);
-      assert.strictEqual(results[0].valid, true);
-      assert.strictEqual(results[1].valid, false);
-      assert.strictEqual(results[2].valid, false);
+      expect(results).to.have.lengthOf(3);
+      expect(results[0].valid).to.be.true;
+      expect(results[1].valid).to.be.false;
+      expect(results[2].valid).to.be.false;
     });
 
     it('should check if all IPs are valid', () => {
       const validIps = ['8.8.8.8', '1.1.1.1'];
       const invalidIps = ['8.8.8.8', '127.0.0.1'];
       
-      assert.strictEqual(IpValidator.validateAll(validIps, false), true);
-      assert.strictEqual(IpValidator.validateAll(invalidIps, false), false);
+      expect(IpValidator.validateAll(validIps, false)).to.be.true;
+      expect(IpValidator.validateAll(invalidIps, false)).to.be.false;
     });
   });
 });

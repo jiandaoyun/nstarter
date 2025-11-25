@@ -2,31 +2,32 @@
  * 配置管理测试
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { mergeConfig, validateConfig } from '../src/config';
+import { EHttpRequestClientAdapter } from '../src/enum';
 
 describe('Config', () => {
   describe('mergeConfig', () => {
     it('should use default config when no user config provided', () => {
       const config = mergeConfig();
-      assert.strictEqual(config.adapter, 'axios');
-      assert.strictEqual(config.security.enableDnsValidation, true);
-      assert.strictEqual(config.security.enableIpValidation, true);
-      assert.strictEqual(config.security.allowPrivateIp, false);
+      expect(config.adapter).to.equal('axios');
+      expect(config.security.enableDnsValidation).to.be.true;
+      expect(config.security.enableIpValidation).to.be.true;
+      expect(config.security.allowPrivateIp).to.be.false;
+      expect(config.security.rejectUnauthorized).to.be.true;
     });
 
     it('should merge user config with defaults', () => {
       const config = mergeConfig({
-        adapter: 'undici',
+        adapter: EHttpRequestClientAdapter.undici,
         security: {
           allowPrivateIp: true
         }
       });
       
-      assert.strictEqual(config.adapter, 'undici');
-      assert.strictEqual(config.security.allowPrivateIp, true);
-      assert.strictEqual(config.security.enableDnsValidation, true); // default
+      expect(config.adapter).to.equal(EHttpRequestClientAdapter.undici);
+      expect(config.security.allowPrivateIp).to.be.true;
+      expect(config.security.enableDnsValidation).to.be.true; // default
     });
 
     it('should preserve nested config', () => {
@@ -37,35 +38,45 @@ describe('Config', () => {
         }
       });
       
-      assert.deepStrictEqual(config.security.whitelist, ['example.com']);
-      assert.deepStrictEqual(config.security.blacklist, ['bad.com']);
+      expect(config.security.whitelist).to.deep.equal(['example.com']);
+      expect(config.security.blacklist).to.deep.equal(['bad.com']);
+    });
+
+    it('should allow custom security config', () => {
+      const config = mergeConfig({
+        security: {
+          rejectUnauthorized: false
+        }
+      });
+      
+      expect(config.security.rejectUnauthorized).to.be.false;
     });
   });
 
   describe('validateConfig', () => {
     it('should accept valid config', () => {
       const config = mergeConfig();
-      assert.doesNotThrow(() => validateConfig(config));
+      expect(() => validateConfig(config)).to.not.throw();
     });
 
     it('should reject invalid adapter', () => {
       const config = mergeConfig({ adapter: 'invalid' as any });
-      assert.throws(() => validateConfig(config), /invalid adapter/i);
+      expect(() => validateConfig(config)).to.throw(/invalid adapter/i);
     });
 
     it('should reject negative timeout', () => {
       const config = mergeConfig({ request: { timeout: -1 } as any });
-      assert.throws(() => validateConfig(config), /timeout/i);
+      expect(() => validateConfig(config)).to.throw(/timeout/i);
     });
 
     it('should reject negative retries', () => {
       const config = mergeConfig({ request: { retries: -1 } as any });
-      assert.throws(() => validateConfig(config), /retries/i);
+      expect(() => validateConfig(config)).to.throw(/retries/i);
     });
 
     it('should reject negative DNS cache TTL', () => {
       const config = mergeConfig({ security: { dnsCacheTtl: -1 } });
-      assert.throws(() => validateConfig(config), /dns cache ttl/i);
+      expect(() => validateConfig(config)).to.throw(/dns cache ttl/i);
     });
   });
 });
