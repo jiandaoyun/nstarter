@@ -3,6 +3,11 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "baseUrl": "./src"
+    }
   }
 }
 

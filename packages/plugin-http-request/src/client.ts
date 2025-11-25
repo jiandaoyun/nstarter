@@ -16,13 +16,17 @@ import {
     mergeConfig,
     validateConfig
 } from './config';
-import { SsrfGuard } from './security/ssrf.guard';
-import { AxiosAdapter } from './adapters/axios.adapter';
-import { UndiciAdapter } from './adapters/undici.adapter';
-import { ConsoleLogger } from './logger/console.logger';
-import { NullLogger } from './logger/base';
+import { SsrfGuard } from './security';
+import {
+    AxiosAdapter,
+    UndiciAdapter
+} from './adapters';
+import {
+    ConsoleLogger,
+    NullLogger
+} from './logger';
 import { EHttpRequestClientAdapter } from './enum';
-import { createRegExpsByDomains } from 'utils/forward.proxy';
+import { createRegExpsByDomains } from './utils/forward.proxy';
 
 /**
  * HTTP 客户端
@@ -301,15 +305,15 @@ export class HttpClient implements IHttpClient {
         // 检查 no_proxy 规则
         const noProxyRegExps = createRegExpsByDomains(no_proxy ?? []);
         if (noProxyRegExps.length > 0 && hostname) {
-          for (const noProxyRegex of noProxyRegExps) {
-            if (noProxyRegex.test(hostname)) {
-              this.logger.debug('Skip proxy for no_proxy matched host', {
-                hostname,
-                pattern: noProxyRegex.source
-              });
-              return;
+            for (const noProxyRegex of noProxyRegExps) {
+                if (noProxyRegex.test(hostname)) {
+                    this.logger.debug('Skip proxy for no_proxy matched host', {
+                        hostname,
+                        pattern: noProxyRegex.source
+                    });
+                    return;
+                }
             }
-          }
         }
 
         const protocol = targetUrl.protocol || 'http:';
