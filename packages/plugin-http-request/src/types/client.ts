@@ -4,7 +4,6 @@
 
 import type { EHttpRequestClientAdapter } from '../enum';
 import type { HttpRequestOptions, HttpResponse } from './request-response';
-import type { HttpClientConfig, PartialHttpClientConfig } from './config';
 
 /**
  * 正向代理配置
@@ -102,17 +101,6 @@ export interface IHttpClient {
         options?: Partial<Omit<HttpRequestOptions, 'method' | 'url' | 'body'>>
     ) => Promise<HttpResponse<T>>;
 
-    /**
-     * 更新配置
-     * @param config 新的配置（部分）
-     */
-    updateConfig: (config: PartialHttpClientConfig) => void;
-
-    /**
-     * 获取当前配置
-     * @returns 配置副本
-     */
-    getConfig: () => HttpClientConfig;
 
     /**
      * 清空 DNS 缓存

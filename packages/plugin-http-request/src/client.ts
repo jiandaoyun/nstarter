@@ -300,44 +300,6 @@ export class HttpClient implements IHttpClient {
     }
 
     /**
-     * 更新配置
-     * @param config 新的配置（部分）
-     */
-    public updateConfig(config: PartialHttpClientConfig): void {
-        const newConfig = mergeConfig({ ...this.config, ...config });
-        validateConfig(newConfig);
-
-        this.config = newConfig;
-
-        // 更新 SSRF 防护配置
-        if (config.security) {
-            this.ssrfGuard.updateConfig(config.security);
-        }
-
-        // 更新适配器配置
-        if (config.request) {
-            this.adapter.updateConfig(config.request);
-        }
-
-        // 如果适配器类型改变，重新初始化适配器
-        if (config.adapter && config.adapter !== this.adapter.name) {
-            this.adapter = this.initAdapter();
-        }
-
-        this.logger.info('HttpClient configuration updated', {
-            adapter: this.config.adapter
-        });
-    }
-
-    /**
-     * 获取当前配置
-     * @returns 配置副本
-     */
-    public getConfig(): HttpClientConfig {
-        return { ...this.config };
-    }
-
-    /**
      * 清空 DNS 缓存
      */
     public clearDnsCache(): void {
