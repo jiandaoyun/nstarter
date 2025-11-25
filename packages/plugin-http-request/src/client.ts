@@ -9,7 +9,8 @@ import type {
     HttpResponse,
     IHttpAdapter,
     IHttpClient,
-    ILogger
+    ILogger,
+    IForwardProxy
 } from './types';
 import {
     mergeConfig,
@@ -72,6 +73,16 @@ export class HttpClient implements IHttpClient {
     public withAdapter(adapter: EHttpRequestClientAdapter): this {
         this.config.adapter = adapter;
         this.adapter = this.initAdapter();
+        return this;
+    }
+
+    /**
+     * 挂载正向代理.
+     * @param proxy
+     */
+    public withForwardProxy(proxy: IForwardProxy): this {
+        // TODO: 实现正向代理逻辑
+        this.logger.warn('Forward proxy is not yet implemented', { proxy });
         return this;
     }
 

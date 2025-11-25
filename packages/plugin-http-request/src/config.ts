@@ -9,11 +9,13 @@ import type {
   LoggingConfig,
   RequestConfig
 } from './types';
+import { EHttpRequestClientAdapter } from './enum';
 
 /**
  * 默认安全配置
  */
 export const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
+  rejectUnauthorized: true,
   enableDnsValidation: true,
   enableIpValidation: true,
   allowPrivateIp: false,
@@ -47,7 +49,7 @@ export const DEFAULT_REQUEST_CONFIG: RequestConfig = {
  * 默认 HTTP 客户端配置
  */
 export const DEFAULT_HTTP_CLIENT_CONFIG: HttpClientConfig = {
-  adapter: 'axios',
+  adapter: EHttpRequestClientAdapter.axios,
   security: DEFAULT_SECURITY_CONFIG,
   logging: DEFAULT_LOGGING_CONFIG,
   request: DEFAULT_REQUEST_CONFIG

@@ -7,9 +7,9 @@ import type {
     HttpRequestOptions,
     HttpResponse,
     RequestConfig,
-    ILogger,
-    AdapterType
+    ILogger
 } from '../types';
+import type { EHttpRequestClientAdapter } from '../enum';
 
 /**
  * 重试选项
@@ -69,7 +69,7 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
         this.logger = logger;
     }
 
-    public abstract readonly name: AdapterType;
+    public abstract readonly name: EHttpRequestClientAdapter;
 
     /**
      * 发送 HTTP 请求（由子类实现）
