@@ -3,9 +3,9 @@
  */
 
 import { expect } from 'chai';
-import { SsrfGuard } from '../src/security/ssrf.guard';
-import { SecurityError } from '../src/types';
-import type { SecurityConfig } from '../src/types';
+import { SsrfGuard } from '../../src/security/ssrf.guard';
+import { SecurityError } from '../../src/types';
+import type { SecurityConfig } from '../../src/types';
 
 describe('SsrfGuard', () => {
     const defaultConfig: SecurityConfig = {

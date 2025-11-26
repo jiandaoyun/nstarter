@@ -3,13 +3,13 @@
  */
 
 import { expect } from 'chai';
-import { HttpClientLogger } from '../src';
-import { LogFilter } from '../src';
+import { HttpClientLogger } from '../../src';
+import { LogFilter } from '../../src';
 import type {
     ILogger,
     IResSuccessOptions,
     IResFailedOptions
-} from '../src';
+} from '../../src';
 
 describe('HttpClientLogger', () => {
     // 模拟日志记录器

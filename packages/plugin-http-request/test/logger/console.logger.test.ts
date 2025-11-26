@@ -3,8 +3,8 @@
  */
 
 import { expect } from 'chai';
-import { ConsoleLogger } from '../src/logger/console.logger';
-import { LogLevel } from '../src/logger/base';
+import { ConsoleLogger } from '../../src/logger/console.logger';
+import { LogLevel } from '../../src/logger/base';
 
 describe('ConsoleLogger', () => {
     let originalConsole: {

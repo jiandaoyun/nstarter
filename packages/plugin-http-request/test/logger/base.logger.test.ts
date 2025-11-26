@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { BaseLogger, LogLevel, NullLogger } from '../src/logger/base';
+import { BaseLogger, LogLevel, NullLogger } from '../../src/logger/base';
 
 // 创建一个具体的实现用于测试
 class TestLogger extends BaseLogger {

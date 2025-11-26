@@ -21,10 +21,11 @@
     "test:request": "nx run nstarter-http-request:test"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.18.5",
+    "@types/sinon": "^21.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
     "chai": "^6.0.1",
     "eslint": "^8.56.0",
     "eslint-config-nstarter": "^4.0.1",
@@ -35,6 +36,7 @@
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "semver": "^7.7.2",
+    "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },

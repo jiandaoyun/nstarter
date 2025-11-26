@@ -3,11 +3,11 @@
  */
 
 import { expect } from 'chai';
-import { LogFilter } from '../src';
+import { LogFilter } from '../../src';
 import type {
     IResSuccessOptions,
     IResFailedOptions
-} from '../src';
+} from '../../src';
 
 describe('LogFilter', () => {
     // 辅助函数：创建成功的请求选项

@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { DnsValidator } from '../src/security/dns.validator';
+import { DnsValidator } from '../../src/security/dns.validator';
 
 describe('DnsValidator', () => {
     describe('构造函数', () => {

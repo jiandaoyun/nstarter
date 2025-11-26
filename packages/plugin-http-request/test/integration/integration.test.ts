@@ -4,9 +4,9 @@
  */
 
 import { expect } from 'chai';
-import { HttpClient } from '../src';
-import { SecurityError } from '../src';
-import { EHttpRequestClientAdapter } from '../src';
+import { HttpClient } from '../../src';
+import { SecurityError } from '../../src';
+import { EHttpRequestClientAdapter } from '../../src';
 
 describe('HttpClient Integration Tests', () => {
     describe('Basic HTTP requests', () => {

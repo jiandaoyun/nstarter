@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { createRegExpsByDomains } from '../src/utils/forward.proxy';
+import { createRegExpsByDomains } from '../../src/utils/forward.proxy';
 
 describe('createRegExpsByDomains', () => {
     describe('全匹配模式', () => {

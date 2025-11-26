@@ -11,7 +11,7 @@ import {
     isIpv6InRange,
     isIpInRange,
     isIpInAnyRange
-} from '../src/utils/ip.range';
+} from '../../src/utils/ip.range';
 
 describe('IP Range Utils', () => {
     describe('ipv4ToNumber', () => {
