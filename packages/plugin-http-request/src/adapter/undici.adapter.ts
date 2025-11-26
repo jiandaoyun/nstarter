@@ -38,7 +38,12 @@ export class UndiciAdapter extends BaseHttpAdapter {
             throw new Error('Undici is not available. Please install it: npm install undici');
         }
 
-        const url = this.buildUrl(options.url, options.params);
+        const fullUrl = this.buildUrl(options.url, options.params);
+        
+        // 解析 URL 以分离 origin 和 pathname
+        const parsedUrl = new URL(fullUrl);
+        const origin = parsedUrl.origin;
+        const pathname = parsedUrl.pathname + parsedUrl.search;
 
         // 准备 headers，将 number 类型转换为 string
         const headers: Record<string, string | string[]> = {};
@@ -63,11 +68,12 @@ export class UndiciAdapter extends BaseHttpAdapter {
         }
 
         // 构建 Undici 请求配置
+        // 注意：undici.request() 的第一个参数是 origin，path 在 options 中指定
         const undiciOptions: Dispatcher.RequestOptions & {
             dispatcher?: Dispatcher,
             connect?: { rejectUnauthorized?: boolean }
         } = {
-            path: url,
+            path: pathname,
             method: options.method as Dispatcher.HttpMethod,
             headers,
             body,
@@ -91,12 +97,12 @@ export class UndiciAdapter extends BaseHttpAdapter {
 
         try {
             const startTime = Date.now();
-            const response = await undici.request(url, undiciOptions);
+            const response = await undici.request(origin, undiciOptions);
             const duration = Date.now() - startTime;
 
             this.logger?.debug('HTTP request completed', {
                 method: options.method,
-                url,
+                url: fullUrl,
                 status: response.statusCode,
                 duration
             });
