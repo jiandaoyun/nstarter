@@ -126,7 +126,9 @@ describe('HttpClient', () => {
 
             const proxy: IForwardProxy = {
                 enabled: true,
-                http_proxy: 'http://proxy.example.com:8080'
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: ['localhost', '127.0.0.1']
             };
 
             const result = client.withForwardProxy(proxy);
@@ -153,6 +155,7 @@ describe('HttpClient', () => {
             const proxy: IForwardProxy = {
                 enabled: true,
                 http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
                 no_proxy: ['localhost']
             };
 
@@ -363,7 +366,8 @@ describe('HttpClient', () => {
             const proxy: IForwardProxy = {
                 enabled: true,
                 http_proxy: 'http://proxy.example.com:8080',
-                https_proxy: 'https://proxy.example.com:8443'
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: ['example.com', '*.example.com']
             };
 
             client.withForwardProxy(proxy);
@@ -401,6 +405,7 @@ describe('HttpClient', () => {
 
             const proxy: IForwardProxy = {
                 enabled: true,
+                https_proxy: 'https://proxy.example.com:8443',
                 http_proxy: 'http://proxy.example.com:8080',
                 no_proxy: ['example.com', '.internal.com']
             };

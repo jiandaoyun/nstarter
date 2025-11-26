@@ -16,7 +16,8 @@ describe('AxiosAdapter', () => {
         retries: 0,
         retryDelay: 1000,
         maxRedirects: 5,
-        maxBodySize: 10 * 1024 * 1024
+        maxRequestBodySize: 10 * 1024 * 1024,
+        maxResponseBodySize: 50 * 1024 * 1024
     };
 
     const defaultSecurityConfig: SecurityConfig = {

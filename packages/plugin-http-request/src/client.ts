@@ -55,7 +55,7 @@ export class HttpClient implements IHttpClient {
         // 初始化适配器
         this.adapter = this.initAdapter();
 
-        this.logger.info('HttpClient initialized', {
+        this.logger.debug('HttpClient initialized', {
             adapter: this.config.adapter,
             security: {
                 enableDnsValidation: this.config.security.enableDnsValidation,
