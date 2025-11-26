@@ -208,31 +208,38 @@ describe('NullLogger', () => {
     it('应该不记录任何 debug 日志', () => {
         const logger = new NullLogger();
         // 不应该抛出错误，也不应该有任何副作用
+        // @ts-ignore
         expect(() => logger.debug('Debug message')).to.not.throw();
     });
 
     it('应该不记录任何 info 日志', () => {
         const logger = new NullLogger();
+        // @ts-ignore
         expect(() => logger.info('Info message')).to.not.throw();
     });
 
     it('应该不记录任何 warn 日志', () => {
         const logger = new NullLogger();
+        // @ts-ignore
         expect(() => logger.warn('Warn message')).to.not.throw();
     });
 
     it('应该不记录任何 error 日志', () => {
         const logger = new NullLogger();
+        // @ts-ignore
         expect(() => logger.error('Error message')).to.not.throw();
     });
 
     it('应该接受但忽略元数据', () => {
         const logger = new NullLogger();
         const meta = { key: 'value' };
-
+        // @ts-ignore
         expect(() => logger.debug('Message', meta)).to.not.throw();
+        // @ts-ignore
         expect(() => logger.info('Message', meta)).to.not.throw();
+        // @ts-ignore
         expect(() => logger.warn('Message', meta)).to.not.throw();
+        // @ts-ignore
         expect(() => logger.error('Message', meta)).to.not.throw();
     });
 
