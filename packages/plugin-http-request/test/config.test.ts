@@ -82,6 +82,18 @@ describe('Config', () => {
             const config = mergeConfig({ security: { dnsCacheTtl: -1 } });
             expect(() => validateConfig(config)).to.throw(/dns cache ttl/i);
         });
+
+        it('should reject DNS cache TTL exceeding maximum (24 hours)', () => {
+            const maxTtl = 24 * 60 * 60 * 1000; // 24 hours
+            const config = mergeConfig({ security: { dnsCacheTtl: maxTtl + 1 } });
+            expect(() => validateConfig(config)).to.throw(/dns cache ttl.*exceed.*24 hours/i);
+        });
+
+        it('should accept DNS cache TTL at maximum (24 hours)', () => {
+            const maxTtl = 24 * 60 * 60 * 1000; // 24 hours
+            const config = mergeConfig({ security: { dnsCacheTtl: maxTtl } });
+            expect(() => validateConfig(config)).to.not.throw();
+        });
     });
 });
 

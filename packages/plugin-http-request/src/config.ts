@@ -12,6 +12,12 @@ import type {
 import { EHttpRequestClientAdapter } from './enum';
 
 /**
+ * DNS 缓存最大 TTL（毫秒）- 24 小时
+ * 避免过长的缓存时间导致内存积压
+ */
+export const MAX_DNS_CACHE_TTL = 24 * 60 * 60 * 1000; // 86400000ms (24 小时)
+
+/**
  * 默认安全配置
  */
 export const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
@@ -92,6 +98,10 @@ export function validateConfig(config: HttpClientConfig): void {
   // 验证安全配置
   if (config.security.dnsCacheTtl < 0) {
     throw new Error('DNS cache TTL must be non-negative.');
+  }
+
+  if (config.security.dnsCacheTtl > MAX_DNS_CACHE_TTL) {
+    throw new Error(`DNS cache TTL must not exceed ${MAX_DNS_CACHE_TTL}ms (24 hours) to prevent memory buildup.`);
   }
 
   // 验证请求配置
