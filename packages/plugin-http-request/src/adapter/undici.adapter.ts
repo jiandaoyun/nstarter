@@ -8,9 +8,12 @@ import type {
 } from '../types';
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
-import undici, { ProxyAgent } from 'undici';
+import undici, {
+    ProxyAgent,
+    type Dispatcher
+} from 'undici';
 import { EHttpRequestClientAdapter } from '../enum';
-
+import { STATUS_CODES } from 'http';
 
 /**
  * Undici 适配器
@@ -36,10 +39,37 @@ export class UndiciAdapter extends BaseHttpAdapter {
 
         const url = this.buildUrl(options.url, options.params);
 
+        // 准备 headers，将 number 类型转换为 string
+        const headers: Record<string, string | string[]> = {};
+        if (options.headers) {
+            for (const [key, value] of Object.entries(options.headers)) {
+                headers[key] = typeof value === 'number' ? String(value) : value;
+            }
+        }
+
+        // 设置请求体
+        let body: Dispatcher.DispatchOptions['body'];
+        if (options.body !== undefined) {
+            if (typeof options.body === 'object' && !(options.body instanceof Buffer)) {
+                body = JSON.stringify(options.body);
+                // 自动设置 Content-Type
+                if (!headers['content-type'] && !headers['Content-Type']) {
+                    headers['Content-Type'] = 'application/json';
+                }
+            } else {
+                body = options.body;
+            }
+        }
+
         // 构建 Undici 请求配置
-        const undiciOptions: any = {
-            method: options.method,
-            headers: options.headers || {},
+        const undiciOptions: Dispatcher.RequestOptions & {
+            dispatcher?: Dispatcher,
+            connect?: { rejectUnauthorized?: boolean }
+        } = {
+            path: url,
+            method: options.method as Dispatcher.HttpMethod,
+            headers,
+            body,
             bodyTimeout: options.timeout ?? this.requestConfig.timeout,
             headersTimeout: options.timeout ?? this.requestConfig.timeout,
             maxRedirections: this.requestConfig.maxRedirects,
@@ -48,19 +78,6 @@ export class UndiciAdapter extends BaseHttpAdapter {
                 rejectUnauthorized: this.securityConfig.rejectUnauthorized
             }
         };
-
-        // 设置请求体
-        if (options.body !== undefined) {
-            if (typeof options.body === 'object' && !(options.body instanceof Buffer)) {
-                undiciOptions.body = JSON.stringify(options.body);
-                // 自动设置 Content-Type
-                if (!undiciOptions.headers['content-type'] && !undiciOptions.headers['Content-Type']) {
-                    undiciOptions.headers['Content-Type'] = 'application/json';
-                }
-            } else {
-                undiciOptions.body = options.body;
-            }
-        }
 
         // 设置正向代理（如果请求元数据中包含代理信息）
         const forwardProxyMeta = options.meta?.__forwardProxy;
@@ -96,11 +113,16 @@ export class UndiciAdapter extends BaseHttpAdapter {
             };
 
             return httpResponse;
-        } catch (error: any) {
+        } catch (error: unknown) {
             // 转换为标准错误格式
+            const errorMessage = error instanceof Error ? error.message : 'Undici request failed';
+            const errorCode = (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string')
+                ? error.code
+                : 'UNDICI_ERROR';
+
             throw new HttpError(
-                error.message || 'Undici request failed',
-                error.code || 'UNDICI_ERROR',
+                errorMessage,
+                errorCode,
                 undefined,
                 undefined,
                 options
@@ -113,7 +135,7 @@ export class UndiciAdapter extends BaseHttpAdapter {
      * @param response Undici 响应对象
      * @param responseType 响应类型
      */
-    private async readResponseBody<T>(response: any, responseType?: string): Promise<T> {
+    private async readResponseBody<T>(response: Dispatcher.ResponseData, responseType?: string): Promise<T> {
         try {
             switch (responseType) {
                 case 'text': {
@@ -147,25 +169,7 @@ export class UndiciAdapter extends BaseHttpAdapter {
      * @param statusCode 状态码
      */
     private getStatusText(statusCode: number): string {
-        const statusTexts: Record<number, string> = {
-            200: 'OK',
-            201: 'Created',
-            202: 'Accepted',
-            204: 'No Content',
-            400: 'Bad Request',
-            401: 'Unauthorized',
-            403: 'Forbidden',
-            404: 'Not Found',
-            405: 'Method Not Allowed',
-            408: 'Request Timeout',
-            429: 'Too Many Requests',
-            500: 'Internal Server Error',
-            502: 'Bad Gateway',
-            503: 'Service Unavailable',
-            504: 'Gateway Timeout'
-        };
-
-        return statusTexts[statusCode] || 'Unknown';
+        return STATUS_CODES[statusCode] || 'Unknown';
     }
 }
 
