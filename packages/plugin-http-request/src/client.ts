@@ -10,6 +10,7 @@ import type {
     IHttpAdapter,
     IHttpClient,
     ILogger,
+    IHttpClientLogger,
     IForwardProxy,
     ISsrfGuard
 } from './types';
@@ -24,10 +25,12 @@ import {
 } from './adapter';
 import {
     ConsoleLogger,
-    NullLogger
+    NullLogger,
+    HttpClientLogger
 } from './logger';
 import { createRegExpsByDomains } from './utils/forward.proxy';
 import { EClientAdapter } from './const';
+import { HttpError } from './types';
 
 /**
  * HTTP 客户端
@@ -37,6 +40,7 @@ export class HttpClient implements IHttpClient {
     private adapter: IHttpAdapter;
     private ssrfGuard: ISsrfGuard;
     private logger: ILogger;
+    private httpLogger?: IHttpClientLogger;
     private forwardProxy?: IForwardProxy;
 
     constructor(userConfig: PartialHttpClientConfig = {}) {
@@ -48,6 +52,7 @@ export class HttpClient implements IHttpClient {
 
         // 初始化日志记录器
         this.logger = this.initLogger();
+        this.httpLogger = this.initHttpLogger();
 
         // 初始化 SSRF 防护
         this.ssrfGuard = new SsrfGuard(this.config.security);
@@ -110,6 +115,31 @@ export class HttpClient implements IHttpClient {
     }
 
     /**
+     * 初始化 HTTP 客户端日志记录器
+     */
+    private initHttpLogger(): IHttpClientLogger | undefined {
+        if (!this.config.logging.enabled) {
+            return undefined;
+        }
+
+        // 如果用户提供了自定义的 httpLogger，直接使用
+        if (this.config.logging.httpLogger) {
+            return this.config.logging.httpLogger;
+        }
+
+        // 否则，使用 HttpClientLogger 包装通用的 logger
+        return HttpClientLogger.create(
+            this.logger,
+            this.config.logging.filter,
+            {
+                logRequestBody: this.config.logging.logRequestBody,
+                logResponseBody: this.config.logging.logResponseBody,
+                bodyMaxLength: this.config.logging.bodyMaxLength
+            }
+        );
+    }
+
+    /**
      * 初始化适配器
      */
     private initAdapter(): IHttpAdapter {
@@ -165,14 +195,11 @@ export class HttpClient implements IHttpClient {
                 this.applyForwardProxy(safeOptions);
             }
 
-            // 记录请求日志
-            this.logRequest(safeOptions);
-
             // 发起请求
             const response = await this.adapter.request<T>(safeOptions);
 
             // 记录响应日志
-            this.logResponse(response, Date.now() - startTime);
+            this.logResponse(safeOptions, response, Date.now() - startTime);
 
             return response;
         } catch (error) {
@@ -236,41 +263,28 @@ export class HttpClient implements IHttpClient {
     }
 
     /**
-     * 记录请求日志
-     */
-    private logRequest(options: HttpRequestOptions): void {
-        if (!this.config.logging.logRequestBody) {
-            return;
-        }
-
-        const bodyToLog = this.truncateBody(options.body);
-
-        this.logger.info('Outgoing HTTP request', {
-            method: options.method,
-            url: options.url,
-            headers: options.headers,
-            body: bodyToLog,
-            scenario: options.scenario,
-            meta: options.meta
-        });
-    }
-
-    /**
      * 记录响应日志
      */
-    private logResponse(response: HttpResponse, duration: number): void {
-        if (!this.config.logging.logResponseBody) {
+    private logResponse(options: HttpRequestOptions, response: HttpResponse, duration: number): void {
+        if (!this.httpLogger) {
             return;
         }
 
-        const bodyToLog = this.truncateBody(response.data);
+        // 计算实际重试次数
+        const retryCount = options.retries ?? this.config.request.retries;
 
-        this.logger.info('HTTP response received', {
-            status: response.status,
-            statusText: response.statusText,
+        this.httpLogger.logSuccess({
+            request: {
+                method: options.method,
+                url: options.url,
+                headers: options.headers,
+                body: options.body,
+                scenario: options.scenario,
+                meta: options.meta
+            },
+            response,
             duration,
-            body: bodyToLog,
-            scenario: response.config.scenario
+            retryCount
         });
     }
 
@@ -278,13 +292,30 @@ export class HttpClient implements IHttpClient {
      * 记录错误日志
      */
     private logError(options: HttpRequestOptions, error: any, duration: number): void {
-        this.logger.error('HTTP request failed', {
-            method: options.method,
-            url: options.url,
+        if (!this.httpLogger) {
+            return;
+        }
+
+        // 计算实际重试次数
+        const retryCount = options.retries ?? this.config.request.retries;
+
+        const httpError = error instanceof HttpError ? error : undefined;
+        
+        this.httpLogger.logFailed({
+            request: {
+                method: options.method,
+                url: options.url,
+                headers: options.headers,
+                body: options.body,
+                scenario: options.scenario,
+                meta: options.meta
+            },
+            error: error instanceof Error ? error : new Error(String(error)),
+            errorCode: httpError?.code || 'UNKNOWN_ERROR',
+            status: httpError?.status,
+            response: httpError?.response,
             duration,
-            error: error instanceof Error ? error.message : String(error),
-            scenario: options.scenario,
-            meta: options.meta
+            retryCount
         });
     }
 
@@ -345,33 +376,6 @@ export class HttpClient implements IHttpClient {
         });
     }
 
-    /**
-     * 截断响应体（用于日志记录）
-     */
-    private truncateBody(body: any): any {
-        if (body === null || body === undefined) {
-            return body;
-        }
-
-        if (typeof body === 'string') {
-            return body.length > this.config.logging.bodyMaxLength
-                ? body.substring(0, this.config.logging.bodyMaxLength) + '...[truncated]'
-                : body;
-        }
-
-        if (Buffer.isBuffer(body)) {
-            return `<Buffer ${ body.length } bytes>`;
-        }
-
-        if (typeof body === 'object') {
-            const str = JSON.stringify(body);
-            return str.length > this.config.logging.bodyMaxLength
-                ? str.substring(0, this.config.logging.bodyMaxLength) + '...[truncated]'
-                : body;
-        }
-
-        return body;
-    }
 
     /**
      * 清空 DNS 缓存

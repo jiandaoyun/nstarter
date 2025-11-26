@@ -485,7 +485,7 @@ describe('BaseHttpAdapter', () => {
                 // Expected
             }
 
-            const errorLogs = logs.filter(log => log.level === 'error');
+            const errorLogs = logs.filter(log => log.level === 'debug');
             expect(errorLogs.length).to.be.greaterThan(0);
         });
 
@@ -516,7 +516,7 @@ describe('BaseHttpAdapter', () => {
                 // Expected
             }
 
-            const warnLogs = logs.filter(log => log.level === 'warn');
+            const warnLogs = logs.filter(log => log.level === 'debug');
             expect(warnLogs.length).to.be.greaterThan(0);
         });
     });

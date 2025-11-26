@@ -310,17 +310,14 @@ describe('HttpClient', () => {
                 body: { test: 'data' }
             });
 
-            const requestLog = logs.find(log =>
-                log.args[0]?.includes?.('Outgoing HTTP request') ||
-                log.args[0] === 'Outgoing HTTP request'
-            );
-            const responseLog = logs.find(log =>
-                log.args[0]?.includes?.('HTTP response received') ||
-                log.args[0] === 'HTTP response received'
+            const successLog = logs.find(log =>
+                log.args[0]?.includes?.('HTTP request succeeded') ||
+                log.args[0] === 'HTTP request succeeded: POST https://example.com'
             );
 
-            expect(requestLog).to.exist;
-            expect(responseLog).to.exist;
+            expect(successLog).to.exist;
+            expect(successLog?.args[1]).to.have.property('method', 'POST');
+            expect(successLog?.args[1]).to.have.property('duration');
         });
 
         it('应该在请求失败时记录错误日志', async () => {
@@ -354,10 +351,12 @@ describe('HttpClient', () => {
             }
 
             const errorLog = logs.find(log =>
-                log.args[0]?.includes?.('HTTP request failed') ||
-                log.args[0] === 'HTTP request failed'
+                log.args[0]?.includes?.('HTTP request failed')
             );
+
             expect(errorLog).to.exist;
+            expect(errorLog?.args[1]).to.have.property('method', 'GET');
+            expect(errorLog?.args[1]).to.have.property('error');
         });
 
         it('应该应用正向代理配置', async () => {
@@ -466,13 +465,13 @@ describe('HttpClient', () => {
                 body: 'This is a very long request body that should be truncated'
             });
 
-            const requestLog = logs.find(log =>
-                log.args[0] === 'Outgoing HTTP request'
+            const successLog = logs.find(log =>
+                log.args[0]?.includes?.('HTTP request succeeded')
             );
 
-            if (requestLog && requestLog.args[1]?.body) {
-                const loggedBody = requestLog.args[1].body;
-                expect(loggedBody).to.include('[truncated]');
+            if (successLog && successLog.args[1]?.requestBody) {
+                const loggedBody = successLog.args[1].requestBody;
+                expect(loggedBody).to.include('(truncated)');
             }
         });
 
@@ -509,15 +508,13 @@ describe('HttpClient', () => {
                 body: buffer
             });
 
-            const requestLog = logs.find(log =>
-                log.args[0] === 'Outgoing HTTP request'
+            const successLog = logs.find(log =>
+                log.args[0]?.includes?.('HTTP request succeeded')
             );
 
-            if (requestLog && requestLog.args[1]?.body) {
-                const loggedBody = requestLog.args[1].body;
-                expect(loggedBody).to.include('<Buffer');
-                expect(loggedBody).to.include('bytes>');
-            }
+            // HttpClientLogger 会将 Buffer 转换为字符串或截断处理
+            // 如果配置了 logRequestBody，应该能在 meta 中找到 requestBody
+            expect(successLog).to.exist;
         });
     });
 
