@@ -6,7 +6,9 @@
 import { URL } from 'node:url';
 import { isIP } from 'node:net';
 import type {
+    ISsrfGuard,
     SecurityConfig,
+    SsrfGuardResult,
 } from '../types';
 import { SecurityError } from '../types';
 import { DnsValidator } from './dns.validator';
@@ -14,27 +16,9 @@ import { IpValidator } from './ip.validator';
 import { UrlValidator } from './url.validator';
 
 /**
- * SSRF 防护结果
- */
-export interface SsrfGuardResult {
-    /** 是否通过验证 */
-    passed: boolean;
-    /** 原始 URL */
-    originalUrl: string;
-    /** 解析后的主机名 */
-    hostname: string;
-    /** 解析后的 IP 地址列表（如果进行了 DNS 解析） */
-    resolvedIps?: string[];
-    /** 安全的 IP 地址（如果进行了 DNS 解析且通过验证） */
-    safeIp?: string;
-    /** 失败原因 */
-    reason?: string;
-}
-
-/**
  * SSRF 防护类
  */
-export class SsrfGuard {
+export class SsrfGuard implements ISsrfGuard {
     private dnsValidator: DnsValidator;
     private urlValidator: UrlValidator;
     private config: SecurityConfig;
@@ -172,7 +156,7 @@ export class SsrfGuard {
                 url
             );
         }
-        
+
         return {
             safeUrl: url,
             result

@@ -10,7 +10,8 @@ import type {
     IHttpAdapter,
     IHttpClient,
     ILogger,
-    IForwardProxy
+    IForwardProxy,
+    ISsrfGuard
 } from './types';
 import {
     mergeConfig,
@@ -34,7 +35,7 @@ import { createRegExpsByDomains } from './utils/forward.proxy';
 export class HttpClient implements IHttpClient {
     private config: HttpClientConfig;
     private adapter: IHttpAdapter;
-    private ssrfGuard: SsrfGuard;
+    private ssrfGuard: ISsrfGuard;
     private logger: ILogger;
     private forwardProxy?: IForwardProxy;
 
