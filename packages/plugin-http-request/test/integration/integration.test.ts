@@ -1,98 +1,79 @@
 /**
  * 集成测试
- * 注意：这些测试需要网络连接
+ * 注意：使用 nock 进行 HTTP mock，测试不同 adapter 和安全功能的集成
  */
 
 import { expect } from 'chai';
+import nock from 'nock';
 import { HttpClient } from '../../src';
 import { SecurityError } from '../../src';
 import { EHttpRequestClientAdapter } from '../../src';
 
-// 辅助函数：检查是否为网络不可用错误
-function isNetworkUnavailable(error: any): boolean {
-    if (!error) return false;
-    
-    // 检查错误码
-    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-        return true;
-    }
-    
-    // 检查错误消息
-    const message = error.message || '';
-    if (message.includes('timeout') || message.includes('Network') || message.includes('fetch failed')) {
-        return true;
-    }
-    
-    // 检查 HTTP 状态码（502/503 表示服务不可用）
-    if (error.status === 502 || error.status === 503) {
-        return true;
-    }
-    
-    return false;
-}
+describe('HttpClient Integration Tests', function () {
+    this.timeout(10000);
 
-// 辅助函数：检查响应是否可用（服务是否正常）
-function checkResponseAvailable(response: any): boolean {
-    if (response.status === 502 || response.status === 503) {
-        console.log('Skipping test: Service unavailable (503/502)');
-        return false;
-    }
-    return true;
-}
+    afterEach(() => {
+        nock.cleanAll();
+    });
 
-describe('HttpClient Integration Tests', () => {
     describe('Basic HTTP requests', () => {
-        it('should make a successful GET request', async function() {
-            this.timeout(10000);
+        it('should make a successful GET request with axios', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .reply(200, {
+                    args: {},
+                    headers: {},
+                    url: 'https://httpbin.org/get'
+                });
+
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
             });
 
-            try {
-                const response = await client.get('https://httpbin.org/get');
-                if (!checkResponseAvailable(response)) {
-                    this.skip();
-                    return;
-                }
-                expect(response.status).to.equal(200);
-                expect(response.data).to.exist;
-            } catch (error: any) {
-                // 网络不可用时跳过
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                    return;
-                }
-                throw error;
-            }
+            const response = await client.get('https://httpbin.org/get');
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
         });
 
-        it('should make a successful POST request', async function() {
-            this.timeout(10000);
+        it('should make a successful GET request with undici', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .reply(200, {
+                    args: {},
+                    headers: {},
+                    url: 'https://httpbin.org/get'
+                });
+
+            const client = new HttpClient({
+                adapter: EHttpRequestClientAdapter.undici,
+                logging: { enabled: false }
+            });
+
+            const response = await client.get('https://httpbin.org/get');
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+        });
+
+        it('should make a successful POST request', async () => {
+            nock('https://httpbin.org')
+                .post('/post', {
+                    test: 'data'
+                })
+                .reply(200, {
+                    json: { test: 'data' }
+                });
+
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
             });
 
-            try {
-                const response = await client.post('https://httpbin.org/post', {
-                    test: 'data'
-                });
-                if (!checkResponseAvailable(response)) {
-                    this.skip();
-                    return;
-                }
-                expect(response.status).to.equal(200);
-                expect(response.data).to.exist;
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                    return;
-                }
-                throw error;
-            }
+            const response = await client.post('https://httpbin.org/post', {
+                test: 'data'
+            });
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
         });
     });
 
@@ -190,9 +171,14 @@ describe('HttpClient Integration Tests', () => {
 
     describe('Error handling', () => {
         it('should handle timeout errors', async () => {
+            nock('https://httpbin.org')
+                .get('/delay/5')
+                .delayConnection(5000)
+                .reply(200);
+
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
-                request: { timeout: 1 }, // 1ms timeout
+                request: { timeout: 100 }, // 100ms timeout
                 logging: { enabled: false }
             });
 
@@ -200,39 +186,52 @@ describe('HttpClient Integration Tests', () => {
                 await client.get('https://httpbin.org/delay/5');
                 expect.fail('Should have thrown timeout error');
             } catch (error: any) {
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-                    console.log('Skipping test: Network unavailable');
-                    return;
-                }
-                expect(error.message).to.match(/timeout/i);
+                expect(error.message).to.match(/timeout|aborted/i);
             }
         });
 
-        it('should handle 404 errors', async function() {
+        it('should handle 404 errors', async () => {
+            nock('https://httpbin.org')
+                .get('/status/404')
+                .reply(404);
+
+            const client = new HttpClient({
+                adapter: EHttpRequestClientAdapter.axios,
+                logging: { enabled: false }
+            });
+
+            const response = await client.get('https://httpbin.org/status/404');
+            expect(response.status).to.equal(404);
+        });
+
+        it('should handle network errors', async () => {
+            nock('http://nonexistent-domain-12345.com')
+                .get('/')
+                .replyWithError({ code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND' });
+
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
             });
 
             try {
-                const response = await client.get('https://httpbin.org/status/404');
-                if (!checkResponseAvailable(response)) {
-                    this.skip();
-                    return;
-                }
-                expect(response.status).to.equal(404);
+                await client.get('http://nonexistent-domain-12345.com');
+                expect.fail('Should have thrown network error');
             } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    return;
-                }
-                throw error;
+                expect(error.code).to.exist;
             }
         });
     });
 
     describe('Retry mechanism', () => {
         it('should retry on temporary failures', async () => {
+            // 第一次返回 503，第二次返回 200
+            nock('https://httpbin.org')
+                .get('/status/503')
+                .reply(503)
+                .get('/status/503')
+                .reply(200, { success: true });
+
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 request: {
@@ -242,15 +241,62 @@ describe('HttpClient Integration Tests', () => {
                 logging: { enabled: false }
             });
 
-            // 此测试依赖于网络环境，可能不稳定
-            // 主要是确保重试机制不会导致程序崩溃
-            try {
-                await client.get('https://httpbin.org/status/503', { timeout: 5000 });
-            } catch (error) {
-                // 预期会失败，但应该进行了重试
-                expect(error).to.exist;
-            }
+            const response = await client.get('https://httpbin.org/status/503');
+            // 第一次失败后重试，第二次成功
+            expect(response.status).to.equal(200);
+        });
+
+        it('should respect max retries', async () => {
+            // 所有请求都返回 503
+            nock('https://httpbin.org')
+                .get('/status/503')
+                .times(4) // 初始请求 + 3次重试
+                .reply(503);
+
+            const client = new HttpClient({
+                adapter: EHttpRequestClientAdapter.axios,
+                request: {
+                    retries: 3,
+                    retryDelay: 100
+                },
+                logging: { enabled: false }
+            });
+
+            const response = await client.get('https://httpbin.org/status/503');
+            // 重试3次后仍然失败
+            expect(response.status).to.equal(503);
+        });
+    });
+
+    describe('Different adapters', () => {
+        it('should work with axios adapter', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .reply(200, { adapter: 'axios' });
+
+            const client = new HttpClient({
+                adapter: EHttpRequestClientAdapter.axios,
+                logging: { enabled: false }
+            });
+
+            const response = await client.get('https://httpbin.org/get');
+            expect(response.status).to.equal(200);
+            expect(response.data).to.have.property('adapter', 'axios');
+        });
+
+        it('should work with undici adapter', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .reply(200, { adapter: 'undici' });
+
+            const client = new HttpClient({
+                adapter: EHttpRequestClientAdapter.undici,
+                logging: { enabled: false }
+            });
+
+            const response = await client.get('https://httpbin.org/get');
+            expect(response.status).to.equal(200);
+            expect(response.data).to.have.property('adapter', 'undici');
         });
     });
 });
-

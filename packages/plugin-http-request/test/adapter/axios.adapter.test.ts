@@ -3,6 +3,7 @@
  */
 
 import { expect } from 'chai';
+import nock from 'nock';
 import { AxiosAdapter } from '../../src';
 import { HttpError } from '../../src';
 import type {
@@ -30,36 +31,9 @@ describe('AxiosAdapter', () => {
         blacklist: []
     };
 
-    // 辅助函数：检查是否为网络不可用错误
-    function isNetworkUnavailable(error: any): boolean {
-        if (!error) return false;
-        
-        // 检查错误码
-        if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-            return true;
-        }
-        
-        // 检查错误消息
-        const message = error.message || '';
-        if (message.includes('timeout') || message.includes('Network') || message.includes('fetch failed')) {
-            return true;
-        }
-        
-        // 检查 HTTP 状态码（502/503 表示服务不可用）
-        if (error.status === 502 || error.status === 503) {
-            return true;
-        }
-        
-        return false;
-    }
-
-    // 辅助函数：检查响应是否可用（服务是否正常）
-    function checkResponseAvailable(response: any, context: Mocha.Context): void {
-        if (response.status === 502 || response.status === 503) {
-            console.log('Skipping test: Service unavailable (503/502)');
-            context.skip();
-        }
-    }
+    afterEach(() => {
+        nock.cleanAll();
+    });
 
     describe('构造函数和基础功能', () => {
         it('应该正确创建实例', () => {
@@ -75,364 +49,311 @@ describe('AxiosAdapter', () => {
     });
 
     describe('HTTP GET 请求', () => {
-        it('应该成功发送 GET 请求', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
+        it('应该成功发送 GET 请求', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .reply(200, {
+                    args: {},
+                    headers: { 'User-Agent': 'axios' },
                     url: 'https://httpbin.org/get'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                expect(response.data).to.exist;
-                expect(response.headers).to.be.an('object');
-                expect(response.statusText).to.be.a('string');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/get'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+            expect(response.headers).to.be.an('object');
+            expect(response.statusText).to.be.a('string');
         });
 
-        it('应该正确处理查询参数', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/get',
-                    params: {
-                        foo: 'bar',
-                        num: 123,
-                        bool: true
-                    }
+        it('应该正确处理查询参数', async () => {
+            nock('https://httpbin.org')
+                .get('/get')
+                .query({ foo: 'bar', num: '123', bool: 'true' })
+                .reply(200, {
+                    args: { foo: 'bar', num: '123', bool: 'true' },
+                    url: 'https://httpbin.org/get?foo=bar&num=123&bool=true'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                const data = response.data as any;
-                expect(data.args).to.exist;
-                expect(data.args.foo).to.equal('bar');
-                expect(data.args.num).to.equal('123');
-                expect(data.args.bool).to.equal('true');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/get',
+                params: {
+                    foo: 'bar',
+                    num: 123,
+                    bool: true
                 }
-                throw error;
-            }
+            });
+
+            expect(response.status).to.equal(200);
+            const data = response.data as any;
+            expect(data.args).to.exist;
+            expect(data.args.foo).to.equal('bar');
+            expect(data.args.num).to.equal('123');
+            expect(data.args.bool).to.equal('true');
         });
 
-        it('应该正确处理自定义请求头', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/headers',
+        it('应该正确处理自定义请求头', async () => {
+            nock('https://httpbin.org', {
+                reqheaders: {
+                    'X-Custom-Header': 'test-value',
+                    'User-Agent': 'test-agent'
+                }
+            })
+                .get('/headers')
+                .reply(200, {
                     headers: {
                         'X-Custom-Header': 'test-value',
                         'User-Agent': 'test-agent'
                     }
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                const data = response.data as any;
-                expect(data.headers).to.exist;
-                expect(data.headers['X-Custom-Header']).to.equal('test-value');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/headers',
+                headers: {
+                    'X-Custom-Header': 'test-value',
+                    'User-Agent': 'test-agent'
                 }
-                throw error;
-            }
+            });
+
+            expect(response.status).to.equal(200);
+            const data = response.data as any;
+            expect(data.headers).to.exist;
+            expect(data.headers['X-Custom-Header']).to.equal('test-value');
         });
     });
 
     describe('HTTP POST 请求', () => {
-        it('应该成功发送 POST 请求', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'POST',
-                    url: 'https://httpbin.org/post',
-                    body: {
+        it('应该成功发送 POST 请求', async () => {
+            nock('https://httpbin.org')
+                .post('/post', {
+                    test: 'data',
+                    number: 42
+                })
+                .reply(200, {
+                    json: {
                         test: 'data',
                         number: 42
                     }
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                const data = response.data as any;
-                expect(data.json).to.exist;
-                expect(data.json.test).to.equal('data');
-                expect(data.json.number).to.equal(42);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'POST',
+                url: 'https://httpbin.org/post',
+                body: {
+                    test: 'data',
+                    number: 42
                 }
-                throw error;
-            }
+            });
+
+            expect(response.status).to.equal(200);
+            const data = response.data as any;
+            expect(data.json).to.exist;
+            expect(data.json.test).to.equal('data');
+            expect(data.json.number).to.equal(42);
         });
 
-        it('应该正确处理 JSON 请求体', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+        it('应该正确处理 JSON 请求体', async () => {
+            const testData = {
+                string: 'test',
+                number: 123,
+                boolean: true,
+                array: [1, 2, 3],
+                object: { nested: 'value' }
+            };
 
-            try {
-                const testData = {
-                    string: 'test',
-                    number: 123,
-                    boolean: true,
-                    array: [1, 2, 3],
-                    object: { nested: 'value' }
-                };
-
-                const response = await adapter.request({
-                    method: 'POST',
-                    url: 'https://httpbin.org/post',
-                    body: testData
+            nock('https://httpbin.org')
+                .post('/post', testData)
+                .reply(200, {
+                    json: testData
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                const data = response.data as any;
-                expect(data.json).to.deep.equal(testData);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'POST',
+                url: 'https://httpbin.org/post',
+                body: testData
+            });
+
+            expect(response.status).to.equal(200);
+            const data = response.data as any;
+            expect(data.json).to.deep.equal(testData);
         });
 
-        it('应该正确处理字符串请求体', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'POST',
-                    url: 'https://httpbin.org/post',
-                    body: 'plain text data',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    }
+        it('应该正确处理字符串请求体', async () => {
+            nock('https://httpbin.org')
+                .post('/post', 'plain text data')
+                .reply(200, {
+                    data: 'plain text data'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                const data = response.data as any;
-                expect(data.data).to.equal('plain text data');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'POST',
+                url: 'https://httpbin.org/post',
+                body: 'plain text data',
+                headers: {
+                    'Content-Type': 'text/plain'
                 }
-                throw error;
-            }
+            });
+
+            expect(response.status).to.equal(200);
+            const data = response.data as any;
+            expect(data.data).to.equal('plain text data');
         });
     });
 
     describe('其他 HTTP 方法', () => {
-        it('应该支持 PUT 请求', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'PUT',
-                    url: 'https://httpbin.org/put',
-                    body: { update: 'data' }
+        it('应该支持 PUT 请求', async () => {
+            nock('https://httpbin.org')
+                .put('/put', { update: 'data' })
+                .reply(200, {
+                    json: { update: 'data' }
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'PUT',
+                url: 'https://httpbin.org/put',
+                body: { update: 'data' }
+            });
+
+            expect(response.status).to.equal(200);
         });
 
-        it('应该支持 DELETE 请求', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'DELETE',
+        it('应该支持 DELETE 请求', async () => {
+            nock('https://httpbin.org')
+                .delete('/delete')
+                .reply(200, {
                     url: 'https://httpbin.org/delete'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'DELETE',
+                url: 'https://httpbin.org/delete'
+            });
+
+            expect(response.status).to.equal(200);
         });
 
-        it('应该支持 PATCH 请求', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'PATCH',
-                    url: 'https://httpbin.org/patch',
-                    body: { patch: 'data' }
+        it('应该支持 PATCH 请求', async () => {
+            nock('https://httpbin.org')
+                .patch('/patch', { patch: 'data' })
+                .reply(200, {
+                    json: { patch: 'data' }
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'PATCH',
+                url: 'https://httpbin.org/patch',
+                body: { patch: 'data' }
+            });
+
+            expect(response.status).to.equal(200);
         });
     });
 
     describe('响应类型处理', () => {
-        it('应该正确处理 JSON 响应', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/json',
-                    responseType: 'json'
+        it('应该正确处理 JSON 响应', async () => {
+            nock('https://httpbin.org')
+                .get('/json')
+                .reply(200, {
+                    slideshow: {
+                        author: 'Yours Truly',
+                        title: 'Sample Slide Show'
+                    }
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                expect(response.data).to.be.an('object');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/json',
+                responseType: 'json'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.be.an('object');
         });
 
-        it('应该正确处理文本响应', async function () {
-            this.timeout(10000);
+        it('应该正确处理文本响应', async () => {
+            nock('https://httpbin.org')
+                .get('/html')
+                .reply(200, '<!DOCTYPE html><html><body><h1>Test HTML</h1></body></html>');
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/html',
+                responseType: 'text'
+            });
 
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/html',
-                    responseType: 'text'
-                });
-
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-                expect(response.data).to.be.a('string');
-                expect(response.data).to.include('html');
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            expect(response.status).to.equal(200);
+            expect(response.data).to.be.a('string');
+            expect(response.data).to.include('html');
         });
     });
 
     describe('HTTP 状态码处理', () => {
-        it('应该正确处理 200 OK', async function () {
-            this.timeout(10000);
+        it('应该正确处理 200 OK', async () => {
+            nock('https://httpbin.org')
+                .get('/status/200')
+                .reply(200);
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/status/200'
+            });
 
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/status/200'
-                });
-
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            expect(response.status).to.equal(200);
         });
 
-        it('应该正确处理 404 Not Found', async function () {
-            this.timeout(10000);
+        it('应该正确处理 404 Not Found', async () => {
+            nock('https://httpbin.org')
+                .get('/status/404')
+                .reply(404);
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/status/404'
+            });
 
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/status/404'
-                });
-
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(404);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            expect(response.status).to.equal(404);
         });
 
-        it('应该正确处理 500 Internal Server Error', async function () {
-            this.timeout(10000);
+        it('应该正确处理 500 Internal Server Error', async () => {
+            nock('https://httpbin.org')
+                .get('/status/500')
+                .reply(500);
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/status/500'
+            });
 
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/status/500'
-                });
-
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(500);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            expect(response.status).to.equal(500);
         });
     });
 
     describe('超时处理', () => {
-        it('应该在超时时抛出错误', async function () {
-            this.timeout(10000);
+        it('应该在超时时抛出错误', async () => {
+            nock('https://httpbin.org')
+                .get('/delay/10')
+                .delayConnection(5000) // 延迟5秒
+                .reply(200);
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             try {
@@ -443,49 +364,47 @@ describe('AxiosAdapter', () => {
                 });
                 expect.fail('应该抛出超时错误');
             } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                    return;
-                }
                 expect(error).to.be.instanceOf(HttpError);
-                expect(error.message).to.match(/timeout|aborted|status code 503/i);
+                expect(error.message).to.match(/timeout|aborted/i);
             }
         });
     });
 
     describe('重试机制', () => {
-        it('应该在临时失败时重试', async function () {
-            this.timeout(15000);
+        it('应该在临时失败时重试', async () => {
+            // 第一次和第二次返回 503，第三次返回 200
+            nock('https://httpbin.org')
+                .get('/status/503')
+                .reply(503)
+                .get('/status/503')
+                .reply(503)
+                .get('/status/503')
+                .reply(503);
+
             const config: RequestConfig = {
                 ...defaultRequestConfig,
                 retries: 2,
-                retryDelay: 500
+                retryDelay: 100
             };
             const adapter = new AxiosAdapter(config, defaultSecurityConfig);
 
-            try {
-                // httpbin.org/status/503 会返回 503，应该触发重试
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/status/503'
-                });
+            // httpbin.org/status/503 会返回 503，应该触发重试
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/status/503'
+            });
 
-                // 即使重试，503 仍然是 503
-                expect(response.status).to.equal(503);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            // 即使重试，503 仍然是 503
+            expect(response.status).to.equal(503);
         });
     });
 
     describe('错误处理', () => {
-        it('应该正确处理网络错误', async function () {
-            this.timeout(10000);
+        it('应该正确处理网络错误', async () => {
+            nock('http://this-domain-absolutely-does-not-exist-12345.com')
+                .get('/')
+                .replyWithError({ code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND' });
+
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             try {
@@ -501,7 +420,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理无效的 URL', async function () {
+        it('应该正确处理无效的 URL', async () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             try {
@@ -546,52 +465,49 @@ describe('AxiosAdapter', () => {
     });
 
     describe('响应头处理', () => {
-        it('应该正确返回响应头', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/response-headers',
-                    params: {
-                        'X-Test-Header': 'test-value'
-                    }
+        it('应该正确返回响应头', async () => {
+            nock('https://httpbin.org')
+                .get('/response-headers')
+                .query({ 'X-Test-Header': 'test-value' })
+                .reply(200, {}, {
+                    'Content-Type': 'application/json',
+                    'X-Test-Header': 'test-value'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.headers).to.be.an('object');
-                expect(response.headers['content-type']).to.exist;
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/response-headers',
+                params: {
+                    'X-Test-Header': 'test-value'
                 }
-                throw error;
-            }
+            });
+
+            expect(response.headers).to.be.an('object');
+            expect(response.headers['content-type']).to.exist;
         });
     });
 
     describe('重定向处理', () => {
-        it('应该正确处理重定向', async function () {
-            this.timeout(10000);
-            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
-
-            try {
-                const response = await adapter.request({
-                    method: 'GET',
-                    url: 'https://httpbin.org/redirect/1'
+        it('应该正确处理重定向', async () => {
+            // 模拟重定向
+            nock('https://httpbin.org')
+                .get('/redirect/1')
+                .reply(302, undefined, {
+                    'Location': 'https://httpbin.org/get'
+                })
+                .get('/get')
+                .reply(200, {
+                    url: 'https://httpbin.org/get'
                 });
 
-                checkResponseAvailable(response, this);
-                expect(response.status).to.equal(200);
-            } catch (error: any) {
-                if (isNetworkUnavailable(error)) {
-                    console.log('Skipping test: Network unavailable');
-                    this.skip();
-                }
-                throw error;
-            }
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.org/redirect/1'
+            });
+
+            expect(response.status).to.equal(200);
         });
     });
 });
