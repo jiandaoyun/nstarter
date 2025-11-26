@@ -68,7 +68,7 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
                 const response = await this.sendRequest<T>(finalOptions);
 
                 if (attempt > 0) {
-                    this.logger?.info(`HTTP request succeeded after ${ attempt } retries`, {
+                    this.logger?.debug(`HTTP request succeeded after ${ attempt } retries`, {
                         method: options.method,
                         url: options.url,
                         status: response.status
@@ -79,7 +79,7 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
             } catch (error) {
                 lastError = error;
 
-                this.logger?.warn(`HTTP request attempt ${ attempt + 1 } failed`, {
+                this.logger?.debug(`HTTP request attempt ${ attempt + 1 } failed`, {
                     method: options.method,
                     url: options.url,
                     error: error instanceof Error ? error.message : String(error)
@@ -96,7 +96,7 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
         }
 
         // 所有尝试都失败了
-        this.logger?.error('All HTTP request attempts failed', {
+        this.logger?.debug('All HTTP request attempts failed', {
             method: options.method,
             url: options.url,
             attempts: retries + 1,
