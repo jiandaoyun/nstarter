@@ -32,6 +32,8 @@ export interface IpValidationResult {
     isLinkLocal: boolean;
     /** 是否为组播地址 */
     isMulticast: boolean;
+    /** 是否为保留地址 */
+    isReserved: boolean;
     /** 原因（当 valid 为 false 时） */
     reason?: string;
 }
