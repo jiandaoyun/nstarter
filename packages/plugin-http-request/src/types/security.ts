@@ -123,3 +123,12 @@ export interface ISsrfGuard {
     getConfig: () => SecurityConfig;
 }
 
+/**
+ * DNS 缓存条目
+ */
+export interface DnsCacheEntry {
+    result: DnsResult;
+    expiresAt: number;
+}
+
+

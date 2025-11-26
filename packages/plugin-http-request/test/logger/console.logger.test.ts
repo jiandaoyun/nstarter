@@ -3,8 +3,10 @@
  */
 
 import { expect } from 'chai';
-import { ConsoleLogger } from '../../src/logger/console.logger';
-import { LogLevel } from '../../src/logger/base';
+import {
+    ConsoleLogger,
+    ELogLevel
+} from '../../src';
 
 describe('ConsoleLogger', () => {
     let originalConsole: {
@@ -44,18 +46,18 @@ describe('ConsoleLogger', () => {
     describe('构造函数', () => {
         it('应该使用默认日志级别 INFO 创建', () => {
             const logger = new ConsoleLogger();
-            expect(logger.getMinLevel()).to.equal(LogLevel.INFO);
+            expect(logger.getMinLevel()).to.equal(ELogLevel.INFO);
         });
 
         it('应该使用指定的日志级别创建', () => {
-            const logger = new ConsoleLogger(LogLevel.DEBUG);
-            expect(logger.getMinLevel()).to.equal(LogLevel.DEBUG);
+            const logger = new ConsoleLogger(ELogLevel.DEBUG);
+            expect(logger.getMinLevel()).to.equal(ELogLevel.DEBUG);
         });
     });
 
     describe('debug', () => {
         it('应该在日志级别为 DEBUG 时输出 debug 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.DEBUG);
+            const logger = new ConsoleLogger(ELogLevel.DEBUG);
             logger.debug('Debug message');
 
             expect(logs).to.have.lengthOf(1);
@@ -65,14 +67,14 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该在日志级别为 INFO 时不输出 debug 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             logger.debug('Debug message');
 
             expect(logs).to.have.lengthOf(0);
         });
 
         it('应该正确格式化带有元数据的日志', () => {
-            const logger = new ConsoleLogger(LogLevel.DEBUG);
+            const logger = new ConsoleLogger(ELogLevel.DEBUG);
             const meta = { userId: 123, action: 'test' };
             logger.debug('Debug message', meta);
 
@@ -82,7 +84,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该包含时间戳', () => {
-            const logger = new ConsoleLogger(LogLevel.DEBUG);
+            const logger = new ConsoleLogger(ELogLevel.DEBUG);
             logger.debug('Debug message');
 
             expect(logs).to.have.lengthOf(1);
@@ -93,7 +95,7 @@ describe('ConsoleLogger', () => {
 
     describe('info', () => {
         it('应该在日志级别为 INFO 时输出 info 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             logger.info('Info message');
 
             expect(logs).to.have.lengthOf(1);
@@ -103,14 +105,14 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该在日志级别为 WARN 时不输出 info 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.WARN);
+            const logger = new ConsoleLogger(ELogLevel.WARN);
             logger.info('Info message');
 
             expect(logs).to.have.lengthOf(0);
         });
 
         it('应该正确格式化带有元数据的日志', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             const meta = { requestId: 'abc-123' };
             logger.info('Info message', meta);
 
@@ -122,7 +124,7 @@ describe('ConsoleLogger', () => {
 
     describe('warn', () => {
         it('应该在日志级别为 WARN 时输出 warn 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.WARN);
+            const logger = new ConsoleLogger(ELogLevel.WARN);
             logger.warn('Warning message');
 
             expect(logs).to.have.lengthOf(1);
@@ -132,14 +134,14 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该在日志级别为 ERROR 时不输出 warn 日志', () => {
-            const logger = new ConsoleLogger(LogLevel.ERROR);
+            const logger = new ConsoleLogger(ELogLevel.ERROR);
             logger.warn('Warning message');
 
             expect(logs).to.have.lengthOf(0);
         });
 
         it('应该正确格式化带有元数据的日志', () => {
-            const logger = new ConsoleLogger(LogLevel.WARN);
+            const logger = new ConsoleLogger(ELogLevel.WARN);
             const meta = { code: 'DEPRECATED' };
             logger.warn('Warning message', meta);
 
@@ -151,7 +153,7 @@ describe('ConsoleLogger', () => {
 
     describe('error', () => {
         it('应该在任何日志级别时都输出 error 日志', () => {
-            const levels = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR];
+            const levels = [ELogLevel.DEBUG, ELogLevel.INFO, ELogLevel.WARN, ELogLevel.ERROR];
 
             for (const level of levels) {
                 logs = [];
@@ -166,7 +168,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该正确格式化带有元数据的日志', () => {
-            const logger = new ConsoleLogger(LogLevel.ERROR);
+            const logger = new ConsoleLogger(ELogLevel.ERROR);
             const meta = { errorCode: 500, stack: 'Error stack' };
             logger.error('Error message', meta);
 
@@ -178,7 +180,7 @@ describe('ConsoleLogger', () => {
 
     describe('日志级别过滤', () => {
         it('应该根据日志级别正确过滤日志', () => {
-            const logger = new ConsoleLogger(LogLevel.WARN);
+            const logger = new ConsoleLogger(ELogLevel.WARN);
 
             logger.debug('Debug message');
             logger.info('Info message');
@@ -192,7 +194,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该在日志级别为 DEBUG 时记录所有日志', () => {
-            const logger = new ConsoleLogger(LogLevel.DEBUG);
+            const logger = new ConsoleLogger(ELogLevel.DEBUG);
 
             logger.debug('Debug message');
             logger.info('Info message');
@@ -205,7 +207,7 @@ describe('ConsoleLogger', () => {
 
     describe('日志格式', () => {
         it('应该包含所有必要的组件', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             logger.info('Test message');
 
             expect(logs).to.have.lengthOf(1);
@@ -216,7 +218,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该正确处理不带元数据的日志', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             logger.info('Simple message');
 
             expect(logs).to.have.lengthOf(1);
@@ -225,7 +227,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该正确处理空对象元数据', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             logger.info('Message with empty meta', {});
 
             expect(logs).to.have.lengthOf(1);
@@ -233,7 +235,7 @@ describe('ConsoleLogger', () => {
         });
 
         it('应该正确处理复杂的元数据对象', () => {
-            const logger = new ConsoleLogger(LogLevel.INFO);
+            const logger = new ConsoleLogger(ELogLevel.INFO);
             const meta = {
                 nested: { key: 'value' },
                 array: [1, 2, 3],

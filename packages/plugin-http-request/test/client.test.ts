@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { HttpClient } from '../src';
-import { EHttpRequestClientAdapter } from '../src';
+import { EClientAdapter } from '../src';
 import type {
     PartialHttpClientConfig,
     HttpResponse,
@@ -35,7 +35,7 @@ describe('HttpClient', () => {
 
         it('应该使用自定义配置创建客户端', () => {
             const config: PartialHttpClientConfig = {
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 request: {
                     timeout: 3000
                 },
@@ -62,7 +62,7 @@ describe('HttpClient', () => {
             const axiosStub = sandbox.stub(adapters.AxiosAdapter.prototype, 'isAvailable').returns(false);
 
             expect(() => {
-                new HttpClient({ adapter: EHttpRequestClientAdapter.axios });
+                new HttpClient({ adapter: EClientAdapter.axios });
             }).to.throw(/not available/);
 
             axiosStub.restore();
@@ -87,11 +87,11 @@ describe('HttpClient', () => {
     describe('withAdapter', () => {
         it('应该切换到指定的适配器', () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
-            client.withAdapter(EHttpRequestClientAdapter.undici);
+            client.withAdapter(EClientAdapter.undici);
             expect(client).to.exist;
         });
 
@@ -99,8 +99,8 @@ describe('HttpClient', () => {
             const client = new HttpClient({ logging: { enabled: false } });
 
             const result = client
-                .withAdapter(EHttpRequestClientAdapter.axios)
-                .withAdapter(EHttpRequestClientAdapter.undici);
+                .withAdapter(EClientAdapter.axios)
+                .withAdapter(EClientAdapter.undici);
 
             expect(result).to.equal(client);
         });

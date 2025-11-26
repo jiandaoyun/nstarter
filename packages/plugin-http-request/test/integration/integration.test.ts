@@ -4,11 +4,16 @@
  */
 
 import { expect } from 'chai';
+// @ts-ignore
 import nock from 'nock';
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
+import {
+    MockAgent,
+    setGlobalDispatcher,
+    getGlobalDispatcher
+} from 'undici';
 import { HttpClient } from '../../src';
 import { SecurityError } from '../../src';
-import { EHttpRequestClientAdapter } from '../../src';
+import { EClientAdapter } from '../../src';
 
 describe('HttpClient Integration Tests', function () {
     this.timeout(10000);
@@ -44,7 +49,7 @@ describe('HttpClient Integration Tests', function () {
                 });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
@@ -65,7 +70,7 @@ describe('HttpClient Integration Tests', function () {
             });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.undici,
+                adapter: EClientAdapter.undici,
                 logging: { enabled: false }
             });
 
@@ -84,7 +89,7 @@ describe('HttpClient Integration Tests', function () {
                 });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
@@ -99,7 +104,7 @@ describe('HttpClient Integration Tests', function () {
     describe('Security validations', () => {
         it('should block requests to loopback addresses', async () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
                     allowPrivateIp: false
@@ -117,7 +122,7 @@ describe('HttpClient Integration Tests', function () {
 
         it('should block requests to private IP addresses', async () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
                     allowPrivateIp: false
@@ -135,7 +140,7 @@ describe('HttpClient Integration Tests', function () {
 
         it('should allow requests to private IPs when enabled', async () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
                     allowPrivateIp: true
@@ -155,7 +160,7 @@ describe('HttpClient Integration Tests', function () {
 
         it('should enforce whitelist', async () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 security: {
                     whitelist: ['httpbin.org']
                 },
@@ -172,7 +177,7 @@ describe('HttpClient Integration Tests', function () {
 
         it('should enforce blacklist', async () => {
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 security: {
                     blacklist: ['bad.example.com']
                 },
@@ -196,7 +201,7 @@ describe('HttpClient Integration Tests', function () {
                 .reply(200);
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 request: { timeout: 100 }, // 100ms timeout
                 logging: { enabled: false }
             });
@@ -215,7 +220,7 @@ describe('HttpClient Integration Tests', function () {
                 .reply(404);
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
@@ -229,7 +234,7 @@ describe('HttpClient Integration Tests', function () {
                 .replyWithError({ code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND' });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
@@ -243,35 +248,6 @@ describe('HttpClient Integration Tests', function () {
     });
 
     describe('Retry mechanism', () => {
-        // 注意：重试机制已在 base.adapter.test.ts 中充分测试
-        // 这里跳过复杂的集成测试，因为涉及 nock 和重试的交互可能导致问题
-        it.skip('should retry on temporary failures', async function() {
-            this.timeout(15000);
-            
-            nock('https://httpbin.org')
-                .get('/get')
-                .once()
-                .replyWithError({ code: 'ECONNREFUSED', message: 'Connection refused' });
-            
-            nock('https://httpbin.org')
-                .get('/get')
-                .once()
-                .reply(200, { success: true });
-
-            const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
-                request: {
-                    retries: 2,
-                    retryDelay: 50
-                },
-                logging: { enabled: false }
-            });
-
-            const response = await client.get('https://httpbin.org/get');
-            expect(response.status).to.equal(200);
-            expect(response.data).to.have.property('success', true);
-        });
-
         it('should respect max retries', async () => {
             // 所有请求都返回 503
             nock('https://httpbin.org')
@@ -280,7 +256,7 @@ describe('HttpClient Integration Tests', function () {
                 .reply(503);
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 request: {
                     retries: 3,
                     retryDelay: 100
@@ -301,7 +277,7 @@ describe('HttpClient Integration Tests', function () {
                 .reply(200, { adapter: 'axios' });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.axios,
+                adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
 
@@ -318,7 +294,7 @@ describe('HttpClient Integration Tests', function () {
             }).reply(200, { adapter: 'undici' });
 
             const client = new HttpClient({
-                adapter: EHttpRequestClientAdapter.undici,
+                adapter: EClientAdapter.undici,
                 logging: { enabled: false }
             });
 

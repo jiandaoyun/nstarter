@@ -2,7 +2,10 @@
  * 日志相关类型定义
  */
 
-import type { HttpRequestOptions, HttpResponse } from './request_response';
+import type {
+    HttpRequestOptions,
+    HttpResponse
+} from './request_response';
 
 /**
  * 日志记录器接口
@@ -113,3 +116,19 @@ export interface IHttpClientLogger {
     ) => void;
 }
 
+
+/**
+ * HTTP 客户端日志记录器配置
+ */
+export interface HttpClientLoggerConfig {
+    /** 底层日志记录器 */
+    logger: ILogger;
+    /** 日志过滤器（可选） */
+    filter?: ILogFilter;
+    /** 是否记录请求体 */
+    logRequestBody?: boolean;
+    /** 是否记录响应体 */
+    logResponseBody?: boolean;
+    /** 响应体最大记录长度（字节） */
+    bodyMaxLength?: number;
+}

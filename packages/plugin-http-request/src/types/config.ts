@@ -2,8 +2,12 @@
  * 配置相关类型定义
  */
 
-import type { EHttpRequestClientAdapter } from '../enum';
-import type { ILogger, IHttpClientLogger, LogFilterConfig } from './logger';
+import type {
+    ILogger,
+    IHttpClientLogger,
+    LogFilterConfig,
+} from './logger';
+import type { EClientAdapter } from '../const';
 
 /**
  * 代理配置
@@ -83,7 +87,7 @@ export interface RequestConfig {
  */
 export interface HttpClientConfig {
     /** 适配器类型 */
-    adapter: EHttpRequestClientAdapter;
+    adapter: EClientAdapter;
     /** 安全配置 */
     security: SecurityConfig;
     /** 日志配置 */
@@ -96,7 +100,7 @@ export interface HttpClientConfig {
  * 部分 HTTP 客户端配置（用于创建实例时）
  */
 export interface PartialHttpClientConfig {
-    adapter?: EHttpRequestClientAdapter;
+    adapter?: EClientAdapter;
     security?: Partial<SecurityConfig>;
     logging?: Partial<LoggingConfig>;
     request?: Partial<RequestConfig>;

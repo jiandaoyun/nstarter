@@ -13,14 +13,14 @@ import undici, {
     ProxyAgent,
     type Dispatcher
 } from 'undici';
-import { EHttpRequestClientAdapter } from '../enum';
 import { STATUS_CODES } from 'http';
+import { EClientAdapter } from '../const';
 
 /**
  * Undici 适配器
  */
 export class UndiciAdapter extends BaseHttpAdapter {
-    public readonly name = EHttpRequestClientAdapter.undici as const;
+    public readonly name = EClientAdapter.undici as const;
 
     /**
      * 检查 Undici 是否可用
@@ -39,7 +39,7 @@ export class UndiciAdapter extends BaseHttpAdapter {
         }
 
         const fullUrl = this.buildUrl(options.url, options.params);
-        
+
         // 解析 URL 以分离 origin 和 pathname
         const parsedUrl = new URL(fullUrl);
         const origin = parsedUrl.origin;

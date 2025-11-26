@@ -4,14 +4,14 @@
 
 import {
     BaseLogger,
-    LogLevel
 } from './base';
+import { ELogLevel } from '../const';
 
 /**
  * 控制台日志记录器
  */
 export class ConsoleLogger extends BaseLogger {
-    constructor(minLevel: LogLevel = LogLevel.INFO) {
+    constructor(minLevel: ELogLevel = ELogLevel.INFO) {
         super(minLevel);
     }
 
@@ -22,38 +22,38 @@ export class ConsoleLogger extends BaseLogger {
      * @param meta 元数据
      * @returns 格式化后的消息
      */
-    private format(level: LogLevel, message: string, meta?: Record<string, any>): string {
+    private format(level: ELogLevel, message: string, meta?: Record<string, any>): string {
         const timestamp = new Date().toISOString();
         const metaStr = meta ? ` ${ JSON.stringify(meta) }` : '';
         return `[${ timestamp } ] [${ level.toUpperCase() }] ${ message }${ metaStr }`;
     }
 
     public debug(message: string, meta?: Record<string, any>): void {
-        if (!this.shouldLog(LogLevel.DEBUG)) {
+        if (!this.shouldLog(ELogLevel.DEBUG)) {
             return;
         }
-        console.debug(this.format(LogLevel.DEBUG, message, meta));
+        console.debug(this.format(ELogLevel.DEBUG, message, meta));
     }
 
     public info(message: string, meta?: Record<string, any>): void {
-        if (!this.shouldLog(LogLevel.INFO)) {
+        if (!this.shouldLog(ELogLevel.INFO)) {
             return;
         }
-        console.info(this.format(LogLevel.INFO, message, meta));
+        console.info(this.format(ELogLevel.INFO, message, meta));
     }
 
     public warn(message: string, meta?: Record<string, any>): void {
-        if (!this.shouldLog(LogLevel.WARN)) {
+        if (!this.shouldLog(ELogLevel.WARN)) {
             return;
         }
-        console.warn(this.format(LogLevel.WARN, message, meta));
+        console.warn(this.format(ELogLevel.WARN, message, meta));
     }
 
     public error(message: string, meta?: Record<string, any>): void {
-        if (!this.shouldLog(LogLevel.ERROR)) {
+        if (!this.shouldLog(ELogLevel.ERROR)) {
             return;
         }
-        console.error(this.format(LogLevel.ERROR, message, meta));
+        console.error(this.format(ELogLevel.ERROR, message, meta));
     }
 }
 

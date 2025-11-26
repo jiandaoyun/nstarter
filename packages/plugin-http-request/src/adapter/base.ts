@@ -10,53 +10,8 @@ import type {
     SecurityConfig,
     ILogger
 } from '../types';
-import type { EHttpRequestClientAdapter } from '../enum';
-
-/**
- * 重试选项
- */
-export interface RetryOptions {
-    /** 重试次数 */
-    retries: number;
-    /** 重试延迟（毫秒） */
-    retryDelay: number;
-    /** 是否应该重试（根据错误判断） */
-    shouldRetry?: (error: any, attempt: number) => boolean;
-}
-
-/**
- * 默认的重试判断函数
- * @param error 错误对象
- * @returns 是否应该重试
- */
-export function defaultShouldRetry(error: any): boolean {
-    // 网络错误应该重试
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
-        return true;
-    }
-
-    // 5xx 服务器错误应该重试
-    if (error.response?.status >= 500) {
-        return true;
-    }
-
-    // 429 Too Many Requests 应该重试
-    if (error.response?.status === 429) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * 延迟函数
- * @param ms 延迟毫秒数
- */
-export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
-}
+import { CommonUtils } from '../utils';
+import type { EClientAdapter } from '../const';
 
 /**
  * HTTP 适配器抽象基类
@@ -72,7 +27,7 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
         this.logger = logger;
     }
 
-    public abstract readonly name: EHttpRequestClientAdapter;
+    public abstract readonly name: EClientAdapter;
 
     /**
      * 发送 HTTP 请求（由子类实现）
@@ -135,16 +90,8 @@ export abstract class BaseHttpAdapter implements IHttpAdapter {
                     break;
                 }
 
-                // 判断是否应该重试
-                if (!defaultShouldRetry(error)) {
-                    this.logger?.debug('Error is not retryable, stopping retry attempts', {
-                        error: error instanceof Error ? error.message : String(error)
-                    });
-                    break;
-                }
-
                 // 等待后重试
-                await delay(retryDelay * (attempt + 1));
+                await CommonUtils.delay(retryDelay * (attempt + 1));
             }
         }
 

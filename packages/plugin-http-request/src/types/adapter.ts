@@ -2,16 +2,19 @@
  * 适配器相关类型定义
  */
 
-import type { EHttpRequestClientAdapter } from '../enum';
-import type { HttpRequestOptions, HttpResponse } from './request_response';
+import type {
+    HttpRequestOptions,
+    HttpResponse
+} from './request_response';
 import type { RequestConfig } from './config';
+import type { EClientAdapter } from '../const';
 
 /**
  * HTTP 适配器接口
  */
 export interface IHttpAdapter {
     /** 适配器名称 */
-    readonly name: EHttpRequestClientAdapter;
+    readonly name: EClientAdapter;
 
     /**
      * 发送 HTTP 请求

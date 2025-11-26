@@ -3,6 +3,7 @@
  */
 
 import { expect } from 'chai';
+// @ts-ignore
 import nock from 'nock';
 import { AxiosAdapter } from '../../src';
 import { HttpError } from '../../src';

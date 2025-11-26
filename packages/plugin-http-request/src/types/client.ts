@@ -2,8 +2,11 @@
  * 客户端相关类型定义
  */
 
-import type { EHttpRequestClientAdapter } from '../enum';
-import type { HttpRequestOptions, HttpResponse } from './request_response';
+import type {
+    HttpRequestOptions,
+    HttpResponse
+} from './request_response';
+import type { EClientAdapter } from '../const';
 
 /**
  * 正向代理配置
@@ -24,7 +27,7 @@ export interface IHttpClient {
      * @param adapter
      * @returns this
      */
-    withAdapter: (adapter: EHttpRequestClientAdapter) => this;
+    withAdapter: (adapter: EClientAdapter) => this;
 
     /**
      * 挂载正向代理.

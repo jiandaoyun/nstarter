@@ -3,16 +3,12 @@
  */
 
 import { promises as dns } from 'node:dns';
-import type { DnsResult } from '../types';
+import type {
+    DnsCacheEntry,
+    DnsResult
+} from '../types';
 import { IpValidator } from './ip.validator';
 
-/**
- * DNS 缓存条目
- */
-interface DnsCacheEntry {
-    result: DnsResult;
-    expiresAt: number;
-}
 
 /**
  * DNS 验证器类

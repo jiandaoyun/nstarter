@@ -26,8 +26,8 @@ import {
     ConsoleLogger,
     NullLogger
 } from './logger';
-import { EHttpRequestClientAdapter } from './enum';
 import { createRegExpsByDomains } from './utils/forward.proxy';
+import { EClientAdapter } from './const';
 
 /**
  * HTTP 客户端
@@ -77,7 +77,7 @@ export class HttpClient implements IHttpClient {
      * 挂载适配器.
      * @param adapter
      */
-    public withAdapter(adapter: EHttpRequestClientAdapter): this {
+    public withAdapter(adapter: EClientAdapter): this {
         this.config.adapter = adapter;
         this.adapter = this.initAdapter();
         return this;
@@ -113,7 +113,7 @@ export class HttpClient implements IHttpClient {
      * 初始化适配器
      */
     private initAdapter(): IHttpAdapter {
-        const adapter = this.config.adapter === EHttpRequestClientAdapter.axios
+        const adapter = this.config.adapter === EClientAdapter.axios
             ? new AxiosAdapter(this.config.request, this.config.security, this.logger)
             : new UndiciAdapter(this.config.request, this.config.security, this.logger);
 

@@ -8,25 +8,10 @@ import type {
     ILogFilter,
     IResFailedOptions,
     IResSuccessOptions,
-    LogFilterConfig
+    LogFilterConfig,
+    HttpClientLoggerConfig
 } from '../types';
 import { LogFilter } from './log.filter';
-
-/**
- * HTTP 客户端日志记录器配置
- */
-export interface HttpClientLoggerConfig {
-    /** 底层日志记录器 */
-    logger: ILogger;
-    /** 日志过滤器（可选） */
-    filter?: ILogFilter;
-    /** 是否记录请求体 */
-    logRequestBody?: boolean;
-    /** 是否记录响应体 */
-    logResponseBody?: boolean;
-    /** 响应体最大记录长度（字节） */
-    bodyMaxLength?: number;
-}
 
 /**
  * HTTP 客户端日志记录器
@@ -65,7 +50,7 @@ export class HttpClientLogger implements IHttpClientLogger {
         }
 
         const meta = this.buildLogMeta(fullOptions);
-        
+
         this.logger.error(
             `HTTP request failed: ${ fullOptions.request.method } ${ fullOptions.request.url }`,
             meta
@@ -90,7 +75,7 @@ export class HttpClientLogger implements IHttpClientLogger {
         }
 
         const meta = this.buildLogMeta(fullOptions);
-        
+
         this.logger.info(
             `HTTP request succeeded: ${ fullOptions.request.method } ${ fullOptions.request.url }`,
             meta
@@ -161,8 +146,8 @@ export class HttpClientLogger implements IHttpClientLogger {
         }
 
         try {
-            const bodyStr = typeof body === 'string' 
-                ? body 
+            const bodyStr = typeof body === 'string'
+                ? body
                 : JSON.stringify(body);
 
             if (bodyStr.length <= this.bodyMaxLength) {

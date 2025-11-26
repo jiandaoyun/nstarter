@@ -7,11 +7,11 @@ import {
     isIPv6
 } from 'node:net';
 import type { IpValidationResult } from '../types';
+import { IpRangeUtils } from '../utils';
 import {
     IPV4_RANGES,
     IPV6_RANGES
-} from './ip.const';
-import { IpRangeUtils } from '../utils';
+} from '../const';
 
 
 /**

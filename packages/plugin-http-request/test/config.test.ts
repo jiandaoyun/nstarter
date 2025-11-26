@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import {
-    EHttpRequestClientAdapter,
+    EClientAdapter,
     mergeConfig,
     validateConfig
 } from '../src';
@@ -23,13 +23,13 @@ describe('Config', () => {
 
         it('should merge user config with defaults', () => {
             const config = mergeConfig({
-                adapter: EHttpRequestClientAdapter.undici,
+                adapter: EClientAdapter.undici,
                 security: {
                     allowPrivateIp: true
                 }
             });
 
-            expect(config.adapter).to.equal(EHttpRequestClientAdapter.undici);
+            expect(config.adapter).to.equal(EClientAdapter.undici);
             expect(config.security.allowPrivateIp).to.be.true;
             expect(config.security.enableDnsValidation).to.be.true; // default
         });

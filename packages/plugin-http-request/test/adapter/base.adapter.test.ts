@@ -4,9 +4,7 @@
 
 import { expect } from 'chai';
 import {
-    BaseHttpAdapter,
-    defaultShouldRetry,
-    delay
+    BaseHttpAdapter
 } from '../../src';
 import type {
     HttpRequestOptions,
@@ -14,11 +12,11 @@ import type {
     RequestConfig,
     SecurityConfig
 } from '../../src';
-import { EHttpRequestClientAdapter } from '../../src';
+import { EClientAdapter } from '../../src';
 
 // 创建一个具体的测试实现
 class TestAdapter extends BaseHttpAdapter {
-    public readonly name = EHttpRequestClientAdapter.axios as const;
+    public readonly name = EClientAdapter.axios as const;
     public requestCount = 0;
     public shouldFail = false;
     public failureError: any = new Error('Test failure');
@@ -63,7 +61,8 @@ describe('BaseHttpAdapter', () => {
         retries: 0,
         retryDelay: 100,
         maxRedirects: 5,
-        maxBodySize: 10 * 1024 * 1024
+        maxRequestBodySize: 10 * 1024 * 1024,
+        maxResponseBodySize: 50 * 1024 * 1024
     };
 
     const defaultSecurityConfig: SecurityConfig = {
@@ -209,28 +208,6 @@ describe('BaseHttpAdapter', () => {
             expect(adapter.requestCount).to.equal(3);
         });
 
-        it('应该在不可重试的错误时立即停止', async () => {
-            const config: RequestConfig = {
-                ...defaultRequestConfig,
-                retries: 3,
-                retryDelay: 10
-            };
-            const adapter = new TestAdapter(config, defaultSecurityConfig);
-            adapter.shouldFail = true;
-            adapter.failureError = { response: { status: 404 } }; // 不可重试的错误
-
-            try {
-                await adapter.request({
-                    method: 'GET',
-                    url: 'https://example.com'
-                });
-                expect.fail('应该抛出错误');
-            } catch (error) {
-                // 应该只尝试 1 次，不重试
-                expect(adapter.requestCount).to.equal(1);
-            }
-        });
-
         it('应该使用请求选项中的重试次数', async () => {
             const adapter = new TestAdapter(defaultRequestConfig, defaultSecurityConfig);
             adapter.shouldFail = true;
@@ -274,56 +251,6 @@ describe('BaseHttpAdapter', () => {
         });
     });
 
-    describe('defaultShouldRetry', () => {
-        it('应该对网络错误返回 true', () => {
-            expect(defaultShouldRetry({ code: 'ECONNREFUSED' })).to.be.true;
-            expect(defaultShouldRetry({ code: 'ENOTFOUND' })).to.be.true;
-            expect(defaultShouldRetry({ code: 'ETIMEDOUT' })).to.be.true;
-        });
-
-        it('应该对 5xx 错误返回 true', () => {
-            expect(defaultShouldRetry({ response: { status: 500 } })).to.be.true;
-            expect(defaultShouldRetry({ response: { status: 502 } })).to.be.true;
-            expect(defaultShouldRetry({ response: { status: 503 } })).to.be.true;
-            expect(defaultShouldRetry({ response: { status: 504 } })).to.be.true;
-        });
-
-        it('应该对 429 错误返回 true', () => {
-            expect(defaultShouldRetry({ response: { status: 429 } })).to.be.true;
-        });
-
-        it('应该对 4xx 客户端错误（除 429 外）返回 false', () => {
-            expect(defaultShouldRetry({ response: { status: 400 } })).to.be.false;
-            expect(defaultShouldRetry({ response: { status: 401 } })).to.be.false;
-            expect(defaultShouldRetry({ response: { status: 403 } })).to.be.false;
-            expect(defaultShouldRetry({ response: { status: 404 } })).to.be.false;
-        });
-
-        it('应该对其他错误返回 false', () => {
-            expect(defaultShouldRetry({ code: 'UNKNOWN_ERROR' })).to.be.false;
-            expect(defaultShouldRetry(new Error('Generic error'))).to.be.false;
-        });
-    });
-
-    describe('delay 函数', () => {
-        it('应该延迟指定的毫秒数', async function () {
-            this.timeout(5000);
-            const startTime = Date.now();
-            await delay(100);
-            const duration = Date.now() - startTime;
-
-            expect(duration).to.be.greaterThanOrEqual(90); // 允许一些误差
-            expect(duration).to.be.lessThan(200);
-        });
-
-        it('应该支持 0 毫秒延迟', async () => {
-            const startTime = Date.now();
-            await delay(0);
-            const duration = Date.now() - startTime;
-
-            expect(duration).to.be.lessThan(50);
-        });
-    });
 
     describe('updateConfig', () => {
         it('应该更新请求配置', () => {

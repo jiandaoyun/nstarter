@@ -11,16 +11,16 @@ import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
 import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import { EHttpRequestClientAdapter } from '../enum';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as https from 'https';
+import { EClientAdapter } from '../const';
 
 
 /**
  * Axios 适配器
  */
 export class AxiosAdapter extends BaseHttpAdapter {
-    public readonly name = EHttpRequestClientAdapter.axios as const;
+    public readonly name = EClientAdapter.axios as const;
 
     /**
      * 检查 Axios 是否可用
