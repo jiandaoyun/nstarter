@@ -8,6 +8,18 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
 
 /**
+ * 响应类型.
+ */
+export type ResponseType =
+    | 'arraybuffer'
+    | 'blob'
+    | 'document'
+    | 'json'
+    | 'text'
+    | 'stream'
+    | 'formdata';
+
+/**
  * HTTP 请求选项
  */
 export interface HttpRequestOptions {
@@ -30,7 +42,7 @@ export interface HttpRequestOptions {
     /** 业务元数据 */
     meta?: Record<string, any>;
     /** 响应类型 */
-    responseType?: 'json' | 'text' | 'stream' | 'arraybuffer';
+    responseType?: ResponseType;
 }
 
 /**

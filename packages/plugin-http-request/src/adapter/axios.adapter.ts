@@ -14,7 +14,6 @@ import axios from 'axios';
 import { EHttpRequestClientAdapter } from '../enum';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as https from 'https';
-import type { ResponseType } from 'axios';
 
 
 /**
@@ -63,7 +62,7 @@ export class AxiosAdapter extends BaseHttpAdapter {
 
         // 设置响应类型
         if (options.responseType) {
-            axiosConfig.responseType = this.mapResponseType(options.responseType) as ResponseType;
+            axiosConfig.responseType = options.responseType;
         }
 
         // 设置代理（全局配置）
@@ -157,20 +156,6 @@ export class AxiosAdapter extends BaseHttpAdapter {
                 options
             );
         }
-    }
-
-    /**
-     * 映射响应类型
-     * @param type 标准响应类型
-     */
-    private mapResponseType(type: string): string {
-        const mapping: Record<string, string> = {
-            json: 'json',
-            text: 'text',
-            stream: 'stream',
-            arraybuffer: 'arraybuffer'
-        };
-        return mapping[type] || 'json';
     }
 
     /**

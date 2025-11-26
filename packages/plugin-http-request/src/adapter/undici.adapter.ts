@@ -5,6 +5,7 @@
 import type {
     HttpRequestOptions,
     HttpResponse,
+    ResponseType,
 } from '../types';
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
@@ -135,7 +136,7 @@ export class UndiciAdapter extends BaseHttpAdapter {
      * @param response Undici 响应对象
      * @param responseType 响应类型
      */
-    private async readResponseBody<T>(response: Dispatcher.ResponseData, responseType?: string): Promise<T> {
+    private async readResponseBody<T>(response: Dispatcher.ResponseData, responseType?: ResponseType): Promise<T> {
         try {
             switch (responseType) {
                 case 'text': {
@@ -147,7 +148,15 @@ export class UndiciAdapter extends BaseHttpAdapter {
                 case 'stream': {
                     return response.body as T;
                 }
-                case 'json':
+                case 'blob': {
+                    return (await response.body.blob()) as T;
+                }
+                case 'formdata': {
+                    return (await response.body.formData()) as T;
+                }
+                case 'json': {
+                    return (await response.body.json()) as T;
+                }
                 default: {
                     const text = await response.body.text();
                     try {
