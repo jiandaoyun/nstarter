@@ -88,11 +88,11 @@ describe('UrlValidator', () => {
         });
     });
 
-    describe('Whitelist priority', () => {
-        it('should prioritize whitelist over blacklist', () => {
-            const validator = new UrlValidator(['example.com'], ['*.example.com']);
-            const result = validator.validate('https://example.com');
-            expect(result.valid).to.be.true;
+    describe('Whitelist mode priority', () => {
+        it('should prioritize whitelist mode', () => {
+            const validator = new UrlValidator(['*.example.com'], ['tmp.example.com']);
+            const result = validator.validate('https://tmp.example.com');
+            expect(result.valid).to.be.false;
         });
     });
 

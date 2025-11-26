@@ -50,35 +50,40 @@ export class UrlValidator {
 
         const hostname = parsedUrl.hostname;
 
-        // 检查白名单（白名单优先）
-        const inWhitelist = this.whitelist.length > 0 && this.matchesAny(hostname, this.whitelist);
+        // 检查白名单
+        const inWhitelist = this.matchesAny(hostname, this.whitelist);
+        // 检查黑名单
+        const inBlacklist = this.matchesAny(hostname, this.blacklist);
+
+        // 配了白名单, 优先使用白名单模式, 在名单内的域名通过, 其余拒绝.
+        // 同时配有黑名单, 黑名单辅助拒绝其余通过的域名.
         if (this.whitelist.length > 0 && !inWhitelist) {
             return {
                 valid: false,
                 url,
-                inWhitelist: false,
-                inBlacklist: false,
+                inWhitelist,
+                inBlacklist,
                 reason: 'Domain is not in whitelist'
             };
         }
 
-        // 检查黑名单
-        const inBlacklist = this.matchesAny(hostname, this.blacklist);
-        if (inBlacklist) {
+        // 配了黑名单, 使用黑名单模式, 在黑名单内的域名拒绝, 其余通过.
+        if (this.blacklist.length > 0 && inBlacklist) {
             return {
                 valid: false,
                 url,
                 inWhitelist,
-                inBlacklist: true,
+                inBlacklist,
                 reason: 'Domain is in blacklist'
             };
         }
 
+        // 黑白名单没配的, 默认通过.
         return {
             valid: true,
             url,
             inWhitelist,
-            inBlacklist: false
+            inBlacklist
         };
     }
 
