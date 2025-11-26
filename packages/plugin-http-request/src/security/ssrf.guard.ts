@@ -157,7 +157,7 @@ export class SsrfGuard {
     }
 
     /**
-     * 验证并返回安全的 URL（使用解析后的 IP 替换主机名，防止 DNS 重绑定）
+     * 验证并返回安全的 URL
      * @param url 要验证的 URL
      * @returns 安全的 URL 和验证结果
      * @throws {SecurityError} 验证失败时抛出错误
@@ -172,27 +172,7 @@ export class SsrfGuard {
                 url
             );
         }
-
-        // 如果有解析后的安全 IP，使用 IP 替换域名（防止 DNS 重绑定）
-        if (result.safeIp && result.hostname !== result.safeIp) {
-            const parsedUrl = new URL(url);
-
-            // 保存原始 Host 头（某些服务器需要）
-            const originalHost = parsedUrl.hostname;
-
-            // 替换主机名为 IP
-            parsedUrl.hostname = result.safeIp;
-
-            return {
-                safeUrl: parsedUrl.toString(),
-                result: {
-                    ...result,
-                    // 附加原始主机名信息，调用者可以用于设置 Host 头
-                    originalHost
-                } as any
-            };
-        }
-
+        
         return {
             safeUrl: url,
             result
