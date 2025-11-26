@@ -49,6 +49,8 @@ export class AxiosAdapter extends BaseHttpAdapter {
             maxRedirects: this.requestConfig.maxRedirects,
             maxContentLength: this.requestConfig.maxResponseBodySize,
             maxBodyLength: this.requestConfig.maxRequestBodySize,
+            // 接受所有 HTTP 状态码（包括 4xx 和 5xx），不将它们视为错误
+            validateStatus: () => true,
             // 设置 HTTPS Agent 以支持证书校验配置
             httpsAgent: new https.Agent({
                 rejectUnauthorized: this.securityConfig.rejectUnauthorized

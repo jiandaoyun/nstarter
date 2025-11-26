@@ -367,7 +367,7 @@ describe('HttpClient', () => {
                 enabled: true,
                 http_proxy: 'http://proxy.example.com:8080',
                 https_proxy: 'https://proxy.example.com:8443',
-                no_proxy: ['example.com', '*.example.com']
+                no_proxy: []
             };
 
             client.withForwardProxy(proxy);

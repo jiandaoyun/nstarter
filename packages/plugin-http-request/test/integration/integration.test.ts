@@ -8,9 +8,42 @@ import { HttpClient } from '../../src';
 import { SecurityError } from '../../src';
 import { EHttpRequestClientAdapter } from '../../src';
 
+// 辅助函数：检查是否为网络不可用错误
+function isNetworkUnavailable(error: any): boolean {
+    if (!error) return false;
+    
+    // 检查错误码
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        return true;
+    }
+    
+    // 检查错误消息
+    const message = error.message || '';
+    if (message.includes('timeout') || message.includes('Network') || message.includes('fetch failed')) {
+        return true;
+    }
+    
+    // 检查 HTTP 状态码（502/503 表示服务不可用）
+    if (error.status === 502 || error.status === 503) {
+        return true;
+    }
+    
+    return false;
+}
+
+// 辅助函数：检查响应是否可用（服务是否正常）
+function checkResponseAvailable(response: any): boolean {
+    if (response.status === 502 || response.status === 503) {
+        console.log('Skipping test: Service unavailable (503/502)');
+        return false;
+    }
+    return true;
+}
+
 describe('HttpClient Integration Tests', () => {
     describe('Basic HTTP requests', () => {
-        it('should make a successful GET request', async () => {
+        it('should make a successful GET request', async function() {
+            this.timeout(10000);
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
@@ -18,19 +51,25 @@ describe('HttpClient Integration Tests', () => {
 
             try {
                 const response = await client.get('https://httpbin.org/get');
+                if (!checkResponseAvailable(response)) {
+                    this.skip();
+                    return;
+                }
                 expect(response.status).to.equal(200);
                 expect(response.data).to.exist;
             } catch (error: any) {
                 // 网络不可用时跳过
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                if (isNetworkUnavailable(error)) {
                     console.log('Skipping test: Network unavailable');
+                    this.skip();
                     return;
                 }
                 throw error;
             }
         });
 
-        it('should make a successful POST request', async () => {
+        it('should make a successful POST request', async function() {
+            this.timeout(10000);
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
@@ -40,11 +79,16 @@ describe('HttpClient Integration Tests', () => {
                 const response = await client.post('https://httpbin.org/post', {
                     test: 'data'
                 });
+                if (!checkResponseAvailable(response)) {
+                    this.skip();
+                    return;
+                }
                 expect(response.status).to.equal(200);
                 expect(response.data).to.exist;
             } catch (error: any) {
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                if (isNetworkUnavailable(error)) {
                     console.log('Skipping test: Network unavailable');
+                    this.skip();
                     return;
                 }
                 throw error;
@@ -164,7 +208,7 @@ describe('HttpClient Integration Tests', () => {
             }
         });
 
-        it('should handle 404 errors', async () => {
+        it('should handle 404 errors', async function() {
             const client = new HttpClient({
                 adapter: EHttpRequestClientAdapter.axios,
                 logging: { enabled: false }
@@ -172,9 +216,13 @@ describe('HttpClient Integration Tests', () => {
 
             try {
                 const response = await client.get('https://httpbin.org/status/404');
+                if (!checkResponseAvailable(response)) {
+                    this.skip();
+                    return;
+                }
                 expect(response.status).to.equal(404);
             } catch (error: any) {
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                if (isNetworkUnavailable(error)) {
                     console.log('Skipping test: Network unavailable');
                     return;
                 }
