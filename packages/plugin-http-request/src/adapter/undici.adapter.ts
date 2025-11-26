@@ -10,6 +10,7 @@ import type {
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
 import undici, {
+    Agent,
     ProxyAgent,
     type Dispatcher
 } from 'undici';
@@ -33,18 +34,13 @@ export class UndiciAdapter extends BaseHttpAdapter {
      * 发送请求
      * @param options 请求选项
      */
+    // eslint-disable-next-line complexity
     protected async sendRequest<T>(options: HttpRequestOptions): Promise<HttpResponse<T>> {
         if (!this.isAvailable()) {
             throw new Error('Undici is not available. Please install it: npm install undici');
         }
 
         const fullUrl = this.buildUrl(options.url, options.params);
-
-        // 解析 URL 以分离 origin 和 pathname
-        const parsedUrl = new URL(fullUrl);
-        const origin = parsedUrl.origin;
-        const pathname = parsedUrl.pathname + parsedUrl.search;
-
         // 准备 headers，将 number 类型转换为 string
         const headers: Record<string, string | string[]> = {};
         if (options.headers) {
@@ -67,37 +63,53 @@ export class UndiciAdapter extends BaseHttpAdapter {
             }
         }
 
+        // 构建 dispatcher 用于代理或 TLS 配置
+        let dispatcher: Dispatcher | undefined;
+
+        // 设置正向代理（如果请求元数据中包含代理信息）
+        const forwardProxyMeta = options.meta?.__forwardProxy;
+        if (forwardProxyMeta) {
+            const { proxyUrl } = forwardProxyMeta;
+            // Undici 使用 ProxyAgent 处理代理，并配置 TLS 选项
+            dispatcher = new ProxyAgent({
+                uri: proxyUrl,
+                connect: {
+                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
+                }
+            });
+            this.logger?.debug('Using ProxyAgent for request', {
+                proxyUrl,
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            });
+        } else if (!this.securityConfig.rejectUnauthorized) {
+            // 需要禁用证书验证且没有代理时，创建自定义 Agent
+            dispatcher = new Agent({
+                connect: {
+                    rejectUnauthorized: false
+                }
+            });
+            this.logger?.debug('Using Agent with rejectUnauthorized: false');
+        }
+
         // 构建 Undici 请求配置
-        // 注意：undici.request() 的第一个参数是 origin，path 在 options 中指定
-        const undiciOptions: Dispatcher.RequestOptions & {
-            dispatcher?: Dispatcher,
-            connect?: { rejectUnauthorized?: boolean }
-        } = {
-            path: pathname,
+        // 注意：undici.request() 的第一个参数是完整 URL
+        // options 中不包含 origin、path，这些已在 URL 中
+        const undiciOptions: Parameters<typeof undici.request>[1] = {
             method: options.method as Dispatcher.HttpMethod,
             headers,
             body,
             bodyTimeout: options.timeout ?? this.requestConfig.timeout,
             headersTimeout: options.timeout ?? this.requestConfig.timeout,
             maxRedirections: this.requestConfig.maxRedirects,
-            // 设置 TLS 连接选项以支持证书校验配置
-            connect: {
-                rejectUnauthorized: this.securityConfig.rejectUnauthorized
-            }
         };
 
-        // 设置正向代理（如果请求元数据中包含代理信息）
-        const forwardProxyMeta = options.meta?.__forwardProxy;
-        if (forwardProxyMeta) {
-            const { proxyUrl } = forwardProxyMeta;
-            // Undici 使用 ProxyAgent 处理代理
-            undiciOptions.dispatcher = new ProxyAgent(proxyUrl);
-            this.logger?.debug('Using ProxyAgent for request', { proxyUrl });
+        if (dispatcher) {
+            undiciOptions.dispatcher = dispatcher;
         }
 
         try {
             const startTime = Date.now();
-            const response = await undici.request(origin, undiciOptions);
+            const response = await undici.request(fullUrl, undiciOptions);
             const duration = Date.now() - startTime;
 
             this.logger?.debug('HTTP request completed', {
