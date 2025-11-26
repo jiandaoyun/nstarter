@@ -512,9 +512,13 @@ describe('HttpClient', () => {
                 log.args[0]?.includes?.('HTTP request succeeded')
             );
 
-            // HttpClientLogger 会将 Buffer 转换为字符串或截断处理
-            // 如果配置了 logRequestBody，应该能在 meta 中找到 requestBody
             expect(successLog).to.exist;
+            // Buffer 应该被标记为特殊类型
+            if (successLog && successLog.args[1]?.requestBody) {
+                const loggedBody = successLog.args[1].requestBody;
+                expect(loggedBody).to.include('# --- buffer');
+                expect(loggedBody).to.include('bytes');
+            }
         });
     });
 

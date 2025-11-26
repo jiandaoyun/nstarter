@@ -112,7 +112,7 @@ export class HttpClientLogger implements IHttpClientLogger {
             meta.statusText = options.response.statusText;
 
             // 记录响应体（如果启用）
-            if (this.logResponseBody && options.response.data) {
+            if (this.logResponseBody) {
                 meta.responseBody = this.truncateBody(options.response.data);
             }
         } else {
@@ -124,13 +124,13 @@ export class HttpClientLogger implements IHttpClientLogger {
                 meta.status = options.status;
             }
 
-            if (options.response && this.logResponseBody) {
+            if (options.response) {
                 meta.responseBody = this.truncateBody(options.response.data);
             }
         }
 
         // 记录请求体（如果启用）
-        if (this.logRequestBody && options.request.body) {
+        if (this.logRequestBody) {
             meta.requestBody = this.truncateBody(options.request.body);
         }
 
@@ -139,21 +139,57 @@ export class HttpClientLogger implements IHttpClientLogger {
 
     /**
      * 截断请求/响应体到指定长度
+     * 对于特殊类型（Stream、Buffer等）返回标记文本
      */
     private truncateBody(body: any): any {
-        if (!body) {
+        // 处理 null 和 undefined
+        if (body === null) {
+            return '# --- null --- #';
+        }
+        if (body === undefined) {
+            return '# --- undefined --- #';
+        }
+
+        // 处理基本类型
+        if (typeof body === 'number' || typeof body === 'boolean') {
             return body;
         }
 
-        try {
-            const bodyStr = typeof body === 'string'
-                ? body
-                : JSON.stringify(body);
+        // 处理字符串
+        if (typeof body === 'string') {
+            if (body.length <= this.bodyMaxLength) {
+                return body;
+            }
+            return body.substring(0, this.bodyMaxLength) + '... (truncated)';
+        }
 
+        // 处理 Buffer
+        if (Buffer.isBuffer(body)) {
+            return `# --- buffer (${ body.length } bytes) --- #`;
+        }
+
+        // 处理 Stream
+        if (typeof body === 'object' && typeof body.pipe === 'function') {
+            return '# --- stream --- #';
+        }
+
+        // 处理 ArrayBuffer
+        if (body instanceof ArrayBuffer ||
+            (typeof body === 'object' && body.constructor?.name === 'ArrayBuffer')) {
+            return `# --- arraybuffer (${ body.byteLength } bytes) --- #`;
+        }
+
+        // 处理 Blob (浏览器环境)
+        if (typeof body === 'object' && body.constructor?.name === 'Blob') {
+            return `# --- blob (${ body.size } bytes) --- #`;
+        }
+
+        // 处理普通对象和数组
+        try {
+            const bodyStr = JSON.stringify(body);
             if (bodyStr.length <= this.bodyMaxLength) {
                 return body;
             }
-
             return bodyStr.substring(0, this.bodyMaxLength) + '... (truncated)';
         } catch {
             return '[unable to serialize body]';

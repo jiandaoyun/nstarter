@@ -285,5 +285,214 @@ describe('HttpClientLogger', () => {
             expect(mockLogger.logs[0].meta.retryCount).to.equal(3);
         });
     });
+
+    describe('Special body types handling', () => {
+        it('应该正确处理 null 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: null
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal('# --- null --- #');
+        });
+
+        it('应该正确处理 undefined 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: undefined
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal('# --- undefined --- #');
+        });
+
+        it('应该正确处理 Buffer 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            const buffer = Buffer.from('test data');
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: buffer
+                }
+            }));
+
+            const requestBody = mockLogger.logs[0].meta.requestBody;
+            expect(requestBody).to.include('# --- buffer');
+            expect(requestBody).to.include('bytes');
+            expect(requestBody).to.include('9'); // 'test data' is 9 bytes
+        });
+
+        it('应该正确处理 Stream 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            // 模拟 Stream 对象
+            const mockStream = {
+                pipe: () => {},
+                read: () => {},
+                on: () => {}
+            };
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: mockStream
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal('# --- stream --- #');
+        });
+
+        it('应该正确处理 number 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: 123
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal(123);
+        });
+
+        it('应该正确处理 boolean 类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: false
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal(false);
+        });
+
+        it('应该正确处理字符串类型的 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: 'simple string'
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal('simple string');
+        });
+
+        it('应该截断过长的字符串 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true,
+                bodyMaxLength: 10
+            });
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: 'This is a very long string that should be truncated'
+                }
+            }));
+
+            const requestBody = mockLogger.logs[0].meta.requestBody;
+            expect(requestBody).to.include('This is a ');
+            expect(requestBody).to.include('(truncated)');
+        });
+
+        it('应该截断过大的对象 body', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true,
+                bodyMaxLength: 20
+            });
+
+            const largeObject = {
+                field1: 'very long value 1',
+                field2: 'very long value 2',
+                field3: 'very long value 3'
+            };
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: largeObject
+                }
+            }));
+
+            const requestBody = mockLogger.logs[0].meta.requestBody;
+            expect(requestBody).to.be.a('string');
+            expect(requestBody).to.include('(truncated)');
+        });
+
+        it('应该处理无法序列化的对象', () => {
+            const mockLogger = new MockLogger();
+            const httpLogger = new HttpClientLogger({
+                logger: mockLogger,
+                logRequestBody: true
+            });
+
+            // 创建循环引用对象
+            const circular: any = { name: 'test' };
+            circular.self = circular;
+
+            httpLogger.logSuccess(createSuccessOptions({
+                request: {
+                    method: 'POST',
+                    url: 'https://example.com',
+                    body: circular
+                }
+            }));
+
+            expect(mockLogger.logs[0].meta.requestBody).to.equal('[unable to serialize body]');
+        });
+    });
 });
 
