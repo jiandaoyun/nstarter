@@ -9,10 +9,12 @@ import type {
 } from '../types';
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
+import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { EHttpRequestClientAdapter } from '../enum';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as https from 'https';
+import type { ResponseType } from 'axios';
 
 
 /**
@@ -40,15 +42,14 @@ export class AxiosAdapter extends BaseHttpAdapter {
         const url = this.buildUrl(options.url, options.params);
 
         // 构建 Axios 配置
-        const axiosConfig: any = {
+        const axiosConfig: AxiosRequestConfig = {
             method: options.method.toLowerCase(),
             url,
             headers: options.headers || {},
             timeout: options.timeout ?? this.requestConfig.timeout,
             maxRedirects: this.requestConfig.maxRedirects,
-            maxContentLength: this.requestConfig.maxBodySize,
-            maxBodyLength: this.requestConfig.maxBodySize,
-            validateStatus: () => true, // 不自动抛出错误，我们自己处理
+            maxContentLength: this.requestConfig.maxResponseBodySize,
+            maxBodyLength: this.requestConfig.maxRequestBodySize,
             // 设置 HTTPS Agent 以支持证书校验配置
             httpsAgent: new https.Agent({
                 rejectUnauthorized: this.securityConfig.rejectUnauthorized
@@ -62,7 +63,7 @@ export class AxiosAdapter extends BaseHttpAdapter {
 
         // 设置响应类型
         if (options.responseType) {
-            axiosConfig.responseType = this.mapResponseType(options.responseType);
+            axiosConfig.responseType = this.mapResponseType(options.responseType) as ResponseType;
         }
 
         // 设置代理（全局配置）
@@ -74,11 +75,16 @@ export class AxiosAdapter extends BaseHttpAdapter {
         const forwardProxyMeta = options.meta?.__forwardProxy;
         if (forwardProxyMeta) {
             const { proxyUrl, isHttps } = forwardProxyMeta;
-            
+
             if (isHttps) {
-                // HTTPS 请求使用 HttpsProxyAgent
-                axiosConfig.proxy = new HttpsProxyAgent(proxyUrl);
-                this.logger?.debug('Using HttpsProxyAgent for HTTPS request', { proxyUrl });
+                // HTTPS 请求使用 HttpsProxyAgent，并应用证书校验配置
+                axiosConfig.httpsAgent = new HttpsProxyAgent<`https://${ string }`>(proxyUrl, {
+                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
+                });
+                this.logger?.debug('Using HttpsProxyAgent for HTTPS request', {
+                    proxyUrl,
+                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
+                });
             } else {
                 // HTTP 请求直接设置 proxy
                 const parsedProxyUrl = new URL(proxyUrl);
@@ -95,10 +101,10 @@ export class AxiosAdapter extends BaseHttpAdapter {
                         password: decodeURIComponent(parsedProxyUrl.password)
                     };
                 }
-                
-                this.logger?.debug('Using proxy for HTTP request', { 
+
+                this.logger?.debug('Using proxy for HTTP request', {
                     host: axiosConfig.proxy.host,
-                    port: axiosConfig.proxy.port 
+                    port: axiosConfig.proxy.port
                 });
             }
         }

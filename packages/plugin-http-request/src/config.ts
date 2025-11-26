@@ -48,7 +48,8 @@ export const DEFAULT_REQUEST_CONFIG: RequestConfig = {
   retries: 0,
   retryDelay: 1000, // 1 秒
   maxRedirects: 5,
-  maxBodySize: 50 * 1024 * 1024 // 50MB
+  maxRequestBodySize: 10 * 1024 * 1024, // 10MB
+  maxResponseBodySize: 50 * 1024 * 1024 // 50MB
 };
 
 /**
@@ -121,8 +122,12 @@ export function validateConfig(config: HttpClientConfig): void {
     throw new Error('Max redirects must be non-negative.');
   }
 
-  if (config.request.maxBodySize <= 0) {
-    throw new Error('Max body size must be positive.');
+  if (config.request.maxRequestBodySize <= 0) {
+    throw new Error('Max request body size must be positive.');
+  }
+
+  if (config.request.maxResponseBodySize <= 0) {
+    throw new Error('Max response body size must be positive.');
   }
 
   // 验证日志配置

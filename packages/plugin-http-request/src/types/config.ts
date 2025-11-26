@@ -72,8 +72,10 @@ export interface RequestConfig {
     proxy?: ProxyConfig;
     /** 最大重定向次数 */
     maxRedirects: number;
+    /** 最大请求体大小（字节） */
+    maxRequestBodySize: number;
     /** 最大响应体大小（字节） */
-    maxBodySize: number;
+    maxResponseBodySize: number;
 }
 
 /**
