@@ -3,9 +3,18 @@
  */
 
 import { expect } from 'chai';
-import { BaseHttpAdapter, defaultShouldRetry, delay } from '../../src/adapters/base';
-import type { HttpRequestOptions, HttpResponse, RequestConfig, SecurityConfig } from '../../src/types';
-import { EHttpRequestClientAdapter } from '../../src/enum';
+import {
+    BaseHttpAdapter,
+    defaultShouldRetry,
+    delay
+} from '../../src';
+import type {
+    HttpRequestOptions,
+    HttpResponse,
+    RequestConfig,
+    SecurityConfig
+} from '../../src';
+import { EHttpRequestClientAdapter } from '../../src';
 
 // 创建一个具体的测试实现
 class TestAdapter extends BaseHttpAdapter {
@@ -75,10 +84,14 @@ describe('BaseHttpAdapter', () => {
 
         it('应该接受日志记录器', () => {
             const mockLogger = {
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {}
+                debug: () => {
+                },
+                info: () => {
+                },
+                warn: () => {
+                },
+                error: () => {
+                }
             };
 
             const adapter = new TestAdapter(defaultRequestConfig, defaultSecurityConfig, mockLogger);
@@ -179,7 +192,7 @@ describe('BaseHttpAdapter', () => {
             // 第三次尝试时成功
             let attemptCount = 0;
             const originalSendRequest = adapter['sendRequest'].bind(adapter);
-            adapter['sendRequest'] = async function(options: HttpRequestOptions) {
+            adapter['sendRequest'] = async function (options: HttpRequestOptions) {
                 attemptCount++;
                 if (attemptCount >= 3) {
                     this.shouldFail = false;
@@ -235,7 +248,7 @@ describe('BaseHttpAdapter', () => {
             }
         });
 
-        it('应该在重试之间延迟', async function() {
+        it('应该在重试之间延迟', async function () {
             this.timeout(5000);
             const config: RequestConfig = {
                 ...defaultRequestConfig,
@@ -293,7 +306,7 @@ describe('BaseHttpAdapter', () => {
     });
 
     describe('delay 函数', () => {
-        it('应该延迟指定的毫秒数', async function() {
+        it('应该延迟指定的毫秒数', async function () {
             this.timeout(5000);
             const startTime = Date.now();
             await delay(100);
@@ -336,10 +349,14 @@ describe('BaseHttpAdapter', () => {
             const adapter = new TestAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             const mockLogger = {
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {}
+                debug: () => {
+                },
+                info: () => {
+                },
+                warn: () => {
+                },
+                error: () => {
+                }
             };
 
             adapter.setLogger(mockLogger);
@@ -351,10 +368,10 @@ describe('BaseHttpAdapter', () => {
 
             const logs: string[] = [];
             const mockLogger = {
-                debug: (msg: string) => logs.push(`debug: ${msg}`),
-                info: (msg: string) => logs.push(`info: ${msg}`),
-                warn: (msg: string) => logs.push(`warn: ${msg}`),
-                error: (msg: string) => logs.push(`error: ${msg}`)
+                debug: (msg: string) => logs.push(`debug: ${ msg }`),
+                info: (msg: string) => logs.push(`info: ${ msg }`),
+                warn: (msg: string) => logs.push(`warn: ${ msg }`),
+                error: (msg: string) => logs.push(`error: ${ msg }`)
             };
 
             adapter.setLogger(mockLogger);

@@ -3,9 +3,12 @@
  */
 
 import { expect } from 'chai';
-import { UndiciAdapter } from '../../src/adapters/undici.adapter';
-import { HttpError } from '../../src/types';
-import type { RequestConfig, SecurityConfig } from '../../src/types';
+import { UndiciAdapter } from '../../src';
+import { HttpError } from '../../src';
+import type {
+    RequestConfig,
+    SecurityConfig
+} from '../../src';
 
 describe('UndiciAdapter', () => {
     const defaultRequestConfig: RequestConfig = {
@@ -40,7 +43,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('HTTP GET 请求', () => {
-        it('应该成功发送 GET 请求', async function() {
+        it('应该成功发送 GET 请求', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -63,7 +66,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理查询参数', async function() {
+        it('应该正确处理查询参数', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -93,7 +96,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理自定义请求头', async function() {
+        it('应该正确处理自定义请求头', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -122,7 +125,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('HTTP POST 请求', () => {
-        it('应该成功发送 POST 请求', async function() {
+        it('应该成功发送 POST 请求', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -150,7 +153,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该自动设置 Content-Type 为 JSON', async function() {
+        it('应该自动设置 Content-Type 为 JSON', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -173,7 +176,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理字符串请求体', async function() {
+        it('应该正确处理字符串请求体', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -201,7 +204,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('其他 HTTP 方法', () => {
-        it('应该支持 PUT 请求', async function() {
+        it('应该支持 PUT 请求', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -222,7 +225,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该支持 DELETE 请求', async function() {
+        it('应该支持 DELETE 请求', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -242,7 +245,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该支持 PATCH 请求', async function() {
+        it('应该支持 PATCH 请求', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -265,7 +268,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('响应类型处理', () => {
-        it('应该正确处理 JSON 响应', async function() {
+        it('应该正确处理 JSON 响应', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -287,7 +290,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理文本响应', async function() {
+        it('应该正确处理文本响应', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -310,7 +313,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理非 JSON 文本为文本', async function() {
+        it('应该正确处理非 JSON 文本为文本', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -334,7 +337,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('HTTP 状态码处理', () => {
-        it('应该正确处理 200 OK', async function() {
+        it('应该正确处理 200 OK', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -355,7 +358,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理 404 Not Found', async function() {
+        it('应该正确处理 404 Not Found', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -376,7 +379,7 @@ describe('UndiciAdapter', () => {
             }
         });
 
-        it('应该正确处理 500 Internal Server Error', async function() {
+        it('应该正确处理 500 Internal Server Error', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -399,7 +402,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('超时处理', () => {
-        it('应该在超时时抛出错误', async function() {
+        it('应该在超时时抛出错误', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -422,7 +425,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('错误处理', () => {
-        it('应该正确处理网络错误', async function() {
+        it('应该正确处理网络错误', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -453,10 +456,14 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             const mockLogger = {
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {}
+                debug: () => {
+                },
+                info: () => {
+                },
+                warn: () => {
+                },
+                error: () => {
+                }
             };
 
             adapter.setLogger(mockLogger);
@@ -465,7 +472,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('响应头处理', () => {
-        it('应该正确返回响应头', async function() {
+        it('应该正确返回响应头', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -491,7 +498,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('重定向处理', () => {
-        it('应该正确处理重定向', async function() {
+        it('应该正确处理重定向', async function () {
             this.timeout(10000);
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -513,7 +520,7 @@ describe('UndiciAdapter', () => {
     });
 
     describe('重试机制', () => {
-        it('应该在临时失败时重试', async function() {
+        it('应该在临时失败时重试', async function () {
             this.timeout(15000);
             const config: RequestConfig = {
                 ...defaultRequestConfig,

@@ -18,7 +18,8 @@
     "upload": "npx nx run-many -t upload",
     "clean": "npx nx run-many -t clean && rimraf .nx/cache && rimraf ./build",
     "reset": "npx nx reset",
-    "test:request": "nx run nstarter-http-request:test"
+    "test:request": "nx run nstarter-http-request:test",
+    "build:request": "nx run nstarter-http-request:build"
   },
   "devDependencies": {
     "@types/chai": "^5.2.2",

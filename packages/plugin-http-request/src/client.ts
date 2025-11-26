@@ -20,7 +20,7 @@ import { SsrfGuard } from './security';
 import {
     AxiosAdapter,
     UndiciAdapter
-} from './adapters';
+} from './adapter';
 import {
     ConsoleLogger,
     NullLogger

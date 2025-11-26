@@ -3,9 +3,12 @@
  */
 
 import { expect } from 'chai';
-import { AxiosAdapter } from '../../src/adapters/axios.adapter';
-import { HttpError } from '../../src/types';
-import type { RequestConfig, SecurityConfig } from '../../src/types';
+import { AxiosAdapter } from '../../src';
+import { HttpError } from '../../src';
+import type {
+    RequestConfig,
+    SecurityConfig
+} from '../../src';
 
 describe('AxiosAdapter', () => {
     const defaultRequestConfig: RequestConfig = {
@@ -40,7 +43,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('HTTP GET 请求', () => {
-        it('应该成功发送 GET 请求', async function() {
+        it('应该成功发送 GET 请求', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -63,7 +66,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理查询参数', async function() {
+        it('应该正确处理查询参数', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -93,7 +96,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理自定义请求头', async function() {
+        it('应该正确处理自定义请求头', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -122,7 +125,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('HTTP POST 请求', () => {
-        it('应该成功发送 POST 请求', async function() {
+        it('应该成功发送 POST 请求', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -150,7 +153,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理 JSON 请求体', async function() {
+        it('应该正确处理 JSON 请求体', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -181,7 +184,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理字符串请求体', async function() {
+        it('应该正确处理字符串请求体', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -209,7 +212,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('其他 HTTP 方法', () => {
-        it('应该支持 PUT 请求', async function() {
+        it('应该支持 PUT 请求', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -230,7 +233,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该支持 DELETE 请求', async function() {
+        it('应该支持 DELETE 请求', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -250,7 +253,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该支持 PATCH 请求', async function() {
+        it('应该支持 PATCH 请求', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -273,7 +276,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('响应类型处理', () => {
-        it('应该正确处理 JSON 响应', async function() {
+        it('应该正确处理 JSON 响应', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -295,7 +298,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理文本响应', async function() {
+        it('应该正确处理文本响应', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -320,7 +323,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('HTTP 状态码处理', () => {
-        it('应该正确处理 200 OK', async function() {
+        it('应该正确处理 200 OK', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -340,7 +343,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理 404 Not Found', async function() {
+        it('应该正确处理 404 Not Found', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -360,7 +363,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理 500 Internal Server Error', async function() {
+        it('应该正确处理 500 Internal Server Error', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -382,7 +385,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('超时处理', () => {
-        it('应该在超时时抛出错误', async function() {
+        it('应该在超时时抛出错误', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -406,7 +409,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('重试机制', () => {
-        it('应该在临时失败时重试', async function() {
+        it('应该在临时失败时重试', async function () {
             this.timeout(15000);
             const config: RequestConfig = {
                 ...defaultRequestConfig,
@@ -435,7 +438,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('错误处理', () => {
-        it('应该正确处理网络错误', async function() {
+        it('应该正确处理网络错误', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -452,7 +455,7 @@ describe('AxiosAdapter', () => {
             }
         });
 
-        it('应该正确处理无效的 URL', async function() {
+        it('应该正确处理无效的 URL', async function () {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             try {
@@ -481,10 +484,14 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
             const mockLogger = {
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {}
+                debug: () => {
+                },
+                info: () => {
+                },
+                warn: () => {
+                },
+                error: () => {
+                }
             };
 
             adapter.setLogger(mockLogger);
@@ -493,7 +500,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('响应头处理', () => {
-        it('应该正确返回响应头', async function() {
+        it('应该正确返回响应头', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 
@@ -519,7 +526,7 @@ describe('AxiosAdapter', () => {
     });
 
     describe('重定向处理', () => {
-        it('应该正确处理重定向', async function() {
+        it('应该正确处理重定向', async function () {
             this.timeout(10000);
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
 

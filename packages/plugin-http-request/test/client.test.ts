@@ -4,11 +4,16 @@
 
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { HttpClient } from '../src/client';
-import { EHttpRequestClientAdapter } from '../src/enum';
-import type { PartialHttpClientConfig, HttpResponse, HttpRequestOptions, IForwardProxy } from '../src/types';
-import { SecurityError } from '../src/types';
-import * as adapters from '../src/adapters';
+import { HttpClient } from '../src';
+import { EHttpRequestClientAdapter } from '../src';
+import type {
+    PartialHttpClientConfig,
+    HttpResponse,
+    HttpRequestOptions,
+    IForwardProxy
+} from '../src';
+import { SecurityError } from '../src';
+import * as adapters from '../src/adapter';
 import * as security from '../src/security';
 
 describe('HttpClient', () => {
@@ -134,10 +139,13 @@ describe('HttpClient', () => {
                 logging: {
                     enabled: true,
                     logger: {
-                        debug: () => {},
+                        debug: () => {
+                        },
                         info: (...args) => logs.push({ level: 'info', args }),
-                        warn: () => {},
-                        error: () => {}
+                        warn: () => {
+                        },
+                        error: () => {
+                        }
                     }
                 }
             });
@@ -150,8 +158,8 @@ describe('HttpClient', () => {
 
             client.withForwardProxy(proxy);
 
-            const proxyLog = logs.find(log => 
-                log.args[0]?.includes?.('Forward proxy') || 
+            const proxyLog = logs.find(log =>
+                log.args[0]?.includes?.('Forward proxy') ||
                 log.args[0] === 'Forward proxy configured'
             );
             expect(proxyLog).to.exist;
@@ -277,8 +285,10 @@ describe('HttpClient', () => {
                     logger: {
                         debug: (...args) => logs.push({ level: 'debug', args }),
                         info: (...args) => logs.push({ level: 'info', args }),
-                        warn: () => {},
-                        error: () => {}
+                        warn: () => {
+                        },
+                        error: () => {
+                        }
                     }
                 }
             });
@@ -297,11 +307,11 @@ describe('HttpClient', () => {
                 body: { test: 'data' }
             });
 
-            const requestLog = logs.find(log => 
+            const requestLog = logs.find(log =>
                 log.args[0]?.includes?.('Outgoing HTTP request') ||
                 log.args[0] === 'Outgoing HTTP request'
             );
-            const responseLog = logs.find(log => 
+            const responseLog = logs.find(log =>
                 log.args[0]?.includes?.('HTTP response received') ||
                 log.args[0] === 'HTTP response received'
             );
@@ -316,9 +326,12 @@ describe('HttpClient', () => {
                 logging: {
                     enabled: true,
                     logger: {
-                        debug: () => {},
-                        info: () => {},
-                        warn: () => {},
+                        debug: () => {
+                        },
+                        info: () => {
+                        },
+                        warn: () => {
+                        },
                         error: (...args) => logs.push({ level: 'error', args })
                     }
                 }
@@ -337,7 +350,7 @@ describe('HttpClient', () => {
                 expect(error).to.equal(testError);
             }
 
-            const errorLog = logs.find(log => 
+            const errorLog = logs.find(log =>
                 log.args[0]?.includes?.('HTTP request failed') ||
                 log.args[0] === 'HTTP request failed'
             );
@@ -423,10 +436,13 @@ describe('HttpClient', () => {
                     logRequestBody: true,
                     bodyMaxLength: 10,
                     logger: {
-                        debug: () => {},
+                        debug: () => {
+                        },
                         info: (...args) => logs.push({ level: 'info', args }),
-                        warn: () => {},
-                        error: () => {}
+                        warn: () => {
+                        },
+                        error: () => {
+                        }
                     }
                 }
             });
@@ -445,7 +461,7 @@ describe('HttpClient', () => {
                 body: 'This is a very long request body that should be truncated'
             });
 
-            const requestLog = logs.find(log => 
+            const requestLog = logs.find(log =>
                 log.args[0] === 'Outgoing HTTP request'
             );
 
@@ -462,10 +478,13 @@ describe('HttpClient', () => {
                     enabled: true,
                     logRequestBody: true,
                     logger: {
-                        debug: () => {},
+                        debug: () => {
+                        },
                         info: (...args) => logs.push({ level: 'info', args }),
-                        warn: () => {},
-                        error: () => {}
+                        warn: () => {
+                        },
+                        error: () => {
+                        }
                     }
                 }
             });
@@ -485,7 +504,7 @@ describe('HttpClient', () => {
                 body: buffer
             });
 
-            const requestLog = logs.find(log => 
+            const requestLog = logs.find(log =>
                 log.args[0] === 'Outgoing HTTP request'
             );
 
