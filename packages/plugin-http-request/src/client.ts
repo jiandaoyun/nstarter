@@ -26,7 +26,7 @@ import {
 import {
     ConsoleLogger,
     NullLogger,
-    HttpClientLogger
+    NsHttpClientLogger
 } from './logger';
 import { createRegExpsByDomains } from './utils/forward.proxy';
 import { EClientAdapter } from './const';
@@ -127,8 +127,8 @@ export class NsHttpClient implements IHttpClient {
             return this.config.logging.httpLogger;
         }
 
-        // 否则，使用 HttpClientLogger 包装通用的 logger
-        return HttpClientLogger.create(
+        // 否则，使用 NsHttpClientLogger 包装通用的 logger
+        return NsHttpClientLogger.create(
             this.logger,
             this.config.logging.filter,
             {

@@ -17,7 +17,7 @@ import { LogFilter } from './log.filter';
  * HTTP 客户端日志记录器
  * 将通用 ILogger 包装成专门的 IHttpClientLogger
  */
-export class HttpClientLogger implements IHttpClientLogger {
+export class NsHttpClientLogger implements IHttpClientLogger {
     private logger: ILogger;
     private filter?: ILogFilter;
     private logRequestBody: boolean;
@@ -210,8 +210,8 @@ export class HttpClientLogger implements IHttpClientLogger {
             logResponseBody?: boolean,
             bodyMaxLength?: number
         }
-    ): HttpClientLogger {
-        return new HttpClientLogger({
+    ): NsHttpClientLogger {
+        return new NsHttpClientLogger({
             logger,
             filter: filterConfig ? new LogFilter(filterConfig) : undefined,
             logRequestBody: options?.logRequestBody,

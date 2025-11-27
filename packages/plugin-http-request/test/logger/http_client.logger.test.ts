@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { HttpClientLogger } from '../../src';
+import { NsHttpClientLogger } from '../../src';
 import { LogFilter } from '../../src';
 import type {
     ILogger,
@@ -11,7 +11,7 @@ import type {
     IResFailedOptions
 } from '../../src';
 
-describe('HttpClientLogger', () => {
+describe('NsHttpClientLogger', () => {
     // 模拟日志记录器
     class MockLogger implements ILogger {
         public logs: Array<{ level: string; message: string; meta?: any }> = [];
@@ -76,7 +76,7 @@ describe('HttpClientLogger', () => {
     describe('Basic logging', () => {
         it('should log successful requests', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: false,
                 logResponseBody: false
@@ -93,7 +93,7 @@ describe('HttpClientLogger', () => {
 
         it('should log failed requests', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: false,
                 logResponseBody: false
@@ -112,7 +112,7 @@ describe('HttpClientLogger', () => {
     describe('Request/Response body logging', () => {
         it('should log request body when enabled', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true,
                 logResponseBody: false
@@ -125,7 +125,7 @@ describe('HttpClientLogger', () => {
 
         it('should log response body when enabled', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: false,
                 logResponseBody: true
@@ -138,7 +138,7 @@ describe('HttpClientLogger', () => {
 
         it('should truncate large bodies', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true,
                 logResponseBody: true,
@@ -171,7 +171,7 @@ describe('HttpClientLogger', () => {
         it('should not log when filter returns false', () => {
             const mockLogger = new MockLogger();
             const filter = new LogFilter({ onlyFailed: true });
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 filter
             });
@@ -191,7 +191,7 @@ describe('HttpClientLogger', () => {
                 methods: ['GET'],
                 minDuration: 50
             });
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 filter
             });
@@ -217,7 +217,7 @@ describe('HttpClientLogger', () => {
     describe('Static factory method', () => {
         it('should create logger with factory method', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = HttpClientLogger.create(
+            const httpLogger = NsHttpClientLogger.create(
                 mockLogger,
                 { onlyFailed: true },
                 {
@@ -237,7 +237,7 @@ describe('HttpClientLogger', () => {
 
         it('should create logger without filter', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = HttpClientLogger.create(mockLogger);
+            const httpLogger = NsHttpClientLogger.create(mockLogger);
 
             httpLogger.logSuccess(createSuccessOptions());
             httpLogger.logFailed(createFailedOptions());
@@ -249,7 +249,7 @@ describe('HttpClientLogger', () => {
     describe('Metadata handling', () => {
         it('should include scenario in metadata', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({ logger: mockLogger });
+            const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
             httpLogger.logSuccess(createSuccessOptions({
                 request: { method: 'GET', url: 'test', scenario: 'user-login' }
@@ -260,7 +260,7 @@ describe('HttpClientLogger', () => {
 
         it('should include request metadata', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({ logger: mockLogger });
+            const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
             httpLogger.logSuccess(createSuccessOptions({
                 request: {
@@ -278,7 +278,7 @@ describe('HttpClientLogger', () => {
 
         it('should include retry count', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({ logger: mockLogger });
+            const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
             httpLogger.logFailed(createFailedOptions({ retryCount: 3 }));
 
@@ -289,7 +289,7 @@ describe('HttpClientLogger', () => {
     describe('Special body types handling', () => {
         it('应该正确处理 null 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -307,7 +307,7 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理 undefined 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -325,7 +325,7 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理 Buffer 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -347,16 +347,19 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理 Stream 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
 
             // 模拟 Stream 对象
             const mockStream = {
-                pipe: () => {},
-                read: () => {},
-                on: () => {}
+                pipe: () => {
+                },
+                read: () => {
+                },
+                on: () => {
+                }
             };
 
             httpLogger.logSuccess(createSuccessOptions({
@@ -372,7 +375,7 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理 number 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -390,7 +393,7 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理 boolean 类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -408,7 +411,7 @@ describe('HttpClientLogger', () => {
 
         it('应该正确处理字符串类型的 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
@@ -426,7 +429,7 @@ describe('HttpClientLogger', () => {
 
         it('应该截断过长的字符串 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true,
                 bodyMaxLength: 10
@@ -447,7 +450,7 @@ describe('HttpClientLogger', () => {
 
         it('应该截断过大的对象 body', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true,
                 bodyMaxLength: 20
@@ -474,7 +477,7 @@ describe('HttpClientLogger', () => {
 
         it('应该处理无法序列化的对象', () => {
             const mockLogger = new MockLogger();
-            const httpLogger = new HttpClientLogger({
+            const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
                 logRequestBody: true
             });
