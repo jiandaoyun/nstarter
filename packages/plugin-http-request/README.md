@@ -40,7 +40,7 @@ plugin-http-request/
 │   │   ├── errors.ts              # 错误类型定义
 │   │   └── index.ts               # 类型统一导出
 │   ├── utils/                     # 工具函数集
-│   │   ├── forward.proxy.ts       # 正向代理工具（no_proxy 处理）
+│   │   ├── domain.matcher.ts      # 域名匹配工具（支持完全匹配、后缀匹配）
 │   │   ├── ip.range.ts            # IP 范围解析工具（CIDR 支持）
 │   │   └── common.ts              # 通用工具函数
 │   ├── const/                     # 常量定义
@@ -70,7 +70,7 @@ plugin-http-request/
 - **adapter/** - 适配器模式实现，支持多种 HTTP 库（Axios、Undici），可扩展
 - **security/** - SSRF 防护核心，包含 DNS 解析、IP 验证、URL 黑白名单等安全检查
 - **logger/** - 可配置的日志系统，支持请求/响应记录、敏感信息过滤、条件日志
-- **utils/** - 工具集，包含代理配置处理、IP 段解析（CIDR）等辅助功能
+- **utils/** - 工具集，包含域名匹配工具（黑白名单、no_proxy）、IP 段解析（CIDR）等辅助功能
 - **types/** - 完整的 TypeScript 类型定义，确保类型安全
 
 ## 本地开发
@@ -140,12 +140,12 @@ const client = new NsHttpClient({
     enableDnsValidation: true,       // 开启 DNS 验证
     enableIpValidation: true,        // 开启 IP 验证
     allowPrivateIp: false,           // 是否允许访问私有 IP（内网地址）
-    whitelist: [                     // 域名白名单（支持通配符 *.example.com）
-      '*.trusted.com',
-      'api.example.com'
+    whitelist: [                     // 域名白名单
+      'trusted.com', '.trusted.com', // 匹配根域名和所有子域名
+      'api.example.com'              // 仅匹配该域名
     ],
-    blacklist: [                     // 域名黑名单（支持通配符）
-      '*.malicious.com',
+    blacklist: [                     // 域名黑名单
+      'malicious.com', '.malicious.com', // 根域名和所有子域名
       'unsafe.net'
     ],
     dnsCacheTtl: 60000               // DNS 缓存 TTL（毫秒，默认 60 秒）
@@ -218,14 +218,26 @@ const client = new NsHttpClient({
 ```typescript
 const client = new NsHttpClient({
   security: {
-    enableDnsValidation: true,  // 启用 DNS 解析验证
-    enableIpValidation: true,   // 启用 IP 地址验证
-    allowPrivateIp: false,      // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
-    whitelist: ['*.safe.com'],  // 白名单优先级最高
-    blacklist: ['*.block.com']  // 黑名单次之
+    enableDnsValidation: true,     // 启用 DNS 解析验证
+    enableIpValidation: true,      // 启用 IP 地址验证
+    allowPrivateIp: false,         // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
+    whitelist: [                   // 白名单（支持以下模式）
+      'api.example.com',           // 1. 完全匹配
+      '.safe.com',                 // 2. 后缀匹配（匹配所有子域名）
+      'trusted.com', '.trusted.com' // 3. 组合使用：匹配根域名和所有子域名
+    ],
+    blacklist: ['malicious.com', '.malicious.com'] // 黑名单：根域名 + 子域名
   }
 });
 ```
+
+**支持的域名模式：**
+
+| 模式 | 匹配规则 | 示例 |
+|------|---------|------|
+| `example.com` | 完全匹配 | ✅ `example.com`<br>❌ `api.example.com` |
+| `.example.com` | 后缀匹配<br>匹配所有子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
+| 组合使用<br>`['example.com', '.example.com']` | 完全匹配 + 后缀匹配<br>匹配根域名和所有子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
 
 ### 日志配置详解
 

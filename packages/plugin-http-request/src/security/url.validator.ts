@@ -4,6 +4,7 @@
 
 import { URL } from 'node:url';
 import type { UrlValidationResult } from '../types';
+import { createDomainMatchers } from '../utils';
 
 /**
  * URL 验证器类
@@ -11,10 +12,15 @@ import type { UrlValidationResult } from '../types';
 export class UrlValidator {
     private whitelist: string[];
     private blacklist: string[];
+    private whitelistRegexps: RegExp[];
+    private blacklistRegexps: RegExp[];
 
     constructor(whitelist: string[] = [], blacklist: string[] = []) {
         this.whitelist = whitelist;
         this.blacklist = blacklist;
+        // 预生成正则表达式，提高匹配性能和安全性
+        this.whitelistRegexps = createDomainMatchers(whitelist);
+        this.blacklistRegexps = createDomainMatchers(blacklist);
     }
 
     /**
@@ -50,10 +56,10 @@ export class UrlValidator {
 
         const hostname = parsedUrl.hostname;
 
-        // 检查白名单
-        const inWhitelist = this.matchesAny(hostname, this.whitelist);
-        // 检查黑名单
-        const inBlacklist = this.matchesAny(hostname, this.blacklist);
+        // 检查白名单（使用预生成的正则表达式）
+        const inWhitelist = this.matchesAny(hostname, this.whitelistRegexps);
+        // 检查黑名单（使用预生成的正则表达式）
+        const inBlacklist = this.matchesAny(hostname, this.blacklistRegexps);
 
         // 配了白名单, 优先使用白名单模式, 在名单内的域名通过, 其余拒绝.
         // 同时配有黑名单, 黑名单辅助拒绝其余通过的域名.
@@ -88,45 +94,13 @@ export class UrlValidator {
     }
 
     /**
-     * 检查域名是否匹配任一模式
+     * 检查域名是否匹配任一模式（使用预生成的正则表达式）
      * @param hostname 域名
-     * @param patterns 模式列表（支持通配符）
+     * @param regexps 正则表达式列表
      * @returns 是否匹配
      */
-    private matchesAny(hostname: string, patterns: string[]): boolean {
-        return patterns.some(pattern => this.matchesPattern(hostname, pattern));
-    }
-
-    /**
-     * 检查域名是否匹配模式
-     * @param hostname 域名
-     * @param pattern 模式（支持通配符 *）
-     * @returns 是否匹配
-     */
-    private matchesPattern(hostname: string, pattern: string): boolean {
-        // 转换为小写进行比较
-        const lowerHostname = hostname.toLowerCase();
-        const lowerPattern = pattern.toLowerCase();
-
-        // 完全匹配
-        if (lowerHostname === lowerPattern) {
-            return true;
-        }
-
-        // 通配符匹配
-        if (lowerPattern.startsWith('*.')) {
-            const domain = lowerPattern.slice(2); // 移除 *.
-            // 匹配整个域名或子域名
-            return lowerHostname === domain || lowerHostname.endsWith('.' + domain);
-        }
-
-        // 支持前缀通配符（如 test-*）
-        if (lowerPattern.includes('*')) {
-            const regex = new RegExp('^' + lowerPattern.replace(/\*/g, '.*') + '$');
-            return regex.test(lowerHostname);
-        }
-
-        return false;
+    private matchesAny(hostname: string, regexps: RegExp[]): boolean {
+        return regexps.some(regex => regex.test(hostname));
     }
 
     /**
@@ -135,6 +109,7 @@ export class UrlValidator {
      */
     public setWhitelist(whitelist: string[]): void {
         this.whitelist = whitelist;
+        this.whitelistRegexps = createDomainMatchers(whitelist);
     }
 
     /**
@@ -143,6 +118,7 @@ export class UrlValidator {
      */
     public setBlacklist(blacklist: string[]): void {
         this.blacklist = blacklist;
+        this.blacklistRegexps = createDomainMatchers(blacklist);
     }
 
     /**
@@ -151,6 +127,7 @@ export class UrlValidator {
      */
     public addToWhitelist(...patterns: string[]): void {
         this.whitelist.push(...patterns);
+        this.whitelistRegexps = createDomainMatchers(this.whitelist);
     }
 
     /**
@@ -159,6 +136,7 @@ export class UrlValidator {
      */
     public addToBlacklist(...patterns: string[]): void {
         this.blacklist.push(...patterns);
+        this.blacklistRegexps = createDomainMatchers(this.blacklist);
     }
 
     /**
@@ -167,6 +145,7 @@ export class UrlValidator {
      */
     public removeFromWhitelist(...patterns: string[]): void {
         this.whitelist = this.whitelist.filter(p => !patterns.includes(p));
+        this.whitelistRegexps = createDomainMatchers(this.whitelist);
     }
 
     /**
@@ -175,6 +154,7 @@ export class UrlValidator {
      */
     public removeFromBlacklist(...patterns: string[]): void {
         this.blacklist = this.blacklist.filter(p => !patterns.includes(p));
+        this.blacklistRegexps = createDomainMatchers(this.blacklist);
     }
 
     /**
@@ -198,6 +178,7 @@ export class UrlValidator {
      */
     public clearWhitelist(): void {
         this.whitelist = [];
+        this.whitelistRegexps = [];
     }
 
     /**
@@ -205,6 +186,7 @@ export class UrlValidator {
      */
     public clearBlacklist(): void {
         this.blacklist = [];
+        this.blacklistRegexps = [];
     }
 }
 

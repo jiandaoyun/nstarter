@@ -1,15 +1,15 @@
 /**
- * 转发代理工具测试
+ * 域名匹配工具函数测试
  */
 
 import { expect } from 'chai';
-import { createRegExpsByDomains } from '../../src/utils/forward.proxy';
+import { createDomainMatchers } from '../../src/utils/domain.matcher';
 
-describe('createRegExpsByDomains', () => {
+describe('createDomainMatchers', () => {
     describe('全匹配模式', () => {
         it('应该生成完全匹配的正则表达式', () => {
             const domains = ['www.example.com', 'api.github.com'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(2);
             expect(regexps[0].test('www.example.com')).to.be.true;
@@ -23,7 +23,7 @@ describe('createRegExpsByDomains', () => {
 
         it('应该处理大小写不敏感的域名', () => {
             const domains = ['Example.COM', 'API.GitHub.COM'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             // 注意：正则本身是大小写敏感的，这里只是测试生成的正则
             expect(regexps[0].test('Example.COM')).to.be.true;
@@ -34,26 +34,29 @@ describe('createRegExpsByDomains', () => {
     describe('后缀匹配模式', () => {
         it('应该生成以点开头的后缀匹配正则', () => {
             const domains = ['.example.com', '.github.io'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(2);
             
             // 应该匹配以该后缀结尾的域名 (注意：正则是 /\.example\.com$/)
-            expect(regexps[0].test('www.example.com')).to.be.true; // 以 .example.com 结尾
+            expect(regexps[0].test('www.example.com')).to.be.true; // 一级子域名
             expect(regexps[0].test('.example.com')).to.be.true;
-            expect(regexps[0].test('sub.example.com')).to.be.true; // 以 .example.com 结尾
-            expect(regexps[0].test('something.example.com')).to.be.true; // 以 .example.com 结尾
-            expect(regexps[0].test('example.com')).to.be.false; // 不以 .example.com 结尾
+            expect(regexps[0].test('sub.example.com')).to.be.true; // 一级子域名
+            expect(regexps[0].test('something.example.com')).to.be.true; // 一级子域名
+            expect(regexps[0].test('api.sub.example.com')).to.be.true; // 多级子域名
+            expect(regexps[0].test('deep.api.sub.example.com')).to.be.true; // 多级子域名
+            expect(regexps[0].test('example.com')).to.be.false; // 不匹配根域名
             expect(regexps[0].test('notexample.com')).to.be.false;
             
             expect(regexps[1].test('.github.io')).to.be.true;
-            expect(regexps[1].test('user.github.io')).to.be.true; // 以 .github.io 结尾
-            expect(regexps[1].test('github.io')).to.be.false; // 不以 .github.io 结尾
+            expect(regexps[1].test('user.github.io')).to.be.true; // 一级子域名
+            expect(regexps[1].test('docs.user.github.io')).to.be.true; // 多级子域名
+            expect(regexps[1].test('github.io')).to.be.false; // 不匹配根域名
         });
 
         it('应该正确转义特殊字符', () => {
             const domains = ['.example-test.com'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps[0].test('.example-test.com')).to.be.true;
             expect(regexps[0].test('.exampleXtest.com')).to.be.false; // - 不应被当作通配符
@@ -61,7 +64,7 @@ describe('createRegExpsByDomains', () => {
 
         it('应该处理大小写（以大写点开头）', () => {
             const domains = ['.Example.COM'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps[0].test('.Example.COM')).to.be.true;
         });
@@ -70,7 +73,7 @@ describe('createRegExpsByDomains', () => {
     describe('前缀匹配模式', () => {
         it('应该生成以点结尾的前缀匹配正则', () => {
             const domains = ['192.168.0.', '172.16.'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(2);
             
@@ -88,7 +91,7 @@ describe('createRegExpsByDomains', () => {
 
         it('应该正确转义点号', () => {
             const domains = ['test.'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps[0].test('test.')).to.be.true;
             expect(regexps[0].test('test.example')).to.be.true;
@@ -97,7 +100,7 @@ describe('createRegExpsByDomains', () => {
 
         it('应该处理大小写（以大写点结尾）', () => {
             const domains = ['Test.'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps[0].test('Test.')).to.be.true;
             expect(regexps[0].test('Test.example')).to.be.true;
@@ -111,7 +114,7 @@ describe('createRegExpsByDomains', () => {
                 '.suffix.com',          // 后缀匹配
                 '192.168.'              // 前缀匹配
             ];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(3);
 
@@ -139,7 +142,7 @@ describe('createRegExpsByDomains', () => {
                 'test+plus.com',
                 'test?question.com'
             ];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps[0].test('test[bracket].com')).to.be.true;
             expect(regexps[1].test('test(paren).com')).to.be.true;
@@ -156,14 +159,14 @@ describe('createRegExpsByDomains', () => {
     describe('空数组和边界情况', () => {
         it('应该处理空数组', () => {
             const domains: string[] = [];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.be.an('array').that.is.empty;
         });
 
         it('应该处理单个域名', () => {
             const domains = ['single.com'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(1);
             expect(regexps[0].test('single.com')).to.be.true;
@@ -171,7 +174,7 @@ describe('createRegExpsByDomains', () => {
 
         it('应该处理只有点的域名', () => {
             const domains = ['.'];
-            const regexps = createRegExpsByDomains(domains);
+            const regexps = createDomainMatchers(domains);
 
             expect(regexps).to.have.lengthOf(1);
             // 只有一个点，应该作为后缀匹配
