@@ -7,10 +7,10 @@ import type {
 import { EClientAdapter } from './enum.const';
 
 /**
- * DNS 缓存最大 TTL（毫秒）- 24 小时
+ * DNS 缓存最大 TTL（毫秒）- 5 分钟
  * 避免过长的缓存时间导致内存积压
  */
-export const MAX_DNS_CACHE_TTL = 24 * 60 * 60 * 1000; // 86400000ms (24 小时)
+export const MAX_DNS_CACHE_TTL = 5 * 60 * 1000; // 300000ms (5 分钟) 
 
 /**
  * 默认安全配置
