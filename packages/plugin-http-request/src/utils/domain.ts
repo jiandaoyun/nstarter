@@ -6,10 +6,10 @@ import escapeRegexp from 'escape-string-regexp';
  *  1. 完全匹配 eg `www.example.com`
  *  2. 后缀匹配 eg `.example.com`（匹配所有子域名）
  *  3. 前缀匹配 eg `172.168.0.`（主要用于 IP 地址匹配）
- * 
+ *
  * @param patterns 域名模式列表
  * @returns 正则表达式数组
- * 
+ *
  * @example
  * ```typescript
  * const regexps = createDomainMatchers(['example.com', '.example.com']);

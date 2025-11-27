@@ -30,7 +30,7 @@ import {
 } from './logger';
 import { EClientAdapter } from './const';
 import { HttpError } from './types';
-import { createDomainMatchers } from './utils';
+import { DomainUtils } from './utils';
 
 /**
  * HTTP 客户端
@@ -335,7 +335,7 @@ export class NsHttpClient implements IHttpClient {
         const hostname = targetUrl.hostname;
 
         // 检查 no_proxy 规则
-        const noProxyRegExps = createDomainMatchers(no_proxy ?? []);
+        const noProxyRegExps = DomainUtils.createDomainMatchers(no_proxy ?? []);
         if (noProxyRegExps.length > 0 && hostname) {
             for (const noProxyRegex of noProxyRegExps) {
                 if (noProxyRegex.test(hostname)) {

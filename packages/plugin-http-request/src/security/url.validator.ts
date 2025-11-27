@@ -4,7 +4,7 @@
 
 import { URL } from 'node:url';
 import type { UrlValidationResult } from '../types';
-import { createDomainMatchers } from '../utils';
+import { DomainUtils } from '../utils';
 
 /**
  * URL 验证器类
@@ -19,8 +19,8 @@ export class UrlValidator {
         this.whitelist = whitelist;
         this.blacklist = blacklist;
         // 预生成正则表达式，提高匹配性能和安全性
-        this.whitelistRegexps = createDomainMatchers(whitelist);
-        this.blacklistRegexps = createDomainMatchers(blacklist);
+        this.whitelistRegexps = DomainUtils.createDomainMatchers(whitelist);
+        this.blacklistRegexps = DomainUtils.createDomainMatchers(blacklist);
     }
 
     /**
@@ -109,7 +109,7 @@ export class UrlValidator {
      */
     public setWhitelist(whitelist: string[]): void {
         this.whitelist = whitelist;
-        this.whitelistRegexps = createDomainMatchers(whitelist);
+        this.whitelistRegexps = DomainUtils.createDomainMatchers(whitelist);
     }
 
     /**
@@ -118,7 +118,7 @@ export class UrlValidator {
      */
     public setBlacklist(blacklist: string[]): void {
         this.blacklist = blacklist;
-        this.blacklistRegexps = createDomainMatchers(blacklist);
+        this.blacklistRegexps = DomainUtils.createDomainMatchers(blacklist);
     }
 
     /**
@@ -127,7 +127,7 @@ export class UrlValidator {
      */
     public addToWhitelist(...patterns: string[]): void {
         this.whitelist.push(...patterns);
-        this.whitelistRegexps = createDomainMatchers(this.whitelist);
+        this.whitelistRegexps = DomainUtils.createDomainMatchers(this.whitelist);
     }
 
     /**
@@ -136,7 +136,7 @@ export class UrlValidator {
      */
     public addToBlacklist(...patterns: string[]): void {
         this.blacklist.push(...patterns);
-        this.blacklistRegexps = createDomainMatchers(this.blacklist);
+        this.blacklistRegexps = DomainUtils.createDomainMatchers(this.blacklist);
     }
 
     /**
@@ -145,7 +145,7 @@ export class UrlValidator {
      */
     public removeFromWhitelist(...patterns: string[]): void {
         this.whitelist = this.whitelist.filter(p => !patterns.includes(p));
-        this.whitelistRegexps = createDomainMatchers(this.whitelist);
+        this.whitelistRegexps = DomainUtils.createDomainMatchers(this.whitelist);
     }
 
     /**
@@ -154,7 +154,7 @@ export class UrlValidator {
      */
     public removeFromBlacklist(...patterns: string[]): void {
         this.blacklist = this.blacklist.filter(p => !patterns.includes(p));
-        this.blacklistRegexps = createDomainMatchers(this.blacklist);
+        this.blacklistRegexps = DomainUtils.createDomainMatchers(this.blacklist);
     }
 
     /**
