@@ -3,6 +3,11 @@
  */
 
 import { promises as dns } from 'node:dns';
+import { CommonUtils } from '../utils';
+import {
+    DEFAULT_DNS_CACHE_TTL,
+    DEFAULT_DNS_RESOLVE_TIMEOUT
+} from '../const';
 import type {
     DnsCacheEntry,
     DnsResult
@@ -16,9 +21,11 @@ import { IpValidator } from './ip.validator';
 export class DnsValidator {
     private cache: Map<string, DnsCacheEntry> = new Map();
     private cacheTtl: number;
+    private resolveTimeout: number;
 
-    constructor(cacheTtl = 60000) {
+    constructor(cacheTtl = DEFAULT_DNS_CACHE_TTL, resolveTimeout = DEFAULT_DNS_RESOLVE_TIMEOUT) {
         this.cacheTtl = cacheTtl;
+        this.resolveTimeout = resolveTimeout;
     }
 
     /**
@@ -38,14 +45,14 @@ export class DnsValidator {
             const addresses: string[] = [];
 
             try {
-                const ipv4Addresses = await dns.resolve4(hostname);
+                const ipv4Addresses = await CommonUtils.withTimeout(dns.resolve4(hostname), this.resolveTimeout, 'DNS resolution timed out');
                 addresses.push(...ipv4Addresses);
             } catch {
                 // IPv4 解析失败，继续尝试 IPv6
             }
 
             try {
-                const ipv6Addresses = await dns.resolve6(hostname);
+                const ipv6Addresses = await CommonUtils.withTimeout(dns.resolve6(hostname), this.resolveTimeout, 'DNS resolution timed out');
                 addresses.push(...ipv6Addresses);
             } catch {
                 // IPv6 解析失败
@@ -72,6 +79,7 @@ export class DnsValidator {
             );
         }
     }
+
 
     /**
      * 解析并验证域名（包括 IP 安全检查）
@@ -172,4 +180,3 @@ export class DnsValidator {
         }
     }
 }
-

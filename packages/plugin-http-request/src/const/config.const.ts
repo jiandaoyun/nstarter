@@ -5,6 +5,7 @@ import type {
     SecurityConfig
 } from '../types';
 import { EClientAdapter } from './enum.const';
+import { DEFAULT_DNS_CACHE_TTL } from './dns.const';
 
 /**
  * DNS 缓存最大 TTL（毫秒）- 5 分钟
@@ -22,7 +23,7 @@ export const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
     allowPrivateIp: false,
     whitelist: [],
     blacklist: [],
-    dnsCacheTtl: 60000 // 60 秒
+    dnsCacheTtl: DEFAULT_DNS_CACHE_TTL
 };
 
 /**
