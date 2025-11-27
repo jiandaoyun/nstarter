@@ -1,50 +1,101 @@
 # nstarter-http-request
 
-`nstarter HTTP` 请求客户端插件，提供安全、可靠、易用的 HTTP 请求能力。
+HTTP 请求客户端插件，提供 SSRF 防护、日志记录、正向代理等安全特性。
 
-## 特性
+## 核心特性
 
-### 🚀 核心功能
+- 🔒 **SSRF 防护**：DNS/IP 验证，阻止访问内网地址
+- 📝 **完善日志**：请求/响应日志记录与过滤
+- 🔄 **多适配器**：支持 Axios 和 Undici
+- 🌐 **代理支持**：HTTP/HTTPS 正向代理
+- ⚡ **重试机制**：可配置的请求重试策略
+- 🎯 **类型安全**：完整 TypeScript 类型支持
 
-- **多适配器支持**：支持 Axios 和 Undici 两种适配器，可根据需求灵活切换
-- **统一接口**：无论使用哪种适配器，都提供统一的请求/响应接口
-- **自动重试**：支持配置自动重试次数和延迟
-- **超时控制**：灵活的超时配置
-- **代理支持**：支持正向代理配置
+## 包结构
 
-### 🔒 安全防护
-
-- **SSRF 防护**：防止服务器端请求伪造攻击
-- **IP 地址验证**：阻止访问私有 IP、回环地址、Link-Local 地址等
-- **DNS 解析验证**：验证 DNS 解析结果.
-- **DNS 缓存**：带 TTL 的 DNS 缓存，提高性能并增强安全性
-- **黑白名单**：支持域名黑白名单（支持通配符，如 `*.example.com`）
-
-### 📊 日志记录
-
-- **可插拔日志适配器**：支持自定义日志记录器
-- **详细的请求/响应日志**：记录完整的请求和响应信息
-- **业务场景标识**：支持为不同业务场景添加标识
-- **灵活配置**：可配置日志级别、内容过滤
-
-### 🧪 测试
-
-- 完整的单元测试覆盖
-
-## 安装
-
-```bash
-npm install nstarter-http-request
+```
+plugin-http-request/
+├── src/                           # 源代码目录
+│   ├── adapter/                   # HTTP 适配器层
+│   │   ├── base.ts                # 适配器基类
+│   │   ├── axios.adapter.ts       # Axios 适配器实现
+│   │   └── undici.adapter.ts      # Undici 适配器实现
+│   ├── security/                  # 安全防护模块
+│   │   ├── ssrf.guard.ts          # SSRF 防护核心
+│   │   ├── dns.validator.ts       # DNS 验证器（域名解析）
+│   │   ├── ip.validator.ts        # IP 地址验证器（私有/保留IP检测）
+│   │   └── url.validator.ts       # URL 验证器（黑白名单）
+│   ├── logger/                    # 日志记录模块
+│   │   ├── base.ts                # 日志记录器基类和接口
+│   │   ├── console.logger.ts      # 控制台日志实现
+│   │   ├── http_client.logger.ts  # HTTP 客户端专用日志
+│   │   └── log.filter.ts          # 日志过滤器（按方法、URL、状态码等）
+│   ├── types/                     # TypeScript 类型定义
+│   │   ├── config.ts              # 配置相关类型
+│   │   ├── request_response.ts    # 请求/响应类型
+│   │   ├── security.ts            # 安全相关类型
+│   │   ├── logger.ts              # 日志相关类型
+│   │   ├── adapter.ts             # 适配器接口类型
+│   │   ├── client.ts              # 客户端接口类型
+│   │   ├── errors.ts              # 错误类型定义
+│   │   └── index.ts               # 类型统一导出
+│   ├── utils/                     # 工具函数集
+│   │   ├── forward.proxy.ts       # 正向代理工具（no_proxy 处理）
+│   │   ├── ip.range.ts            # IP 范围解析工具（CIDR 支持）
+│   │   └── common.ts              # 通用工具函数
+│   ├── const/                     # 常量定义
+│   │   ├── config.const.ts        # 默认配置常量
+│   │   ├── enum.const.ts          # 枚举常量（适配器类型、日志级别）
+│   │   └── ip.const.ts            # IP 相关常量（私有IP段、保留IP段）
+│   ├── client.ts                  # HTTP 客户端核心类（NsHttpClient）
+│   ├── config.ts                  # 配置合并与验证
+│   └── index.ts                   # 主入口文件
+├── test/                          # 测试文件目录
+│   ├── adapter/                   # 适配器测试
+│   ├── security/                  # 安全模块测试
+│   ├── logger/                    # 日志模块测试
+│   ├── utils/                     # 工具函数测试
+│   ├── integration/               # 集成测试
+│   ├── client.test.ts             # 客户端测试
+│   └── config.test.ts             # 配置测试
+└── dist/                          # 构建输出目录
+    ├── cjs/                       # CommonJS 格式（Node.js require）
+    ├── esm/                       # ES Module 格式（import）
+    └── types/                     # TypeScript 类型声明文件
 ```
 
-根据需要安装适配器依赖：
+### 核心模块说明
+
+- **client.ts** - 提供统一的 HTTP 客户端接口，整合适配器、安全防护、日志等功能
+- **adapter/** - 适配器模式实现，支持多种 HTTP 库（Axios、Undici），可扩展
+- **security/** - SSRF 防护核心，包含 DNS 解析、IP 验证、URL 黑白名单等安全检查
+- **logger/** - 可配置的日志系统，支持请求/响应记录、敏感信息过滤、条件日志
+- **utils/** - 工具集，包含代理配置处理、IP 段解析（CIDR）等辅助功能
+- **types/** - 完整的 TypeScript 类型定义，确保类型安全
+
+## 本地开发
 
 ```bash
-# 使用 Axios 适配器
-npm install axios
+# 在项目根目录安装依赖
+npm install
 
-# 使用 Undici 适配器
-npm install undici
+# 构建此包（在根目录执行）
+nx build nstarter-http-request
+
+# 运行测试（在根目录执行）
+nx test nstarter-http-request
+
+# 代码检查（在根目录执行）
+nx eslint nstarter-http-request
+
+# 清理构建产物（在根目录执行）
+nx run nstarter-http-request:clean
+
+# 构建所有包
+nx run-many -t build
+
+# 测试所有包
+nx run-many -t test
 ```
 
 ## 快速开始
@@ -52,581 +103,191 @@ npm install undici
 ### 基础使用
 
 ```typescript
-import {
-    HttpClient,
-    EClientAdapter
-} from 'nstarter-http-request';
+import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 
 // 创建客户端实例
-const client = new HttpClient({
-    adapter: EClientAdapter.undici, // 或 EClientAdapter.axios
-    request: {
-        timeout: 5000,
-        retries: 3
-    }
+const client = new NsHttpClient({
+  adapter: EClientAdapter.axios,
+  security: {
+    enableDnsValidation: true,
+    enableIpValidation: true,
+    allowPrivateIp: false
+  }
 });
 
-// 发送 GET 请求
-const response = await client.get('https://api.example.com/data');
-console.log(response.data);
-
-// 发送 POST 请求
-const postResponse = await client.post(
-    'https://api.example.com/users',
-    { name: 'John', email: 'john@example.com' }
-);
-```
-
-### 使用便捷方法
-
-```typescript
 // GET 请求
-const getData = await client.get('https://api.example.com/data');
+const response = await client.get('https://api.example.com/users');
 
 // POST 请求
-const postData = await client.post('https://api.example.com/users', {
-    name: 'John'
-});
-
-// PUT 请求
-const putData = await client.put('https://api.example.com/users/1', {
-    name: 'Jane'
-});
-
-// DELETE 请求
-const deleteData = await client.delete('https://api.example.com/users/1');
-
-// PATCH 请求
-const patchData = await client.patch('https://api.example.com/users/1', {
-    email: 'newemail@example.com'
+const user = await client.post('https://api.example.com/users', {
+  name: 'John',
+  email: 'john@example.com'
 });
 ```
-
-### 通用请求方法
-
-```typescript
-const response = await client.request({
-    method: 'GET',
-    url: 'https://api.example.com/data',
-    headers: {
-        'Authorization': 'Bearer token123'
-    },
-    params: {
-        page: 1,
-        limit: 10
-    },
-    scenario: 'user-management', // 业务场景标识
-    meta: {
-        userId: '123' // 自定义元数据
-    }
-});
-```
-
-## 配置选项
 
 ### 完整配置示例
 
 ```typescript
-import {
-    HttpClient,
-    EClientAdapter
-} from 'nstarter-http-request';
+import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 
-const client = new HttpClient({
-    // 适配器配置
-    adapter: EClientAdapter.undici,
+const client = new NsHttpClient({
+  // 适配器配置
+  adapter: EClientAdapter.axios,
 
-    // 请求配置
-    request: {
-        timeout: 5000,              // 超时时间（毫秒）
-        retries: 3,                 // 重试次数
-        retryDelay: 1000,           // 重试延迟（毫秒）
-        maxRedirects: 5,            // 最大重定向次数
-        maxRequestBodySize: 10485760,  // 最大请求体大小（10MB）
-        maxResponseBodySize: 10485760  // 最大响应体大小（10MB）
-    },
+  // 安全配置
+  security: {
+    rejectUnauthorized: true,        // 是否验证 SSL 证书（生产环境建议 true）
+    enableDnsValidation: true,       // 开启 DNS 验证
+    enableIpValidation: true,        // 开启 IP 验证
+    allowPrivateIp: false,           // 是否允许访问私有 IP（内网地址）
+    whitelist: [                     // 域名白名单（支持通配符 *.example.com）
+      '*.trusted.com',
+      'api.example.com'
+    ],
+    blacklist: [                     // 域名黑名单（支持通配符）
+      '*.malicious.com',
+      'unsafe.net'
+    ],
+    dnsCacheTtl: 60000               // DNS 缓存 TTL（毫秒，默认 60 秒）
+  },
 
-    // 安全配置
-    security: {
-        rejectUnauthorized: true,   // 证书校验
-        enableDnsValidation: true,  // 启用 DNS 验证
-        enableIpValidation: true,   // 启用 IP 验证
-        allowPrivateIp: false,      // 是否允许访问私有 IP
-        whitelist: ['*.example.com'], // 域名白名单
-        blacklist: ['*.blocked.com'], // 域名黑名单
-        dnsCacheTtl: 300000         // DNS 缓存 TTL（5分钟）
-    },
-
-    // 日志配置
-    logging: {
-        enabled: true,              // 启用日志
-        logRequestBody: true,       // 记录请求体
-        logResponseBody: true,      // 记录响应体
-        bodyMaxLength: 1000,        // 响应体最大记录长度
-        filter: {
-            // 日志过滤配置（可选）
-            methods: ['POST', 'PUT'],           // 只记录 POST 和 PUT 请求
-            scenarios: ['user-management'],     // 只记录特定场景
-            minDuration: 1000,                  // 只记录耗时超过 1 秒的请求
-            onlyFailed: false                   // 记录所有请求（成功和失败）
-        }
+  // 日志配置
+  logging: {
+    enabled: true,                   // 是否启用日志
+    logRequestBody: true,            // 是否记录请求体
+    logResponseBody: true,           // 是否记录响应体
+    bodyMaxLength: 1024 * 1024,      // 请求/响应体最大记录长度（字节，默认 1MB）
+    logger: customLogger,            // 自定义日志记录器（可选，实现 ILogger 接口）
+    httpLogger: customHttpLogger,    // 自定义 HTTP 日志记录器（可选，实现 IHttpClientLogger 接口）
+    filter: {                        // 日志过滤配置
+      methods: ['POST', 'PUT'],      // 只记录指定 HTTP 方法
+      urlPatterns: [                 // 只记录匹配的 URL（支持正则）
+        /\/api\//,
+        'https://api.example.com'
+      ],
+      scenarios: ['payment'],        // 只记录指定业务场景
+      statusCodes: [404, 500],       // 只记录指定状态码
+      statusCodeRanges: [            // 只记录指定状态码范围
+        { min: 400, max: 499 },      // 客户端错误
+        { min: 500, max: 599 }       // 服务端错误
+      ],
+      onlyFailed: false,             // 是否只记录失败请求
+      onlySuccess: false,            // 是否只记录成功请求
+      minDuration: 100,              // 只记录耗时超过指定毫秒的请求
+      customFilter: (options) => {   // 自定义过滤函数
+        return options.request.method === 'POST';
+      }
     }
+  },
+
+  // 请求配置
+  request: {
+    timeout: 30000,                  // 请求超时（毫秒，默认 30 秒）
+    retries: 3,                      // 重试次数（默认 0）
+    retryDelay: 1000,                // 重试延迟（毫秒，默认 1 秒）
+    maxRedirects: 5,                 // 最大重定向次数（默认 5）
+    maxRequestBodySize: 10 * 1024 * 1024,   // 最大请求体大小（字节，默认 10MB）
+    maxResponseBodySize: 50 * 1024 * 1024,  // 最大响应体大小（字节，默认 50MB）
+    proxy: {                         // HTTP 代理配置（可选，不同于正向代理）
+      host: 'proxy.example.com',
+      port: 8080,
+      protocol: 'http',              // 'http' | 'https'
+      auth: {                        // 代理认证（可选）
+        username: 'user',
+        password: 'pass'
+      }
+    }
+  }
 });
 ```
 
 ### 安全配置详解
 
-#### IP 验证
-
-默认情况下，客户端会阻止访问以下 IP 地址：
-
-- 私有 IP 地址
-- 回环地址
-- Link-Local 地址
-- 多播地址
-- 广播地址
+#### 1. SSL 证书验证
 
 ```typescript
-// 允许访问私有 IP
-const client = new HttpClient({
-    security: {
-        allowPrivateIp: true
-    }
+const client = new NsHttpClient({
+  security: {
+    rejectUnauthorized: true  // 生产环境必须为 true，开发环境可设为 false
+  }
 });
 ```
 
-#### 域名黑白名单
-
-支持使用通配符配置域名黑白名单：
+#### 2. SSRF 防护
 
 ```typescript
-const client = new HttpClient({
-    security: {
-        // 只允许访问这些域名
-        whitelist: [
-            'api.example.com',
-            '*.trusted.com',
-            'service.*.example.com'
-        ],
-        // 禁止访问这些域名
-        blacklist: [
-            '*.malicious.com',
-            'dangerous.example.com'
-        ]
-    }
+const client = new NsHttpClient({
+  security: {
+    enableDnsValidation: true,  // 启用 DNS 解析验证
+    enableIpValidation: true,   // 启用 IP 地址验证
+    allowPrivateIp: false,      // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
+    whitelist: ['*.safe.com'],  // 白名单优先级最高
+    blacklist: ['*.block.com']  // 黑名单次之
+  }
 });
 ```
 
-#### DNS 验证和缓存
+### 日志配置详解
 
-DNS 验证可以防止 DNS 重绑定攻击：
-
-```typescript
-const client = new HttpClient({
-    security: {
-        enableDnsValidation: true,  // 启用 DNS 验证
-        dnsCacheTtl: 300000         // DNS 缓存 5 分钟
-    }
-});
-
-// 手动清空 DNS 缓存
-client.clearDnsCache();
-
-// 获取 DNS 缓存大小
-const cacheSize = client.getDnsCacheSize();
-```
-
-### 日志配置
-
-#### 使用内置日志
+#### 1. 自定义日志记录器
 
 ```typescript
-const client = new HttpClient({
-    logging: {
-        enabled: true,
-        logRequestBody: true,
-        logResponseBody: true,
-        bodyMaxLength: 1000
-    }
-});
-```
+import { ILogger } from 'nstarter-http-request';
 
-#### 使用自定义日志记录器
-
-```typescript
-import type { ILogger } from 'nstarter-http-request';
-
-class MyLogger implements ILogger {
-    debug(message: string, meta?: any): void {
-        console.log('[DEBUG]', message, meta);
-    }
-
-    info(message: string, meta?: any): void {
-        console.log('[INFO]', message, meta);
-    }
-
-    warn(message: string, meta?: any): void {
-        console.warn('[WARN]', message, meta);
-    }
-
-    error(message: string, meta?: any): void {
-        console.error('[ERROR]', message, meta);
-    }
-}
-
-const client = new HttpClient({
-    logging: {
-        enabled: true,
-        logger: new MyLogger()
-    }
-});
-```
-
-#### 使用自定义 HTTP 日志记录器
-
-```typescript
-import type {
-    IHttpClientLogger,
-    HttpLogContext
-} from 'nstarter-http-request';
-
-class MyHttpLogger implements IHttpClientLogger {
-    logSuccess(context: HttpLogContext): void {
-        console.log('Request succeeded:', {
-            url: context.request.url,
-            status: context.response?.status,
-            duration: context.duration
-        });
-    }
-
-    logFailed(context: HttpLogContext): void {
-        console.error('Request failed:', {
-            url: context.request.url,
-            error: context.error?.message,
-            duration: context.duration
-        });
-    }
-}
-
-const client = new HttpClient({
-    logging: {
-        enabled: true,
-        httpLogger: new MyHttpLogger()
-    }
-});
-```
-
-#### 日志过滤
-
-日志过滤器用于控制记录哪些请求日志：
-
-```typescript
-const client = new HttpClient({
-    logging: {
-        enabled: true,
-        filter: {
-            // 只记录 POST 和 PUT 请求
-            methods: ['POST', 'PUT'],
-
-            // 只记录特定 URL 模式
-            urlPatterns: ['/api/users', /\/api\/orders\/\d+/],
-
-            // 只记录特定业务场景
-            scenarios: ['user-registration', 'order-payment'],
-
-            // 只记录 4xx 和 5xx 错误
-            statusCodeRanges: [
-                { min: 400, max: 499 },
-                { min: 500, max: 599 }
-            ],
-
-            // 只记录失败的请求
-            onlyFailed: true,
-
-            // 只记录耗时超过 1 秒的请求
-            minDuration: 1000,
-
-            // 自定义过滤函数
-            customFilter: (context) => {
-                // 只记录生产环境的错误
-                return process.env.NODE_ENV === 'production' && !context.isSuccess;
-            }
-        }
-    }
-});
-```
-
-### 代理配置
-
-#### 正向代理
-
-```typescript
-import type { IForwardProxy } from 'nstarter-http-request';
-
-const proxy: IForwardProxy = {
-    enabled: true,
-    http_proxy: 'http://proxy.example.com:8080',
-    https_proxy: 'http://proxy.example.com:8080',
-    no_proxy: ['localhost', '*.internal.com']
+const customLogger: ILogger = {
+  debug: (msg, meta) => console.debug(msg, meta),
+  info: (msg, meta) => console.info(msg, meta),
+  warn: (msg, meta) => console.warn(msg, meta),
+  error: (msg, meta) => console.error(msg, meta)
 };
 
-const client = new HttpClient();
-client.withForwardProxy(proxy);
-```
-
-## 高级用法
-
-### 切换适配器
-
-```typescript
-const client = new HttpClient({
-    adapter: EClientAdapter.axios
+const client = new NsHttpClient({
+  logging: { logger: customLogger }
 });
-
-// 动态切换到 Undici 适配器
-client.withAdapter(EClientAdapter.undici);
 ```
 
-### 业务场景标识
-
-为不同的业务场景添加标识，便于日志追踪和统计：
+#### 2. 日志过滤
 
 ```typescript
-// 用户管理场景
-await client.get('https://api.example.com/users', {
-    scenario: 'user-management',
-    meta: {
-        action: 'list-users',
-        adminId: '123'
+const client = new NsHttpClient({
+  logging: {
+    enabled: true,
+    filter: {
+      // 只记录失败的 POST 请求
+      methods: ['POST'],
+      onlyFailed: true,
+      minDuration: 1000  // 且耗时超过 1 秒
     }
-});
-
-// 订单处理场景
-await client.post('https://api.example.com/orders', orderData, {
-    scenario: 'order-processing',
-    meta: {
-        orderId: 'ORD-001',
-        userId: 'USER-123'
-    }
+  }
 });
 ```
 
-### 请求重试
+### 正向代理配置
 
 ```typescript
-// 使用默认重试配置
-const client = new HttpClient({
-    request: {
-        retries: 3,
-        retryDelay: 1000
-    }
-});
-
-// 为特定请求自定义重试
-await client.get('https://api.example.com/data', {
-    retries: 5,
-    retryDelay: 2000
-});
+const client = new NsHttpClient()
+  .withForwardProxy({
+    enabled: true,
+    http_proxy: 'http://proxy.example.com:8080',
+    https_proxy: 'https://proxy.example.com:8443',
+    no_proxy: [          // 不使用代理的域名
+      'localhost',
+      '127.0.0.1',
+      '*.internal.com',
+      '.local'
+    ]
+  });
 ```
 
-### 自定义请求头
+### 适配器切换
 
 ```typescript
-await client.get('https://api.example.com/data', {
-    headers: {
-        'Authorization': 'Bearer token123',
-        'X-Custom-Header': 'custom-value',
-        'User-Agent': 'MyApp/1.0'
-    }
-});
-```
+import { EClientAdapter } from 'nstarter-http-request';
 
-### 查询参数
+// 使用 Axios 适配器（适合通用场景）
+const axiosClient = new NsHttpClient().withAdapter(EClientAdapter.axios);
 
-```typescript
-await client.get('https://api.example.com/users', {
-    params: {
-        page: 1,
-        limit: 20,
-        sort: 'name',
-        filter: 'active'
-    }
-});
-// 实际请求 URL: https://api.example.com/users?page=1&limit=20&sort=name&filter=active
-```
-
-### 请求体
-
-```typescript
-// JSON 请求体
-await client.post('https://api.example.com/users', {
-    name: 'John',
-    email: 'john@example.com'
-}, {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
-
-// Form 请求体
-await client.post('https://api.example.com/upload', formData, {
-    headers: {
-        'Content-Type': 'multipart/form-data'
-    }
-});
-```
-
-## 错误处理
-
-```typescript
-import {
-    HttpError,
-    SecurityError
-} from 'nstarter-http-request';
-
-try {
-    const response = await client.get('https://api.example.com/data');
-    console.log(response.data);
-} catch (error) {
-    if (error instanceof SecurityError) {
-        // 安全相关错误（SSRF、IP 验证失败等）
-        console.error('Security error:', error.message);
-    } else if (error instanceof HttpError) {
-        // HTTP 请求错误
-        console.error('HTTP error:', {
-            status: error.status,
-            code: error.code,
-            message: error.message,
-            response: error.response
-        });
-    } else {
-        // 其他错误
-        console.error('Unknown error:', error);
-    }
-}
-```
-
-### 类型定义
-
-#### HttpRequestOptions
-
-```typescript
-interface HttpRequestOptions {
-    method: string;           // HTTP 方法
-    url: string;              // 请求 URL
-    headers?: Record<string, string>;  // 请求头
-    params?: Record<string, any>;      // 查询参数
-    body?: any;               // 请求体
-    timeout?: number;         // 超时时间
-    retries?: number;         // 重试次数
-    retryDelay?: number;      // 重试延迟
-    scenario?: string;        // 业务场景标识
-    meta?: Record<string, any>;  // 自定义元数据
-}
-```
-
-#### HttpResponse
-
-```typescript
-interface HttpResponse<T = any> {
-    status: number;           // HTTP 状态码
-    statusText: string;       // 状态文本
-    headers: Record<string, string>;  // 响应头
-    data: T;                  // 响应数据
-}
-```
-
-## 最佳实践
-
-### 1. 使用单例模式
-
-```typescript
-// httpClient.ts
-import {
-    HttpClient,
-    EClientAdapter
-} from 'nstarter-http-request';
-
-export const httpClient = new HttpClient({
-    adapter: EClientAdapter.undici,
-    request: {
-        timeout: 5000,
-        retries: 3
-    },
-    security: {
-        enableDnsValidation: true,
-        enableIpValidation: true
-    }
-});
-```
-
-### 2. 为不同服务创建专用客户端
-
-```typescript
-// userService.ts
-const userApiClient = new HttpClient({
-    request: { timeout: 3000 },
-    security: { whitelist: ['api.user-service.com'] }
-});
-
-// orderService.ts
-const orderApiClient = new HttpClient({
-    request: { timeout: 5000 },
-    security: { whitelist: ['api.order-service.com'] }
-});
-```
-
-### 3. 合理配置安全选项
-
-```typescript
-// 生产环境
-const prodClient = new HttpClient({
-    security: {
-        enableDnsValidation: true,
-        enableIpValidation: true,
-        allowPrivateIp: false,
-        whitelist: ['*.trusted-api.com']
-    }
-});
-
-// 开发环境
-const devClient = new HttpClient({
-    security: {
-        allowPrivateIp: true,  // 允许访问本地服务
-        enableIpValidation: false
-    }
-});
-```
-
-### 4. 使用业务场景标识
-
-```typescript
-await client.post('/api/users', userData, {
-    scenario: 'user-registration',
-    meta: {
-        source: 'web',
-        version: 'v2'
-    }
-});
-```
-
-### 5. 错误处理和重试
-
-```typescript
-const client = new HttpClient({
-    request: {
-        retries: 3,
-        retryDelay: 1000
-    }
-});
-
-try {
-    const response = await client.get(url);
-    return response.data;
-} catch (error) {
-    // 处理错误，记录日志
-    logger.error('Request failed after retries', error);
-    throw error;
-}
+// 使用 Undici 适配器（高性能，Node.js 原生）
+const undiciClient = new NsHttpClient().withAdapter(EClientAdapter.undici);
 ```
 
