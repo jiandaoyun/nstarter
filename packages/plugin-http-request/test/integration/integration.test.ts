@@ -11,11 +11,11 @@ import {
     setGlobalDispatcher,
     getGlobalDispatcher
 } from 'undici';
-import { HttpClient } from '../../src';
+import { NsHttpClient } from '../../src';
 import { SecurityError } from '../../src';
 import { EClientAdapter } from '../../src';
 
-describe('HttpClient Integration Tests', function () {
+describe('NsHttpClient Integration Tests', function () {
     this.timeout(10000);
     let mockAgent: MockAgent;
     let originalDispatcher: any;
@@ -48,7 +48,7 @@ describe('HttpClient Integration Tests', function () {
                     url: 'https://httpbin.org/get'
                 });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -69,7 +69,7 @@ describe('HttpClient Integration Tests', function () {
                 url: 'https://httpbin.org/get'
             });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.undici,
                 logging: { enabled: false }
             });
@@ -88,7 +88,7 @@ describe('HttpClient Integration Tests', function () {
                     json: { test: 'data' }
                 });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -103,7 +103,7 @@ describe('HttpClient Integration Tests', function () {
 
     describe('Security validations', () => {
         it('should block requests to loopback addresses', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
@@ -121,7 +121,7 @@ describe('HttpClient Integration Tests', function () {
         });
 
         it('should block requests to private IP addresses', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
@@ -139,7 +139,7 @@ describe('HttpClient Integration Tests', function () {
         });
 
         it('should allow requests to private IPs when enabled', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
@@ -159,7 +159,7 @@ describe('HttpClient Integration Tests', function () {
         });
 
         it('should enforce whitelist', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
                     whitelist: ['httpbin.org']
@@ -176,7 +176,7 @@ describe('HttpClient Integration Tests', function () {
         });
 
         it('should enforce blacklist', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
                     blacklist: ['bad.example.com']
@@ -200,7 +200,7 @@ describe('HttpClient Integration Tests', function () {
                 .delayConnection(5000)
                 .reply(200);
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 request: { timeout: 100 }, // 100ms timeout
                 logging: { enabled: false }
@@ -219,7 +219,7 @@ describe('HttpClient Integration Tests', function () {
                 .get('/status/404')
                 .reply(404);
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -233,7 +233,7 @@ describe('HttpClient Integration Tests', function () {
                 .get('/')
                 .replyWithError({ code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND' });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -255,7 +255,7 @@ describe('HttpClient Integration Tests', function () {
                 .times(4) // 初始请求 + 3次重试
                 .reply(503);
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 request: {
                     retries: 3,
@@ -276,7 +276,7 @@ describe('HttpClient Integration Tests', function () {
                 .get('/get')
                 .reply(200, { adapter: 'axios' });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -293,7 +293,7 @@ describe('HttpClient Integration Tests', function () {
                 method: 'GET'
             }).reply(200, { adapter: 'undici' });
 
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.undici,
                 logging: { enabled: false }
             });

@@ -35,7 +35,7 @@ import { HttpError } from './types';
 /**
  * HTTP 客户端
  */
-export class HttpClient implements IHttpClient {
+export class NsHttpClient implements IHttpClient {
     private config: HttpClientConfig;
     private adapter: IHttpAdapter;
     private ssrfGuard: ISsrfGuard;
@@ -60,7 +60,7 @@ export class HttpClient implements IHttpClient {
         // 初始化适配器
         this.adapter = this.initAdapter();
 
-        this.logger.debug('HttpClient initialized', {
+        this.logger.debug('NsHttpClient initialized', {
             adapter: this.config.adapter,
             security: {
                 enableDnsValidation: this.config.security.enableDnsValidation,
@@ -74,8 +74,8 @@ export class HttpClient implements IHttpClient {
      * 从配置创建 HTTP 客户端
      * @param config
      */
-    public static fromHttpClientConfig(config: PartialHttpClientConfig = {}): HttpClient {
-        return new HttpClient(config);
+    public static fromHttpClientConfig(config: PartialHttpClientConfig = {}): NsHttpClient {
+        return new NsHttpClient(config);
     }
 
     /**
@@ -300,7 +300,7 @@ export class HttpClient implements IHttpClient {
         const retryCount = options.retries ?? this.config.request.retries;
 
         const httpError = error instanceof HttpError ? error : undefined;
-        
+
         this.httpLogger.logFailed({
             request: {
                 method: options.method,

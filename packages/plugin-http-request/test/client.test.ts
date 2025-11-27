@@ -1,10 +1,10 @@
 /**
- * HttpClient 核心测试
+ * NsHttpClient 核心测试
  */
 
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { HttpClient } from '../src';
+import { NsHttpClient } from '../src';
 import { EClientAdapter } from '../src';
 import type {
     PartialHttpClientConfig,
@@ -16,7 +16,7 @@ import { SecurityError } from '../src';
 import * as adapters from '../src/adapter';
 import * as security from '../src/security';
 
-describe('HttpClient', () => {
+describe('NsHttpClient', () => {
     let sandbox: sinon.SinonSandbox;
 
     beforeEach(() => {
@@ -29,8 +29,8 @@ describe('HttpClient', () => {
 
     describe('构造函数', () => {
         it('应该使用默认配置创建客户端', () => {
-            const client = new HttpClient();
-            expect(client).to.be.instanceOf(HttpClient);
+            const client = new NsHttpClient();
+            expect(client).to.be.instanceOf(NsHttpClient);
         });
 
         it('应该使用自定义配置创建客户端', () => {
@@ -44,12 +44,12 @@ describe('HttpClient', () => {
                 }
             };
 
-            const client = new HttpClient(config);
+            const client = new NsHttpClient(config);
             expect(client).to.exist;
         });
 
         it('应该初始化所有内部组件', () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false }
             });
 
@@ -62,7 +62,7 @@ describe('HttpClient', () => {
             const axiosStub = sandbox.stub(adapters.AxiosAdapter.prototype, 'isAvailable').returns(false);
 
             expect(() => {
-                new HttpClient({ adapter: EClientAdapter.axios });
+                new NsHttpClient({ adapter: EClientAdapter.axios });
             }).to.throw(/not available/);
 
             axiosStub.restore();
@@ -71,22 +71,22 @@ describe('HttpClient', () => {
 
     describe('fromHttpClientConfig', () => {
         it('应该通过静态方法创建客户端', () => {
-            const client = HttpClient.fromHttpClientConfig({
+            const client = NsHttpClient.fromHttpClientConfig({
                 logging: { enabled: false }
             });
 
-            expect(client).to.be.instanceOf(HttpClient);
+            expect(client).to.be.instanceOf(NsHttpClient);
         });
 
         it('应该支持无参数调用', () => {
-            const client = HttpClient.fromHttpClientConfig();
-            expect(client).to.be.instanceOf(HttpClient);
+            const client = NsHttpClient.fromHttpClientConfig();
+            expect(client).to.be.instanceOf(NsHttpClient);
         });
     });
 
     describe('withAdapter', () => {
         it('应该切换到指定的适配器', () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 logging: { enabled: false }
             });
@@ -96,7 +96,7 @@ describe('HttpClient', () => {
         });
 
         it('应该支持链式调用', () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const result = client
                 .withAdapter(EClientAdapter.axios)
@@ -108,7 +108,7 @@ describe('HttpClient', () => {
 
     describe('withForwardProxy', () => {
         it('应该配置正向代理', () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const proxy: IForwardProxy = {
                 enabled: true,
@@ -122,7 +122,7 @@ describe('HttpClient', () => {
         });
 
         it('应该支持链式调用', () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const proxy: IForwardProxy = {
                 enabled: true,
@@ -137,7 +137,7 @@ describe('HttpClient', () => {
 
         it('应该记录代理配置日志', () => {
             const logs: any[] = [];
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: {
                     enabled: true,
                     logger: {
@@ -171,7 +171,7 @@ describe('HttpClient', () => {
 
     describe('request', () => {
         it('应该成功发送HTTP请求', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             // Mock adapter.request
             const mockResponse: HttpResponse = {
@@ -194,7 +194,7 @@ describe('HttpClient', () => {
         });
 
         it('应该进行SSRF安全验证', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     enableIpValidation: true,
@@ -218,7 +218,7 @@ describe('HttpClient', () => {
         });
 
         it('应该在URL安全验证失败时抛出错误', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     blacklist: ['bad.example.com']
@@ -237,7 +237,7 @@ describe('HttpClient', () => {
         });
 
         it('应该在响应中设置Host头当URL被替换为IP时', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     enableDnsValidation: true,
@@ -280,7 +280,7 @@ describe('HttpClient', () => {
 
         it('应该记录请求和响应日志', async () => {
             const logs: any[] = [];
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: {
                     enabled: true,
                     logRequestBody: true,
@@ -322,7 +322,7 @@ describe('HttpClient', () => {
 
         it('应该在请求失败时记录错误日志', async () => {
             const logs: any[] = [];
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: {
                     enabled: true,
                     logger: {
@@ -360,7 +360,7 @@ describe('HttpClient', () => {
         });
 
         it('应该应用正向代理配置', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const proxy: IForwardProxy = {
                 enabled: true,
@@ -393,7 +393,7 @@ describe('HttpClient', () => {
         });
 
         it('应该跳过no_proxy列表中的域名', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     enableDnsValidation: false,
@@ -434,7 +434,7 @@ describe('HttpClient', () => {
 
         it('应该正确截断过长的请求体', async () => {
             const logs: any[] = [];
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: {
                     enabled: true,
                     logRequestBody: true,
@@ -477,7 +477,7 @@ describe('HttpClient', () => {
 
         it('应该正确处理Buffer类型的请求体', async () => {
             const logs: any[] = [];
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: {
                     enabled: true,
                     logRequestBody: true,
@@ -535,14 +535,14 @@ describe('HttpClient', () => {
 
         describe('get', () => {
             it('应该发送GET请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.get('https://example.com');
 
                 expect(response.status).to.equal(200);
             });
 
             it('应该支持查询参数', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.get('https://example.com', {
                     params: { foo: 'bar' }
                 });
@@ -553,21 +553,21 @@ describe('HttpClient', () => {
 
         describe('post', () => {
             it('应该发送POST请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.post('https://example.com', { data: 'test' });
 
                 expect(response.status).to.equal(200);
             });
 
             it('应该支持没有body的POST请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.post('https://example.com');
 
                 expect(response.status).to.equal(200);
             });
 
             it('应该支持额外的选项', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.post('https://example.com', { data: 'test' }, {
                     headers: { 'X-Custom': 'header' }
                 });
@@ -578,7 +578,7 @@ describe('HttpClient', () => {
 
         describe('put', () => {
             it('应该发送PUT请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.put('https://example.com', { data: 'test' });
 
                 expect(response.status).to.equal(200);
@@ -587,14 +587,14 @@ describe('HttpClient', () => {
 
         describe('delete', () => {
             it('应该发送DELETE请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.delete('https://example.com');
 
                 expect(response.status).to.equal(200);
             });
 
             it('应该支持额外的选项', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.delete('https://example.com', {
                     headers: { 'Authorization': 'Bearer token' }
                 });
@@ -605,7 +605,7 @@ describe('HttpClient', () => {
 
         describe('patch', () => {
             it('应该发送PATCH请求', async () => {
-                const client = new HttpClient({ logging: { enabled: false } });
+                const client = new NsHttpClient({ logging: { enabled: false } });
                 const response = await client.patch('https://example.com', { data: 'test' });
 
                 expect(response.status).to.equal(200);
@@ -615,7 +615,7 @@ describe('HttpClient', () => {
 
     describe('DNS缓存管理', () => {
         it('应该清空DNS缓存', () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const spy = sandbox.spy(security.SsrfGuard.prototype, 'clearDnsCache');
 
@@ -625,7 +625,7 @@ describe('HttpClient', () => {
         });
 
         it('应该返回DNS缓存大小', () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const size = client.getDnsCacheSize();
             expect(size).to.be.a('number');
@@ -633,7 +633,7 @@ describe('HttpClient', () => {
         });
 
         it('应该在清空后DNS缓存大小为0', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     enableDnsValidation: true
@@ -668,7 +668,7 @@ describe('HttpClient', () => {
 
     describe('错误处理', () => {
         it('应该正确传播适配器错误', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             const testError = new Error('Adapter error');
             sandbox.stub(adapters.AxiosAdapter.prototype, 'request').rejects(testError);
@@ -685,7 +685,7 @@ describe('HttpClient', () => {
         });
 
         it('应该正确传播安全错误', async () => {
-            const client = new HttpClient({
+            const client = new NsHttpClient({
                 logging: { enabled: false },
                 security: {
                     whitelist: ['allowed.com']
@@ -706,7 +706,7 @@ describe('HttpClient', () => {
 
     describe('边界情况', () => {
         it('应该处理null和undefined的请求体', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             sandbox.stub(adapters.AxiosAdapter.prototype, 'request').resolves({
                 status: 200,
@@ -724,7 +724,7 @@ describe('HttpClient', () => {
         });
 
         it('应该处理空字符串URL', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             try {
                 await client.request({
@@ -738,7 +738,7 @@ describe('HttpClient', () => {
         });
 
         it('应该处理无效的URL格式', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             try {
                 await client.request({
@@ -755,7 +755,7 @@ describe('HttpClient', () => {
     describe('配置验证', () => {
         it('应该在配置无效时抛出错误', () => {
             expect(() => {
-                new HttpClient({
+                new NsHttpClient({
                     request: {
                         timeout: -1 // 无效的超时值
                     }
@@ -766,7 +766,7 @@ describe('HttpClient', () => {
 
     describe('并发请求', () => {
         it('应该正确处理多个并发请求', async () => {
-            const client = new HttpClient({ logging: { enabled: false } });
+            const client = new NsHttpClient({ logging: { enabled: false } });
 
             let callCount = 0;
             sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async () => {
