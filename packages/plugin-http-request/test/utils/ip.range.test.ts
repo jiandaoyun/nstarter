@@ -5,12 +5,16 @@
 import { expect } from 'chai';
 import {
     ipv4ToNumber,
-    isIpv4InRange,
     ipv6ToBigInt,
     normalizeIpv6,
-    isIpv6InRange,
-    isIpInRange,
-    isIpInAnyRange
+    compileIpv4Range,
+    compileIpv6Range,
+    isIpv4InCompiledRange,
+    isIpv6InCompiledRange,
+    compileIpv4Ranges,
+    compileIpv6Ranges,
+    isIpv4InAnyCompiledRange,
+    isIpv6InAnyCompiledRange
 } from '../../src/utils/ip.range';
 
 describe('IP Range Utils', () => {
@@ -30,53 +34,6 @@ describe('IP Range Utils', () => {
         });
     });
 
-    describe('isIpv4InRange', () => {
-        it('应该正确判断 IPv4 地址是否在 CIDR 范围内', () => {
-            // 192.168.0.0/16 范围测试
-            expect(isIpv4InRange('192.168.0.1', '192.168.0.0/16')).to.be.true;
-            expect(isIpv4InRange('192.168.255.255', '192.168.0.0/16')).to.be.true;
-            expect(isIpv4InRange('192.169.0.1', '192.168.0.0/16')).to.be.false;
-            expect(isIpv4InRange('192.167.0.1', '192.168.0.0/16')).to.be.false;
-
-            // 10.0.0.0/8 范围测试
-            expect(isIpv4InRange('10.0.0.1', '10.0.0.0/8')).to.be.true;
-            expect(isIpv4InRange('10.255.255.255', '10.0.0.0/8')).to.be.true;
-            expect(isIpv4InRange('11.0.0.1', '10.0.0.0/8')).to.be.false;
-            expect(isIpv4InRange('9.255.255.255', '10.0.0.0/8')).to.be.false;
-
-            // 172.16.0.0/12 范围测试
-            expect(isIpv4InRange('172.16.0.1', '172.16.0.0/12')).to.be.true;
-            expect(isIpv4InRange('172.31.255.255', '172.16.0.0/12')).to.be.true;
-            expect(isIpv4InRange('172.32.0.1', '172.16.0.0/12')).to.be.false;
-        });
-
-        it('应该处理 /32 单个 IP 地址', () => {
-            expect(isIpv4InRange('192.168.1.1', '192.168.1.1/32')).to.be.true;
-            expect(isIpv4InRange('192.168.1.2', '192.168.1.1/32')).to.be.false;
-        });
-
-        it('应该处理 /1 和 /8 等常见前缀', () => {
-            // /8 测试
-            expect(isIpv4InRange('10.0.0.1', '10.0.0.0/8')).to.be.true;
-            expect(isIpv4InRange('10.255.255.255', '10.0.0.0/8')).to.be.true;
-            
-            // /1 测试 - 前半部分和后半部分
-            expect(isIpv4InRange('0.0.0.0', '0.0.0.0/1')).to.be.true;
-            expect(isIpv4InRange('127.255.255.255', '0.0.0.0/1')).to.be.true;
-        });
-
-        it('应该抛出错误当 CIDR 前缀无效时', () => {
-            expect(() => isIpv4InRange('192.168.1.1', '192.168.0.0/33')).to.throw('Invalid CIDR prefix');
-            expect(() => isIpv4InRange('192.168.1.1', '192.168.0.0/-1')).to.throw('Invalid CIDR prefix');
-        });
-
-        it('应该处理边界情况的前缀', () => {
-            // /24 子网
-            expect(isIpv4InRange('192.168.1.1', '192.168.1.0/24')).to.be.true;
-            expect(isIpv4InRange('192.168.1.255', '192.168.1.0/24')).to.be.true;
-            expect(isIpv4InRange('192.168.2.0', '192.168.1.0/24')).to.be.false;
-        });
-    });
 
     describe('normalizeIpv6', () => {
         it('应该正确展开 IPv6 缩写', () => {
@@ -134,157 +91,13 @@ describe('IP Range Utils', () => {
         });
     });
 
-    describe('isIpv6InRange', () => {
-        it('应该正确判断 IPv6 地址是否在 CIDR 范围内', () => {
-            // fe80::/10 范围测试 (link-local)
-            expect(isIpv6InRange('fe80::1', 'fe80::/10')).to.be.true;
-            expect(isIpv6InRange('fe80::ffff:ffff:ffff:ffff', 'fe80::/10')).to.be.true;
-            expect(isIpv6InRange('fec0::1', 'fe80::/10')).to.be.false;
 
-            // 2001:db8::/32 范围测试
-            expect(isIpv6InRange('2001:db8::1', '2001:db8::/32')).to.be.true;
-            expect(isIpv6InRange('2001:db8:ffff:ffff:ffff:ffff:ffff:ffff', '2001:db8::/32')).to.be.true;
-            expect(isIpv6InRange('2001:db9::1', '2001:db8::/32')).to.be.false;
-        });
-
-        it('应该处理 /64 前缀', () => {
-            expect(isIpv6InRange('2001:db8::', '2001:db8::/64')).to.be.true;
-            expect(isIpv6InRange('2001:db8::1', '2001:db8::/64')).to.be.true;
-            expect(isIpv6InRange('2001:db8:0:1::', '2001:db8::/64')).to.be.false;
-        });
-
-        it('应该处理 /128 单个 IP 地址', () => {
-            expect(isIpv6InRange('2001:db8::1', '2001:db8::1/128')).to.be.true;
-            expect(isIpv6InRange('2001:db8::2', '2001:db8::1/128')).to.be.false;
-        });
-
-        it('应该处理大于 64 位的前缀', () => {
-            // /96 前缀测试
-            // 2001:db8::1:0 = 2001:0db8:0000:0000:0000:0000:0001:0000
-            // /96 表示前96位固定，即前6个组（6*16=96位）
-            expect(isIpv6InRange('2001:db8::1:0', '2001:db8::1:0/96')).to.be.true;
-            expect(isIpv6InRange('2001:db8::1:ffff', '2001:db8::1:0/96')).to.be.true;
-            // 2001:db8::2:0 = 2001:0db8:0000:0000:0000:0000:0002:0000
-            // 前96位不同（第7组不同：0001 vs 0002）
-            expect(isIpv6InRange('2001:db8::2:0', '2001:db8::1:0/96')).to.be.true; // 实际上在范围内，因为::展开后的位置不同
-        });
-
-        it('应该抛出错误当 CIDR 前缀无效时', () => {
-            expect(() => isIpv6InRange('2001:db8::1', '2001:db8::/129')).to.throw('Invalid IPv6 CIDR prefix');
-            expect(() => isIpv6InRange('2001:db8::1', '2001:db8::/-1')).to.throw('Invalid IPv6 CIDR prefix');
-        });
-
-        it('应该处理 /0 全部 IPv6 地址', () => {
-            expect(isIpv6InRange('::', '::/0')).to.be.true;
-            expect(isIpv6InRange('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff', '::/0')).to.be.true;
-            expect(isIpv6InRange('2001:db8::1', '::/0')).to.be.true;
-        });
-    });
-
-    describe('isIpInRange', () => {
-        it('应该根据 IP 类型自动选择验证方法', () => {
-            // IPv4
-            expect(isIpInRange('192.168.1.1', '192.168.0.0/16')).to.be.true;
-            expect(isIpInRange('10.0.0.1', '10.0.0.0/8')).to.be.true;
-
-            // IPv6
-            expect(isIpInRange('2001:db8::1', '2001:db8::/32')).to.be.true;
-            expect(isIpInRange('fe80::1', 'fe80::/10')).to.be.true;
-        });
-
-        it('应该抛出错误当 IP 地址无效时', () => {
-            expect(() => isIpInRange('not-an-ip', '192.168.0.0/16')).to.throw('Invalid IP address');
-            expect(() => isIpInRange('256.256.256.256', '192.168.0.0/16')).to.throw('Invalid IP address');
-        });
-
-        it('应该正确处理边界情况', () => {
-            // IPv4 边界
-            expect(isIpInRange('192.168.0.0', '192.168.0.0/24')).to.be.true;
-            expect(isIpInRange('192.168.0.255', '192.168.0.0/24')).to.be.true;
-
-            // IPv6 边界
-            expect(isIpInRange('2001:db8::', '2001:db8::/32')).to.be.true;
-        });
-    });
-
-    describe('isIpInAnyRange', () => {
-        it('应该检查 IP 是否在多个范围中的任一个', () => {
-            const ranges = ['192.168.0.0/16', '10.0.0.0/8', '172.16.0.0/12'];
-
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.true;
-            expect(isIpInAnyRange('10.5.5.5', ranges)).to.be.true;
-            expect(isIpInAnyRange('172.20.0.1', ranges)).to.be.true;
-            expect(isIpInAnyRange('8.8.8.8', ranges)).to.be.false;
-        });
-
-        it('应该处理混合 IPv4 和 IPv6 范围', () => {
-            const ranges = ['192.168.0.0/16', '2001:db8::/32', 'fe80::/10'];
-
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.true;
-            expect(isIpInAnyRange('2001:db8::1', ranges)).to.be.true;
-            expect(isIpInAnyRange('fe80::1', ranges)).to.be.true;
-            expect(isIpInAnyRange('8.8.8.8', ranges)).to.be.false;
-            expect(isIpInAnyRange('2001:4860::8888', ranges)).to.be.false;
-        });
-
-        it('应该忽略无效的 CIDR 并继续检查', () => {
-            const ranges = ['invalid-cidr', '192.168.0.0/16', 'bad-format'];
-
-            // 应该忽略无效的 CIDR 并检查有效的
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.true;
-            expect(isIpInAnyRange('10.0.0.1', ranges)).to.be.false;
-        });
-
-        it('应该处理空范围列表', () => {
-            expect(isIpInAnyRange('192.168.1.1', [])).to.be.false;
-            expect(isIpInAnyRange('2001:db8::1', [])).to.be.false;
-        });
-
-        it('应该在第一个匹配时返回', () => {
-            const ranges = [
-                '192.168.0.0/16',
-                '192.168.0.0/24',  // 更小的范围，但第一个已匹配
-                '10.0.0.0/8'
-            ];
-
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.true;
-        });
-
-        it('应该处理全是无效 CIDR 的情况', () => {
-            const ranges = ['invalid-1', 'invalid-2', 'bad-format'];
-
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.false;
-        });
-
-        it('应该正确处理不同前缀长度的范围', () => {
-            const ranges = [
-                '192.168.1.0/32',    // 单个 IP
-                '10.0.0.0/8',        // 大范围
-                '172.16.0.0/12'      // 中等范围
-            ];
-
-            expect(isIpInAnyRange('192.168.1.0', ranges)).to.be.true;  // 精确匹配
-            expect(isIpInAnyRange('192.168.1.1', ranges)).to.be.false; // 不在 /32 范围
-            expect(isIpInAnyRange('10.255.255.255', ranges)).to.be.true; // 在 /8 边界
-        });
-    });
 
     describe('边界情况和错误处理', () => {
-        it('应该处理极端的 CIDR 前缀值', () => {
-            // IPv4 极端值
-            expect(isIpv4InRange('192.168.1.1', '192.168.1.1/32')).to.be.true;
-            expect(isIpv4InRange('0.0.0.0', '0.0.0.0/0')).to.be.true;
-
-            // IPv6 极端值
-            expect(isIpv6InRange('2001:db8::1', '2001:db8::1/128')).to.be.true;
-            expect(isIpv6InRange('::', '::/0')).to.be.true;
-        });
-
         it('应该正确处理大数运算', () => {
             // IPv4 最大值
             const maxIpv4 = '255.255.255.255';
             expect(ipv4ToNumber(maxIpv4)).to.equal(4294967295);
-            expect(isIpv4InRange(maxIpv4, '255.255.255.0/24')).to.be.true;
 
             // IPv6 大数
             const [high, low] = ipv6ToBigInt('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff');
@@ -292,5 +105,126 @@ describe('IP Range Utils', () => {
             expect(low).to.be.a('bigint');
         });
     });
+
+    describe('预编译 IPv4 范围', () => {
+        it('应该正确预编译 IPv4 CIDR 范围', () => {
+            const compiled = compileIpv4Range('192.168.0.0/16');
+            
+            expect(compiled).to.have.property('network');
+            expect(compiled).to.have.property('mask');
+            expect(compiled).to.have.property('cidr', '192.168.0.0/16');
+            expect(compiled.network).to.be.a('number');
+            expect(compiled.mask).to.be.a('number');
+        });
+
+        it('应该正确检查 IPv4 地址是否在预编译范围内', () => {
+            const compiled = compileIpv4Range('192.168.0.0/16');
+            
+            // 在范围内
+            expect(isIpv4InCompiledRange('192.168.0.1', compiled)).to.be.true;
+            expect(isIpv4InCompiledRange('192.168.255.255', compiled)).to.be.true;
+            
+            // 不在范围内
+            expect(isIpv4InCompiledRange('192.169.0.1', compiled)).to.be.false;
+            expect(isIpv4InCompiledRange('10.0.0.1', compiled)).to.be.false;
+        });
+
+        it('应该处理 /32 单个 IP 地址', () => {
+            const compiled = compileIpv4Range('192.168.1.1/32');
+            expect(isIpv4InCompiledRange('192.168.1.1', compiled)).to.be.true;
+            expect(isIpv4InCompiledRange('192.168.1.2', compiled)).to.be.false;
+        });
+
+        it('应该抛出错误当 CIDR 前缀无效时', () => {
+            expect(() => compileIpv4Range('192.168.0.0/33')).to.throw('Invalid CIDR prefix');
+            expect(() => compileIpv4Range('192.168.0.0/-1')).to.throw('Invalid CIDR prefix');
+        });
+
+        it('应该正确处理批量预编译', () => {
+            const cidrs = ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'];
+            const compiled = compileIpv4Ranges(cidrs);
+
+            expect(compiled).to.have.lengthOf(3);
+            expect(compiled[0].cidr).to.equal('10.0.0.0/8');
+            expect(compiled[1].cidr).to.equal('172.16.0.0/12');
+            expect(compiled[2].cidr).to.equal('192.168.0.0/16');
+        });
+
+        it('应该正确检查IP是否在任一预编译范围内', () => {
+            const ranges = compileIpv4Ranges(['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']);
+
+            expect(isIpv4InAnyCompiledRange('10.5.5.5', ranges)).to.be.true;
+            expect(isIpv4InAnyCompiledRange('172.20.0.1', ranges)).to.be.true;
+            expect(isIpv4InAnyCompiledRange('192.168.1.1', ranges)).to.be.true;
+            expect(isIpv4InAnyCompiledRange('8.8.8.8', ranges)).to.be.false;
+        });
+    });
+
+    describe('预编译 IPv6 范围', () => {
+        it('应该正确预编译 IPv6 CIDR 范围', () => {
+            const compiled = compileIpv6Range('2001:db8::/32');
+            
+            expect(compiled).to.have.property('networkHigh');
+            expect(compiled).to.have.property('networkLow');
+            expect(compiled).to.have.property('maskHigh');
+            expect(compiled).to.have.property('maskLow');
+            expect(compiled).to.have.property('prefix', 32);
+            expect(compiled).to.have.property('cidr', '2001:db8::/32');
+        });
+
+        it('应该正确检查 IPv6 地址是否在预编译范围内', () => {
+            const compiled = compileIpv6Range('fe80::/10');
+            
+            // 在范围内
+            expect(isIpv6InCompiledRange('fe80::1', compiled)).to.be.true;
+            expect(isIpv6InCompiledRange('fe80::ffff:ffff:ffff:ffff', compiled)).to.be.true;
+            
+            // 不在范围内
+            expect(isIpv6InCompiledRange('fec0::1', compiled)).to.be.false;
+            expect(isIpv6InCompiledRange('2001:db8::1', compiled)).to.be.false;
+        });
+
+        it('应该处理 /128 单个 IP 地址', () => {
+            const compiled = compileIpv6Range('2001:db8::1/128');
+            expect(isIpv6InCompiledRange('2001:db8::1', compiled)).to.be.true;
+            expect(isIpv6InCompiledRange('2001:db8::2', compiled)).to.be.false;
+        });
+
+        it('应该正确处理大于64位的前缀', () => {
+            const compiled = compileIpv6Range('2001:db8::/96');
+            
+            expect(compiled.prefix).to.equal(96);
+            expect(compiled.maskHigh).to.equal(BigInt('0xffffffffffffffff'));
+            
+            // 测试检查
+            expect(isIpv6InCompiledRange('2001:db8::1:0', compiled)).to.be.true;
+            expect(isIpv6InCompiledRange('2001:db8::1:ffff', compiled)).to.be.true;
+        });
+
+        it('应该抛出错误当 CIDR 前缀无效时', () => {
+            expect(() => compileIpv6Range('2001:db8::/129')).to.throw('Invalid IPv6 CIDR prefix');
+            expect(() => compileIpv6Range('2001:db8::/-1')).to.throw('Invalid IPv6 CIDR prefix');
+        });
+
+        it('应该正确处理批量预编译', () => {
+            const cidrs = ['fe80::/10', 'fc00::/7', '2001:db8::/32'];
+            const compiled = compileIpv6Ranges(cidrs);
+
+            expect(compiled).to.have.lengthOf(3);
+            expect(compiled[0].cidr).to.equal('fe80::/10');
+            expect(compiled[1].cidr).to.equal('fc00::/7');
+            expect(compiled[2].cidr).to.equal('2001:db8::/32');
+        });
+
+        it('应该正确检查IP是否在任一预编译范围内', () => {
+            const ranges = compileIpv6Ranges(['fe80::/10', 'fc00::/7', '2001:db8::/32']);
+
+            expect(isIpv6InAnyCompiledRange('fe80::1', ranges)).to.be.true;
+            expect(isIpv6InAnyCompiledRange('fc00::1', ranges)).to.be.true;
+            expect(isIpv6InAnyCompiledRange('2001:db8::1', ranges)).to.be.true;
+            expect(isIpv6InAnyCompiledRange('2001:4860::8888', ranges)).to.be.false;
+        });
+    });
+
 });
 

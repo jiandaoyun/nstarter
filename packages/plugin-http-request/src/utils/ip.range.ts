@@ -2,10 +2,10 @@
  * IP 地址范围工具
  */
 
-import {
-    isIPv4,
-    isIPv6
-} from 'node:net';
+import type {
+    CompiledIpv4Range,
+    CompiledIpv6Range
+} from '../types';
 
 /**
  * 将 IPv4 地址转换为数字
@@ -21,11 +21,10 @@ export function ipv4ToNumber(ip: string): number {
 }
 
 /**
- * 检查 IPv4 地址是否在指定范围内
- * @param ip IP 地址
+ * 预编译 IPv4 CIDR 范围
  * @param cidr CIDR 表示法，如 "192.168.0.0/16"
  */
-export function isIpv4InRange(ip: string, cidr: string): boolean {
+export function compileIpv4Range(cidr: string): CompiledIpv4Range {
     const [network, prefixStr] = cidr.split('/');
     const prefix = parseInt(prefixStr, 10);
 
@@ -33,11 +32,24 @@ export function isIpv4InRange(ip: string, cidr: string): boolean {
         throw new Error(`Invalid CIDR prefix: ${ prefix }`);
     }
 
-    const ipNum = ipv4ToNumber(ip);
     const networkNum = ipv4ToNumber(network);
     const mask = (0xffffffff << (32 - prefix)) >>> 0;
 
-    return (ipNum & mask) === (networkNum & mask);
+    return {
+        network: networkNum & mask,
+        mask,
+        cidr
+    };
+}
+
+/**
+ * 检查 IPv4 地址是否在预编译的范围内（高性能版本）
+ * @param ip IP 地址
+ * @param compiledRange 预编译的范围
+ */
+export function isIpv4InCompiledRange(ip: string, compiledRange: CompiledIpv4Range): boolean {
+    const ipNum = ipv4ToNumber(ip);
+    return (ipNum & compiledRange.mask) === compiledRange.network;
 }
 
 /**
@@ -97,11 +109,10 @@ export function normalizeIpv6(ip: string): string {
 }
 
 /**
- * 检查 IPv6 地址是否在指定范围内
- * @param ip IPv6 地址
+ * 预编译 IPv6 CIDR 范围
  * @param cidr CIDR 表示法，如 "fe80::/10"
  */
-export function isIpv6InRange(ip: string, cidr: string): boolean {
+export function compileIpv6Range(cidr: string): CompiledIpv6Range {
     const [network, prefixStr] = cidr.split('/');
     const prefix = parseInt(prefixStr, 10);
 
@@ -109,51 +120,97 @@ export function isIpv6InRange(ip: string, cidr: string): boolean {
         throw new Error(`Invalid IPv6 CIDR prefix: ${ prefix }`);
     }
 
-    const [ipHigh, ipLow] = ipv6ToBigInt(ip);
     const [netHigh, netLow] = ipv6ToBigInt(network);
 
+    let maskHigh: bigint;
+    let maskLow: bigint;
+
     if (prefix <= 64) {
+        // 只需要掩码高 64 位
+        maskHigh = (BigInt(0xffffffffffffffffn) << BigInt(64 - prefix)) & BigInt(0xffffffffffffffffn);
+        maskLow = BigInt(0);
+    } else {
+        // 高 64 位全部掩码，低 64 位部分掩码
+        maskHigh = BigInt(0xffffffffffffffffn);
+        maskLow = (BigInt(0xffffffffffffffffn) << BigInt(128 - prefix)) & BigInt(0xffffffffffffffffn);
+    }
+
+    return {
+        networkHigh: netHigh & maskHigh,
+        networkLow: netLow & maskLow,
+        maskHigh,
+        maskLow,
+        prefix,
+        cidr
+    };
+}
+
+/**
+ * 检查 IPv6 地址是否在预编译的范围内（高性能版本）
+ * @param ip IPv6 地址
+ * @param compiledRange 预编译的范围
+ */
+export function isIpv6InCompiledRange(ip: string, compiledRange: CompiledIpv6Range): boolean {
+    const [ipHigh, ipLow] = ipv6ToBigInt(ip);
+
+    if (compiledRange.prefix <= 64) {
         // 只需要比较高 64 位
-        const mask = (BigInt(0xffffffffffffffffn) << BigInt(64 - prefix)) & BigInt(0xffffffffffffffffn);
-        return (ipHigh & mask) === (netHigh & mask);
+        return (ipHigh & compiledRange.maskHigh) === compiledRange.networkHigh;
     } else {
         // 高 64 位必须完全匹配，低 64 位部分匹配
-        if (ipHigh !== netHigh) {
-            return false;
+        return (ipHigh & compiledRange.maskHigh) === compiledRange.networkHigh &&
+            (ipLow & compiledRange.maskLow) === compiledRange.networkLow;
+    }
+}
+
+/**
+ * 批量预编译 IPv4 CIDR 范围列表
+ * @param cidrs CIDR 范围列表
+ */
+export function compileIpv4Ranges(cidrs: string[]): CompiledIpv4Range[] {
+    return cidrs.map(cidr => compileIpv4Range(cidr));
+}
+
+/**
+ * 批量预编译 IPv6 CIDR 范围列表
+ * @param cidrs CIDR 范围列表
+ */
+export function compileIpv6Ranges(cidrs: string[]): CompiledIpv6Range[] {
+    return cidrs.map(cidr => compileIpv6Range(cidr));
+}
+
+/**
+ * 检查 IPv4 地址是否匹配任一预编译范围（高性能版本）
+ * @param ip IPv4 地址
+ * @param compiledRanges 预编译的范围列表
+ */
+export function isIpv4InAnyCompiledRange(ip: string, compiledRanges: CompiledIpv4Range[]): boolean {
+    const ipNum = ipv4ToNumber(ip);
+    for (const range of compiledRanges) {
+        if ((ipNum & range.mask) === range.network) {
+            return true;
         }
-        const mask = (BigInt(0xffffffffffffffffn) << BigInt(128 - prefix)) & BigInt(0xffffffffffffffffn);
-        return (ipLow & mask) === (netLow & mask);
     }
+    return false;
 }
 
 /**
- * 检查 IP 地址是否在指定范围内
- * @param ip IP 地址
- * @param cidr CIDR 表示法
+ * 检查 IPv6 地址是否匹配任一预编译范围（高性能版本）
+ * @param ip IPv6 地址
+ * @param compiledRanges 预编译的范围列表
  */
-export function isIpInRange(ip: string, cidr: string): boolean {
-    if (isIPv4(ip)) {
-        return isIpv4InRange(ip, cidr);
-    } else if (isIPv6(ip)) {
-        return isIpv6InRange(ip, cidr);
-    }
-    throw new Error(`Invalid IP address: ${ ip }`);
-}
-
-/**
- * 检查 IP 地址是否匹配任一范围
- * @param ip IP 地址
- * @param ranges CIDR 范围列表
- */
-export function isIpInAnyRange(ip: string, ranges: string[]): boolean {
-    for (const range of ranges) {
-        try {
-            if (isIpInRange(ip, range)) {
+export function isIpv6InAnyCompiledRange(ip: string, compiledRanges: CompiledIpv6Range[]): boolean {
+    const [ipHigh, ipLow] = ipv6ToBigInt(ip);
+    for (const range of compiledRanges) {
+        if (range.prefix <= 64) {
+            if ((ipHigh & range.maskHigh) === range.networkHigh) {
                 return true;
             }
-        } catch {
-            // 忽略无效的 CIDR
-            continue;
+        } else {
+            if ((ipHigh & range.maskHigh) === range.networkHigh &&
+                (ipLow & range.maskLow) === range.networkLow) {
+                return true;
+            }
         }
     }
     return false;

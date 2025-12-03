@@ -1,3 +1,12 @@
+import {
+    compileIpv4Ranges,
+    compileIpv6Ranges,
+} from '../utils/ip.range';
+import type {
+    CompiledIpv4Range,
+    CompiledIpv6Range
+} from '../types';
+
 /**
  * 私有 IP 地址范围（RFC 1918）
  */
@@ -74,7 +83,7 @@ const RESERVED_IPV6_RANGES = [
 ];
 
 /**
- * IPV4 校验地址范围
+ * IPV4 校验地址范围（原始 CIDR 字符串）
  */
 export const IPV4_RANGES = {
     private: PRIVATE_IPV4_RANGES,
@@ -85,7 +94,7 @@ export const IPV4_RANGES = {
 };
 
 /**
- * IPV6 校验地址范围
+ * IPV6 校验地址范围（原始 CIDR 字符串）
  */
 export const IPV6_RANGES = {
     private: PRIVATE_IPV6_RANGES,
@@ -93,4 +102,38 @@ export const IPV6_RANGES = {
     linkLocal: LINK_LOCAL_IPV6_RANGES,
     multicast: MULTICAST_IPV6_RANGES,
     reserved: RESERVED_IPV6_RANGES
+};
+
+/**
+ * 预编译的 IPV4 校验地址范围（高性能版本）
+ */
+export const COMPILED_IPV4_RANGES: {
+    private: CompiledIpv4Range[],
+    loopback: CompiledIpv4Range[],
+    linkLocal: CompiledIpv4Range[],
+    multicast: CompiledIpv4Range[],
+    reserved: CompiledIpv4Range[]
+} = {
+    private: compileIpv4Ranges(PRIVATE_IPV4_RANGES),
+    loopback: compileIpv4Ranges(LOOPBACK_IPV4_RANGES),
+    linkLocal: compileIpv4Ranges(LINK_LOCAL_IPV4_RANGES),
+    multicast: compileIpv4Ranges(MULTICAST_IPV4_RANGES),
+    reserved: compileIpv4Ranges(RESERVED_IPV4_RANGES)
+};
+
+/**
+ * 预编译的 IPV6 校验地址范围（高性能版本）
+ */
+export const COMPILED_IPV6_RANGES: {
+    private: CompiledIpv6Range[],
+    loopback: CompiledIpv6Range[],
+    linkLocal: CompiledIpv6Range[],
+    multicast: CompiledIpv6Range[],
+    reserved: CompiledIpv6Range[]
+} = {
+    private: compileIpv6Ranges(PRIVATE_IPV6_RANGES),
+    loopback: compileIpv6Ranges(LOOPBACK_IPV6_RANGES),
+    linkLocal: compileIpv6Ranges(LINK_LOCAL_IPV6_RANGES),
+    multicast: compileIpv6Ranges(MULTICAST_IPV6_RANGES),
+    reserved: compileIpv6Ranges(RESERVED_IPV6_RANGES)
 };

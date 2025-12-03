@@ -9,8 +9,8 @@ import {
 import type { IpValidationResult } from '../types';
 import { IpRangeUtils } from '../utils';
 import {
-    IPV4_RANGES,
-    IPV6_RANGES
+    COMPILED_IPV4_RANGES,
+    COMPILED_IPV6_RANGES
 } from '../const';
 
 
@@ -42,13 +42,26 @@ export class IpValidator {
             };
         }
 
-        const ranges = isV4 ? IPV4_RANGES : IPV6_RANGES;
+        // 使用预编译的范围进行高性能检查
+        let isPrivate: boolean;
+        let isLoopback: boolean;
+        let isLinkLocal: boolean;
+        let isMulticast: boolean;
+        let isReserved: boolean;
 
-        const isPrivate = IpRangeUtils.isIpInAnyRange(ip, ranges.private);
-        const isLoopback = IpRangeUtils.isIpInAnyRange(ip, ranges.loopback);
-        const isLinkLocal = IpRangeUtils.isIpInAnyRange(ip, ranges.linkLocal);
-        const isMulticast = IpRangeUtils.isIpInAnyRange(ip, ranges.multicast);
-        const isReserved = IpRangeUtils.isIpInAnyRange(ip, ranges.reserved);
+        if (isV4) {
+            isPrivate = IpRangeUtils.isIpv4InAnyCompiledRange(ip, COMPILED_IPV4_RANGES.private);
+            isLoopback = IpRangeUtils.isIpv4InAnyCompiledRange(ip, COMPILED_IPV4_RANGES.loopback);
+            isLinkLocal = IpRangeUtils.isIpv4InAnyCompiledRange(ip, COMPILED_IPV4_RANGES.linkLocal);
+            isMulticast = IpRangeUtils.isIpv4InAnyCompiledRange(ip, COMPILED_IPV4_RANGES.multicast);
+            isReserved = IpRangeUtils.isIpv4InAnyCompiledRange(ip, COMPILED_IPV4_RANGES.reserved);
+        } else {
+            isPrivate = IpRangeUtils.isIpv6InAnyCompiledRange(ip, COMPILED_IPV6_RANGES.private);
+            isLoopback = IpRangeUtils.isIpv6InAnyCompiledRange(ip, COMPILED_IPV6_RANGES.loopback);
+            isLinkLocal = IpRangeUtils.isIpv6InAnyCompiledRange(ip, COMPILED_IPV6_RANGES.linkLocal);
+            isMulticast = IpRangeUtils.isIpv6InAnyCompiledRange(ip, COMPILED_IPV6_RANGES.multicast);
+            isReserved = IpRangeUtils.isIpv6InAnyCompiledRange(ip, COMPILED_IPV6_RANGES.reserved);
+        }
 
         // 基础验证信息
         const baseResult = {
