@@ -40,6 +40,8 @@ export interface SecurityConfig {
     blacklist: string[];
     /** DNS 缓存 TTL（毫秒） */
     dnsCacheTtl: number;
+    /** DNS 缓存最大条目数 */
+    dnsCacheMaxSize: number;
 }
 
 /**

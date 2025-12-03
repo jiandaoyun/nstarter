@@ -36,6 +36,7 @@
   "dependencies": {
     "axios": "^1.7.5",
     "https-proxy-agent": "^7.0.6",
+    "lru-cache": "^11.2.4",
     "undici": "^6.0.0"
   },
   "peerDependencies": {

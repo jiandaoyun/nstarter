@@ -164,41 +164,6 @@ describe('DnsValidator', () => {
         });
     });
 
-    describe('setCacheTtl', () => {
-        it('应该能够更新缓存 TTL', () => {
-            const validator = new DnsValidator(60000);
-
-            validator.setCacheTtl(30000);
-            // 无法直接验证 TTL 的值，但可以验证方法不抛出错误
-            expect(() => validator.setCacheTtl(10000)).to.not.throw();
-        });
-
-        it('更新 TTL 应该影响新的缓存条目', async function() {
-            this.timeout(5000);
-
-            const validator = new DnsValidator(100);
-
-            await validator.resolve('google.com');
-            
-            // 等待第一个缓存过期
-            await new Promise(resolve => setTimeout(resolve, 150));
-
-            // 更新 TTL 为更长时间
-            validator.setCacheTtl(60000);
-
-            // 重新查询，使用新的 TTL
-            const result1 = await validator.resolve('github.com');
-            const timestamp1 = result1.timestamp;
-
-            // 短暂等待（不应该过期）
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // 应该从缓存返回
-            const result2 = await validator.resolve('github.com');
-            expect(result2.timestamp).to.equal(timestamp1);
-        });
-    });
-
     describe('cleanExpiredCache', () => {
         it('应该清理过期的缓存条目', async function() {
             this.timeout(5000);
@@ -230,31 +195,6 @@ describe('DnsValidator', () => {
             validator.cleanExpiredCache();
             // 缓存应该仍然存在
             expect(validator.getCacheSize()).to.equal(2);
-        });
-
-        it('应该能够清理部分过期的缓存', async function() {
-            this.timeout(5000);
-
-            const validator = new DnsValidator(60000);
-
-            // 添加第一个条目
-            await validator.resolve('google.com');
-
-            // 更改 TTL 为短时间
-            validator.setCacheTtl(100);
-
-            // 添加第二个条目（短 TTL）
-            await validator.resolve('github.com');
-
-            expect(validator.getCacheSize()).to.equal(2);
-
-            // 等待第二个缓存过期
-            await new Promise(resolve => setTimeout(resolve, 150));
-
-            validator.cleanExpiredCache();
-            
-            // 应该只剩下第一个未过期的缓存
-            expect(validator.getCacheSize()).to.equal(1);
         });
     });
 
@@ -344,6 +284,68 @@ describe('DnsValidator', () => {
             await validator.resolve('google.com');
             // TTL 为 0 时，缓存应该立即过期
             expect(validator.getCacheSize()).to.be.greaterThanOrEqual(0);
+        });
+    });
+
+    describe('LRU 缓存淘汰', () => {
+        it('应该在缓存满时淘汰最旧的条目', async function() {
+            this.timeout(10000); // 增加超时时间
+
+            // 创建一个只能容纳 3 个条目的小缓存
+            const validator = new DnsValidator(60000, undefined, 3);
+
+            // 添加 3 个域名
+            await validator.resolve('google.com');
+            await validator.resolve('github.com');
+            await validator.resolve('npmjs.com');
+
+            expect(validator.getCacheSize()).to.equal(3);
+
+            // 添加第 4 个域名，应该淘汰最旧的 (google.com)
+            await validator.resolve('stackoverflow.com');
+
+            expect(validator.getCacheSize()).to.equal(3);
+            expect(validator.getMaxCacheSize()).to.equal(3);
+        });
+
+        it('应该更新最近访问的条目位置', async function() {
+            this.timeout(10000);
+
+            const validator = new DnsValidator(60000, undefined, 3);
+
+            // 添加 3 个域名
+            await validator.resolve('google.com');
+            await validator.resolve('github.com');
+            await validator.resolve('npmjs.com');
+
+            // 再次访问 google.com，使其成为最近使用的
+            await validator.resolve('google.com');
+
+            // 添加新域名，应该淘汰 github.com（最早没被访问的）
+            await validator.resolve('stackoverflow.com');
+
+            expect(validator.getCacheSize()).to.equal(3);
+            // google.com 应该还在缓存中（因为刚被访问过）
+            expect(validator.hasCache('google.com')).to.be.true;
+        });
+
+        it('getMaxCacheSize 应该返回正确的最大容量', () => {
+            const validator1 = new DnsValidator(60000, undefined, 100);
+            expect(validator1.getMaxCacheSize()).to.equal(100);
+
+            const validator2 = new DnsValidator(60000, undefined, 500);
+            expect(validator2.getMaxCacheSize()).to.equal(500);
+        });
+
+        it('hasCache 应该正确判断缓存是否存在', async () => {
+            const validator = new DnsValidator();
+
+            expect(validator.hasCache('google.com')).to.be.false;
+
+            await validator.resolve('google.com');
+
+            expect(validator.hasCache('google.com')).to.be.true;
+            expect(validator.hasCache('github.com')).to.be.false;
         });
     });
 });

@@ -148,7 +148,8 @@ const client = new NsHttpClient({
       'malicious.com', '.malicious.com', // 根域名和所有子域名
       'unsafe.net'
     ],
-    dnsCacheTtl: 60000               // DNS 缓存 TTL（毫秒，默认 60 秒）
+    dnsCacheTtl: 60000,              // DNS 缓存 TTL（毫秒，默认 60 秒）
+    dnsCacheMaxSize: 500             // DNS 缓存最大条目数（默认 500，使用 LRU 淘汰策略）
   },
 
   // 日志配置
@@ -238,6 +239,24 @@ const client = new NsHttpClient({
 | `example.com` | 完全匹配 | ✅ `example.com`<br>❌ `api.example.com` |
 | `.example.com` | 后缀匹配<br>匹配所有子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
 | 组合使用<br>`['example.com', '.example.com']` | 完全匹配 + 后缀匹配<br>匹配根域名和所有子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
+
+**DNS 缓存机制：**
+
+为提升性能，DNS 解析结果会被缓存。缓存使用 [lru-cache](https://www.npmjs.com/package/lru-cache) 实现，具有以下特性：
+
+- ✅ **TTL 自动过期**：缓存条目到期后自动释放内存
+- ✅ **LRU 淘汰策略**：缓存满时自动淘汰最近最少使用的条目
+- ✅ **容量限制**：默认最多缓存 500 个域名解析结果
+- ✅ **可配置**：支持自定义 TTL 和缓存容量
+
+```typescript
+const client = new NsHttpClient({
+  security: {
+    dnsCacheTtl: 60000,       // 缓存时间：60 秒（默认）
+    dnsCacheMaxSize: 500      // 最大缓存条目数（默认）
+  }
+});
+```
 
 ### 日志配置详解
 

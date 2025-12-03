@@ -3,13 +3,14 @@
  */
 
 import { promises as dns } from 'node:dns';
+import { LRUCache } from 'lru-cache';
 import { CommonUtils } from '../utils';
 import {
     DEFAULT_DNS_CACHE_TTL,
-    DEFAULT_DNS_RESOLVE_TIMEOUT
+    DEFAULT_DNS_RESOLVE_TIMEOUT,
+    DEFAULT_DNS_CACHE_MAX_SIZE
 } from '../const';
 import type {
-    DnsCacheEntry,
     DnsResult
 } from '../types';
 import { IpValidator } from './ip.validator';
@@ -19,13 +20,27 @@ import { IpValidator } from './ip.validator';
  * DNS 验证器类
  */
 export class DnsValidator {
-    private cache: Map<string, DnsCacheEntry> = new Map();
+    private cache: LRUCache<string, DnsResult>;
     private cacheTtl: number;
     private resolveTimeout: number;
 
-    constructor(cacheTtl = DEFAULT_DNS_CACHE_TTL, resolveTimeout = DEFAULT_DNS_RESOLVE_TIMEOUT) {
+    constructor(
+        cacheTtl = DEFAULT_DNS_CACHE_TTL,
+        resolveTimeout = DEFAULT_DNS_RESOLVE_TIMEOUT,
+        maxCacheSize = DEFAULT_DNS_CACHE_MAX_SIZE
+    ) {
         this.cacheTtl = cacheTtl;
         this.resolveTimeout = resolveTimeout;
+        this.cache = new LRUCache<string, DnsResult>({
+            max: maxCacheSize,
+            ttl: cacheTtl,
+            // 启用 TTL 自动清理
+            ttlAutopurge: true,
+            // 更新访问时间，实现真正的 LRU
+            updateAgeOnGet: true,
+            // 更新访问时间时也更新 has() 调用
+            updateAgeOnHas: true,
+        });
     }
 
     /**
@@ -35,7 +50,7 @@ export class DnsValidator {
      */
     public async resolve(hostname: string): Promise<DnsResult> {
         // 检查缓存
-        const cached = this.getFromCache(hostname);
+        const cached = this.cache.get(hostname);
         if (cached) {
             return cached;
         }
@@ -69,8 +84,8 @@ export class DnsValidator {
                 ttl: this.cacheTtl
             };
 
-            // 存入缓存
-            this.setCache(hostname, result);
+            // 存入缓存，LRUCache 会自动处理 TTL 和容量限制
+            this.cache.set(hostname, result);
 
             return result;
         } catch (error) {
@@ -106,38 +121,6 @@ export class DnsValidator {
     }
 
     /**
-     * 从缓存获取 DNS 结果
-     * @param hostname 域名
-     * @returns DNS 结果或 null
-     */
-    private getFromCache(hostname: string): DnsResult | null {
-        const entry = this.cache.get(hostname);
-        if (!entry) {
-            return null;
-        }
-
-        // 检查是否过期
-        if (Date.now() > entry.expiresAt) {
-            this.cache.delete(hostname);
-            return null;
-        }
-
-        return entry.result;
-    }
-
-    /**
-     * 设置缓存
-     * @param hostname 域名
-     * @param result DNS 结果
-     */
-    private setCache(hostname: string, result: DnsResult): void {
-        this.cache.set(hostname, {
-            result,
-            expiresAt: Date.now() + this.cacheTtl
-        });
-    }
-
-    /**
      * 清空缓存
      */
     public clearCache(): void {
@@ -161,22 +144,27 @@ export class DnsValidator {
     }
 
     /**
-     * 设置缓存 TTL
-     * @param ttl TTL（毫秒）
+     * 清理过期的缓存条目
+     * LRUCache 会自动清理过期条目（ttlAutopurge: true），此方法主动触发清理
      */
-    public setCacheTtl(ttl: number): void {
-        this.cacheTtl = ttl;
+    public cleanExpiredCache(): void {
+        this.cache.purgeStale();
     }
 
     /**
-     * 清理过期的缓存条目
+     * 获取缓存的最大容量
+     * @returns 最大缓存条目数量
      */
-    public cleanExpiredCache(): void {
-        const now = Date.now();
-        for (const [hostname, entry] of this.cache.entries()) {
-            if (now > entry.expiresAt) {
-                this.cache.delete(hostname);
-            }
-        }
+    public getMaxCacheSize(): number {
+        return this.cache.max;
+    }
+
+    /**
+     * 检查缓存中是否存在指定域名
+     * @param hostname 域名
+     * @returns 是否存在
+     */
+    public hasCache(hostname: string): boolean {
+        return this.cache.has(hostname);
     }
 }

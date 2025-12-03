@@ -25,7 +25,11 @@ export class SsrfGuard implements ISsrfGuard {
 
     constructor(config: SecurityConfig) {
         this.config = config;
-        this.dnsValidator = new DnsValidator(config.dnsCacheTtl);
+        this.dnsValidator = new DnsValidator(
+            config.dnsCacheTtl,
+            undefined,  // 使用默认的 DNS 解析超时
+            config.dnsCacheMaxSize
+        );
         this.urlValidator = new UrlValidator(config.whitelist, config.blacklist);
     }
 
@@ -170,8 +174,13 @@ export class SsrfGuard implements ISsrfGuard {
     public updateConfig(config: Partial<SecurityConfig>): void {
         this.config = { ...this.config, ...config };
 
-        if (config.dnsCacheTtl !== undefined) {
-            this.dnsValidator.setCacheTtl(config.dnsCacheTtl);
+        // 如果 DNS 缓存配置变更，需要重新创建 DNS 验证器
+        if (config.dnsCacheTtl !== undefined || config.dnsCacheMaxSize !== undefined) {
+            this.dnsValidator = new DnsValidator(
+                this.config.dnsCacheTtl,
+                undefined,
+                this.config.dnsCacheMaxSize
+            );
         }
 
         if (config.whitelist !== undefined || config.blacklist !== undefined) {

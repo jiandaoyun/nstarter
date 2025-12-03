@@ -8,3 +8,8 @@ export const DEFAULT_DNS_CACHE_TTL = 60000;
  */
 export const DEFAULT_DNS_RESOLVE_TIMEOUT = 3000;
 
+/**
+ * 默认 DNS 缓存最大条目数
+ */
+export const DEFAULT_DNS_CACHE_MAX_SIZE = 500;
+
