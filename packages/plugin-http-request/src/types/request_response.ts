@@ -43,6 +43,8 @@ export interface HttpRequestOptions {
     meta?: Record<string, any>;
     /** 响应类型 */
     responseType?: ResponseType;
+    /** W3C Trace Context traceparent 头（用于分布式链路追踪） */
+    traceparent?: string;
 }
 
 /**

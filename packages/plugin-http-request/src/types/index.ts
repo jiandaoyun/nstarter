@@ -22,3 +22,6 @@ export * from './adapter';
 // 客户端相关
 export * from './client';
 
+// trace 相关
+export * from './trace';
+

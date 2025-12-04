@@ -792,5 +792,153 @@ describe('NsHttpClient', () => {
             expect(callCount).to.equal(3);
         });
     });
+
+    describe('W3C Trace Context traceparent 支持', () => {
+        it('应该在请求头中添加有效的 traceparent', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.request({
+                method: 'GET',
+                url: 'https://example.com',
+                traceparent
+            });
+
+            expect(capturedOptions?.headers).to.exist;
+            expect(capturedOptions?.headers?.traceparent).to.equal(traceparent);
+        });
+
+        it('应该忽略无效的 traceparent', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const invalidTraceparent = 'invalid-traceparent';
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.request({
+                method: 'GET',
+                url: 'https://example.com',
+                traceparent: invalidTraceparent
+            });
+
+            // 无效的 traceparent 不应该被添加到请求头
+            expect(capturedOptions?.headers?.traceparent).to.be.undefined;
+        });
+
+        it('应该支持在 GET 请求中使用 traceparent', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.get('https://example.com', { traceparent });
+
+            expect(capturedOptions?.headers?.traceparent).to.equal(traceparent);
+        });
+
+        it('应该支持在 POST 请求中使用 traceparent', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.post('https://example.com', { data: 'test' }, { traceparent });
+
+            expect(capturedOptions?.headers?.traceparent).to.equal(traceparent);
+        });
+
+        it('应该保留现有的 headers 并添加 traceparent', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+            const customHeaders = {
+                'X-Custom-Header': 'custom-value',
+                'Authorization': 'Bearer token123'
+            };
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.request({
+                method: 'GET',
+                url: 'https://example.com',
+                headers: customHeaders,
+                traceparent
+            });
+
+            expect(capturedOptions?.headers?.traceparent).to.equal(traceparent);
+            expect(capturedOptions?.headers?.['X-Custom-Header']).to.equal('custom-value');
+            expect(capturedOptions?.headers?.Authorization).to.equal('Bearer token123');
+        });
+
+        it('应该在没有 traceparent 时正常工作', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            
+            let capturedOptions: HttpRequestOptions | undefined;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.get('https://example.com');
+
+            expect(capturedOptions?.headers?.traceparent).to.be.undefined;
+        });
+    });
 });
 

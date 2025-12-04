@@ -29,7 +29,7 @@ import {
 } from './logger';
 import { EClientAdapter } from './const';
 import { HttpError } from './types';
-import { DomainUtils } from './utils';
+import { DomainUtils, TraceContextUtils } from './utils';
 
 /**
  * HTTP 客户端
@@ -187,6 +187,26 @@ export class NsHttpClient implements IHttpClient {
                     ...safeOptions.headers,
                     Host: ssrfResult.hostname
                 };
+            }
+
+            // 处理 W3C Trace Context traceparent 头
+            if (options.traceparent) {
+                // 验证 traceparent 格式
+                if (!TraceContextUtils.isValidTraceParent(options.traceparent)) {
+                    this.logger.warn('Invalid traceparent format, ignoring', {
+                        traceparent: options.traceparent
+                    });
+                } else {
+                    safeOptions.headers = {
+                        ...safeOptions.headers,
+                        traceparent: options.traceparent
+                    };
+                    
+                    this.logger.debug('Traceparent header added', {
+                        traceparent: options.traceparent,
+                        sampled: TraceContextUtils.isSampled(options.traceparent)
+                    });
+                }
             }
 
             // 应用正向代理配置
