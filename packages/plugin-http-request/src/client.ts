@@ -333,8 +333,8 @@ export class NsHttpClient implements IHttpClient {
         const targetUrl = new URL(options.url);
         const hostname = targetUrl.hostname;
 
-        // 检查 no_proxy 规则
-        const noProxyRegExps = DomainUtils.createDomainMatchers(no_proxy ?? []);
+        // 检查 no_proxy 规则（使用传统匹配模式）
+        const noProxyRegExps = DomainUtils.createLegacyDomainMatchers(no_proxy ?? []);
         if (noProxyRegExps.length > 0 && hostname) {
             for (const noProxyRegex of noProxyRegExps) {
                 if (noProxyRegex.test(hostname)) {

@@ -54,8 +54,8 @@ describe('UrlValidator', () => {
         });
 
         it('should support domain patterns combination', () => {
-            // 使用组合模式：完全匹配 + 后缀匹配 = 匹配根域名和所有子域名
-            const validator = new UrlValidator(['example.com', '.example.com']);
+            // 使用组合模式：精确匹配 + 通配符匹配 = 匹配根域名和所有子域名
+            const validator = new UrlValidator(['example.com', '*.example.com']);
 
             expect(validator.validate('https://example.com').valid).to.be.true;
             expect(validator.validate('https://api.example.com').valid).to.be.true;
@@ -81,7 +81,7 @@ describe('UrlValidator', () => {
         });
 
         it('should support domain patterns in blacklist', () => {
-            const validator = new UrlValidator([], ['bad.com', '.bad.com']);
+            const validator = new UrlValidator([], ['bad.com', '*.bad.com']);
 
             expect(validator.validate('https://bad.com').valid).to.be.false;
             expect(validator.validate('https://api.bad.com').valid).to.be.false;
@@ -91,7 +91,7 @@ describe('UrlValidator', () => {
 
     describe('Whitelist mode priority', () => {
         it('should prioritize whitelist mode', () => {
-            const validator = new UrlValidator(['example.com', '.example.com'], ['tmp.example.com']);
+            const validator = new UrlValidator(['example.com', '*.example.com'], ['tmp.example.com']);
             const result = validator.validate('https://tmp.example.com');
             expect(result.valid).to.be.false;
         });
@@ -226,21 +226,23 @@ describe('UrlValidator', () => {
             expect(validator.validate('https://example.com.cn').valid).to.be.false;
         });
 
-        it('should handle suffix pattern correctly', () => {
-            const validator = new UrlValidator(['.example.com']);
+        it('should handle wildcard pattern correctly', () => {
+            const validator = new UrlValidator(['*.example.com']);
 
-            expect(validator.validate('https://sub.example.com').valid).to.be.true;
-            expect(validator.validate('https://deep.sub.example.com').valid).to.be.true;
-            expect(validator.validate('https://example.com').valid).to.be.false; // 后缀模式不匹配根域名
+            expect(validator.validate('https://api.example.com').valid).to.be.true; // ✅ 一级子域名
+            expect(validator.validate('https://www.example.com').valid).to.be.true; // ✅ 一级子域名
+            expect(validator.validate('https://deep.sub.example.com').valid).to.be.false; // ❌ 多级子域名
+            expect(validator.validate('https://example.com').valid).to.be.false; // ❌ 根域名
             expect(validator.validate('https://notexample.com').valid).to.be.false;
         });
 
-        it('should handle combination of exact and suffix patterns', () => {
-            const validator = new UrlValidator(['example.com', '.example.com']);
+        it('should handle combination of exact and wildcard patterns', () => {
+            const validator = new UrlValidator(['example.com', '*.example.com']);
 
-            expect(validator.validate('https://example.com').valid).to.be.true; // 完全匹配
-            expect(validator.validate('https://api.example.com').valid).to.be.true; // 后缀匹配
-            expect(validator.validate('https://v2.api.example.com').valid).to.be.true; // 后缀匹配多级
+            expect(validator.validate('https://example.com').valid).to.be.true; // ✅ 精确匹配
+            expect(validator.validate('https://api.example.com').valid).to.be.true; // ✅ 通配符匹配一级子域名
+            expect(validator.validate('https://www.example.com').valid).to.be.true; // ✅ 通配符匹配一级子域名
+            expect(validator.validate('https://v2.api.example.com').valid).to.be.false; // ❌ 多级子域名不匹配
             expect(validator.validate('https://notexample.com').valid).to.be.false;
         });
     });
@@ -277,7 +279,7 @@ describe('UrlValidator', () => {
         });
 
         it('should reject when both in whitelist and blacklist', () => {
-            const validator = new UrlValidator(['example.com', '.example.com'], ['bad.example.com']);
+            const validator = new UrlValidator(['example.com', '*.example.com'], ['bad.example.com']);
 
             // 在白名单中，但也在黑名单中
             const result = validator.validate('https://bad.example.com');

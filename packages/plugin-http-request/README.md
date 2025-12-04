@@ -141,11 +141,11 @@ const client = new NsHttpClient({
     enableIpValidation: true,        // 开启 IP 验证
     allowPrivateIp: false,           // 是否允许访问私有 IP（内网地址）
     whitelist: [                     // 域名白名单
-      'trusted.com', '.trusted.com', // 匹配根域名和所有子域名
-      'api.example.com'              // 仅匹配该域名
+      'trusted.com', '*.trusted.com', // 匹配根域名和一级子域名
+      'api.example.com'               // 仅匹配该域名
     ],
     blacklist: [                     // 域名黑名单
-      'malicious.com', '.malicious.com', // 根域名和所有子域名
+      'malicious.com', '*.malicious.com', // 根域名和一级子域名
       'unsafe.net'
     ],
     dnsCacheTtl: 60000,              // DNS 缓存 TTL（毫秒，默认 60 秒）
@@ -223,11 +223,11 @@ const client = new NsHttpClient({
     enableIpValidation: true,      // 启用 IP 地址验证
     allowPrivateIp: false,         // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
     whitelist: [                   // 白名单（支持以下模式）
-      'api.example.com',           // 1. 完全匹配
-      '.safe.com',                 // 2. 后缀匹配（匹配所有子域名）
-      'trusted.com', '.trusted.com' // 3. 组合使用：匹配根域名和所有子域名
+      'api.example.com',           // 1. 精确匹配
+      '*.safe.com',                // 2. 通配符匹配（只匹配一级子域名）
+      'trusted.com', '*.trusted.com' // 3. 组合使用：匹配根域名和一级子域名
     ],
-    blacklist: ['malicious.com', '.malicious.com'] // 黑名单：根域名 + 子域名
+    blacklist: ['malicious.com', '*.malicious.com'] // 黑名单：根域名 + 一级子域名
   }
 });
 ```
@@ -236,9 +236,9 @@ const client = new NsHttpClient({
 
 | 模式 | 匹配规则 | 示例 |
 |------|---------|------|
-| `example.com` | 完全匹配 | ✅ `example.com`<br>❌ `api.example.com` |
-| `.example.com` | 后缀匹配<br>匹配所有子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
-| 组合使用<br>`['example.com', '.example.com']` | 完全匹配 + 后缀匹配<br>匹配根域名和所有子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `v2.api.example.com`（多级） |
+| `example.com` | 精确匹配 | ✅ `example.com`<br>❌ `api.example.com` |
+| `*.example.com` | 通配符匹配<br>只匹配一级子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
+| 组合使用<br>`['example.com', '*.example.com']` | 精确匹配 + 通配符匹配<br>匹配根域名和一级子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
 
 **DNS 缓存机制：**
 
@@ -301,14 +301,20 @@ const client = new NsHttpClient()
     enabled: true,
     http_proxy: 'http://proxy.example.com:8080',
     https_proxy: 'https://proxy.example.com:8443',
-    no_proxy: [          // 不使用代理的域名
-      'localhost',
-      '127.0.0.1',
-      '*.internal.com',
-      '.local'
+    no_proxy: [          // 不使用代理的域名（支持传统模式）
+      'localhost',       // 精确匹配
+      '127.0.0.1',       // 精确匹配
+      '.internal.com',   // 后缀匹配（匹配所有子域名）
+      '.local',          // 后缀匹配
+      '192.168.'         // 前缀匹配（IP地址）
     ]
   });
 ```
+
+**no_proxy 支持的模式：**
+- `example.com` - 精确匹配该域名
+- `.example.com` - 后缀匹配，匹配所有以 `.example.com` 结尾的域名（包括子域名）
+- `192.168.` - 前缀匹配，主要用于 IP 地址范围匹配
 
 ### 适配器切换
 

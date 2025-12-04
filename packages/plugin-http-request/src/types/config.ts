@@ -34,9 +34,9 @@ export interface SecurityConfig {
     enableIpValidation: boolean;
     /** 允许访问私有 IP */
     allowPrivateIp: boolean;
-    /** 域名白名单（支持通配符，如 *.example.com） */
+    /** 域名白名单（支持通配符，如 *.example.com 匹配一级子域名） */
     whitelist: string[];
-    /** 域名黑名单（支持通配符） */
+    /** 域名黑名单（支持通配符，如 *.example.com 匹配一级子域名） */
     blacklist: string[];
     /** DNS 缓存 TTL（毫秒） */
     dnsCacheTtl: number;
