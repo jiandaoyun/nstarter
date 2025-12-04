@@ -3,7 +3,7 @@
  */
 
 import { expect } from 'chai';
-import { DnsValidator } from '../../src/security/dns.validator';
+import { DnsValidator } from '../../src';
 
 describe('DnsValidator', () => {
     describe('构造函数', () => {
@@ -42,7 +42,7 @@ describe('DnsValidator', () => {
 
         it('应该在 DNS 解析失败时抛出错误', async () => {
             const validator = new DnsValidator();
-            
+
             try {
                 await validator.resolve('this-domain-definitely-does-not-exist-12345678.com');
                 expect.fail('应该抛出错误');
@@ -75,11 +75,11 @@ describe('DnsValidator', () => {
 
             await validator.resolve('google.com');
             await validator.resolve('github.com');
-            
+
             expect(validator.getCacheSize()).to.equal(2);
         });
 
-        it('应该在缓存过期后重新查询', async function() {
+        it('应该在缓存过期后重新查询', async function () {
             this.timeout(5000); // 增加超时时间
 
             const validator = new DnsValidator(100); // 100ms TTL
@@ -165,7 +165,7 @@ describe('DnsValidator', () => {
     });
 
     describe('cleanExpiredCache', () => {
-        it('应该清理过期的缓存条目', async function() {
+        it('应该清理过期的缓存条目', async function () {
             this.timeout(5000);
 
             const validator = new DnsValidator(100);
@@ -180,7 +180,7 @@ describe('DnsValidator', () => {
             expect(validator.getCacheSize()).to.equal(0);
         });
 
-        it('应该保留未过期的缓存条目', async function() {
+        it('应该保留未过期的缓存条目', async function () {
             this.timeout(5000);
 
             const validator = new DnsValidator(60000); // 长 TTL
@@ -288,7 +288,7 @@ describe('DnsValidator', () => {
     });
 
     describe('LRU 缓存淘汰', () => {
-        it('应该在缓存满时淘汰最旧的条目', async function() {
+        it('应该在缓存满时淘汰最旧的条目', async function () {
             this.timeout(10000); // 增加超时时间
 
             // 创建一个只能容纳 3 个条目的小缓存
@@ -308,7 +308,7 @@ describe('DnsValidator', () => {
             expect(validator.getMaxCacheSize()).to.equal(3);
         });
 
-        it('应该更新最近访问的条目位置', async function() {
+        it('应该更新最近访问的条目位置', async function () {
             this.timeout(10000);
 
             const validator = new DnsValidator(60000, undefined, 3);

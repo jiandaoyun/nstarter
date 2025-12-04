@@ -4,39 +4,10 @@
 
 import { expect } from 'chai';
 import {
-    BaseLogger,
     ELogLevel,
     NullLogger
 } from '../../src';
-
-// 创建一个具体的实现用于测试
-class TestLogger extends BaseLogger {
-    public logs: { level: ELogLevel; message: string; meta?: Record<string, any> }[] = [];
-
-    public debug(message: string, meta?: Record<string, any>): void {
-        if (this.shouldLog(ELogLevel.DEBUG)) {
-            this.logs.push({ level: ELogLevel.DEBUG, message, meta });
-        }
-    }
-
-    public info(message: string, meta?: Record<string, any>): void {
-        if (this.shouldLog(ELogLevel.INFO)) {
-            this.logs.push({ level: ELogLevel.INFO, message, meta });
-        }
-    }
-
-    public warn(message: string, meta?: Record<string, any>): void {
-        if (this.shouldLog(ELogLevel.WARN)) {
-            this.logs.push({ level: ELogLevel.WARN, message, meta });
-        }
-    }
-
-    public error(message: string, meta?: Record<string, any>): void {
-        if (this.shouldLog(ELogLevel.ERROR)) {
-            this.logs.push({ level: ELogLevel.ERROR, message, meta });
-        }
-    }
-}
+import { TestLogger } from '../venv';
 
 describe('BaseLogger', () => {
     describe('构造函数', () => {

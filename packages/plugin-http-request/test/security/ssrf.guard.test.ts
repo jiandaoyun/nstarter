@@ -3,9 +3,9 @@
  */
 
 import { expect } from 'chai';
-import { SsrfGuard } from '../../src/security/ssrf.guard';
-import { SecurityError } from '../../src/types';
-import type { SecurityConfig } from '../../src/types';
+import { SsrfGuard } from '../../src';
+import { SecurityError } from '../../src';
+import type { SecurityConfig } from '../../src';
 
 describe('SsrfGuard', () => {
     const defaultConfig: SecurityConfig = {
@@ -209,7 +209,7 @@ describe('SsrfGuard', () => {
                 allowPrivateIp: false
             };
             const guard = new SsrfGuard(config);
-            
+
             // localhost 会解析为 127.0.0.1
             const result = await guard.validate('http://localhost');
 
@@ -278,36 +278,36 @@ describe('SsrfGuard', () => {
     describe('updateConfig', () => {
         it('应该更新配置', () => {
             const guard = new SsrfGuard(defaultConfig);
-            
+
             guard.updateConfig({ allowPrivateIp: true });
-            
+
             const config = guard.getConfig();
             expect(config.allowPrivateIp).to.be.true;
         });
 
         it('应该更新 DNS 缓存 TTL', () => {
             const guard = new SsrfGuard(defaultConfig);
-            
+
             guard.updateConfig({ dnsCacheTtl: 30000 });
-            
+
             const config = guard.getConfig();
             expect(config.dnsCacheTtl).to.equal(30000);
         });
 
         it('应该更新白名单', async () => {
             const guard = new SsrfGuard(defaultConfig);
-            
+
             guard.updateConfig({ whitelist: ['new-domain.com'] });
-            
+
             const config = guard.getConfig();
             expect(config.whitelist).to.deep.equal(['new-domain.com']);
         });
 
         it('应该更新黑名单', () => {
             const guard = new SsrfGuard(defaultConfig);
-            
+
             guard.updateConfig({ blacklist: ['bad-domain.com'] });
-            
+
             const config = guard.getConfig();
             expect(config.blacklist).to.deep.equal(['bad-domain.com']);
         });
@@ -315,9 +315,9 @@ describe('SsrfGuard', () => {
         it('应该支持部分配置更新', () => {
             const guard = new SsrfGuard(defaultConfig);
             const originalConfig = guard.getConfig();
-            
+
             guard.updateConfig({ allowPrivateIp: true });
-            
+
             const newConfig = guard.getConfig();
             expect(newConfig.allowPrivateIp).to.be.true;
             expect(newConfig.enableIpValidation).to.equal(originalConfig.enableIpValidation);
@@ -347,7 +347,7 @@ describe('SsrfGuard', () => {
             expect(guard.getDnsCacheSize()).to.equal(2);
         });
 
-        it('应该清理过期的缓存', async function() {
+        it('应该清理过期的缓存', async function () {
             this.timeout(5000);
 
             const config: SecurityConfig = {
@@ -465,8 +465,8 @@ describe('SsrfGuard', () => {
             const guard = new SsrfGuard(config);
 
             const longPath = 'a'.repeat(1000);
-            const result = await guard.validate(`https://example.com/${longPath}`);
-            
+            const result = await guard.validate(`https://example.com/${ longPath }`);
+
             expect(result.passed).to.be.true;
         });
 
@@ -479,7 +479,7 @@ describe('SsrfGuard', () => {
 
             // Punycode 编码的国际化域名
             const result = await guard.validate('https://xn--n3h.com'); // ☃.com
-            
+
             expect(result.passed).to.be.true;
         });
     });

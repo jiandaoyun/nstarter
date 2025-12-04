@@ -24,7 +24,6 @@ import {
     UndiciAdapter
 } from './adapter';
 import {
-    ConsoleLogger,
     NullLogger,
     NsHttpClientLogger
 } from './logger';
@@ -111,7 +110,7 @@ export class NsHttpClient implements IHttpClient {
             return new NullLogger();
         }
 
-        return this.config.logging.logger || new ConsoleLogger();
+        return this.config.logging.logger || new NullLogger();
     }
 
     /**
