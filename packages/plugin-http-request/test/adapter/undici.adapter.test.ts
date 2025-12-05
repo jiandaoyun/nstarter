@@ -4,7 +4,11 @@
  */
 
 import { expect } from 'chai';
-import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from 'undici';
+import {
+    MockAgent,
+    setGlobalDispatcher,
+    getGlobalDispatcher
+} from 'undici';
 import { UndiciAdapter } from '../../src';
 import { HttpError } from '../../src';
 import type {
@@ -68,20 +72,20 @@ describe('UndiciAdapter', () => {
 
     describe('HTTP GET 请求', () => {
         it('应该成功发送 GET 请求', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get',
                 method: 'GET'
             }).reply(200, {
                 args: {},
                 headers: { 'User-Agent': 'undici' },
-                url: 'https://httpbin.org/get'
+                url: 'https://httpbin.nstarter/get'
             });
 
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/get'
+                url: 'https://httpbin.nstarter/get'
             });
 
             expect(response.status).to.equal(200);
@@ -91,19 +95,19 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理查询参数', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get?foo=bar&num=123&bool=true',
                 method: 'GET'
             }).reply(200, {
                 args: { foo: 'bar', num: '123', bool: 'true' },
-                url: 'https://httpbin.org/get?foo=bar&num=123&bool=true'
+                url: 'https://httpbin.nstarter/get?foo=bar&num=123&bool=true'
             });
 
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/get',
+                url: 'https://httpbin.nstarter/get',
                 params: {
                     foo: 'bar',
                     num: 123,
@@ -120,7 +124,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理自定义请求头', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/headers',
                 method: 'GET',
@@ -138,7 +142,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/headers',
+                url: 'https://httpbin.nstarter/headers',
                 headers: {
                     'X-Custom-Header': 'test-value',
                     'User-Agent': 'test-agent'
@@ -154,7 +158,7 @@ describe('UndiciAdapter', () => {
 
     describe('HTTP POST 请求', () => {
         it('应该成功发送 POST 请求', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/post',
                 method: 'POST',
@@ -166,7 +170,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: {
                     test: 'data',
                     number: 42
@@ -181,7 +185,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该自动设置 Content-Type 为 JSON', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/post',
                 method: 'POST',
@@ -193,7 +197,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: { test: 'data' }
             });
 
@@ -203,7 +207,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理字符串请求体', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/post',
                 method: 'POST',
@@ -215,7 +219,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: 'plain text data',
                 headers: {
                     'Content-Type': 'text/plain'
@@ -230,7 +234,7 @@ describe('UndiciAdapter', () => {
 
     describe('其他 HTTP 方法', () => {
         it('应该支持 PUT 请求', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/put',
                 method: 'PUT',
@@ -242,7 +246,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'PUT',
-                url: 'https://httpbin.org/put',
+                url: 'https://httpbin.nstarter/put',
                 body: { update: 'data' }
             });
 
@@ -250,25 +254,25 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该支持 DELETE 请求', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/delete',
                 method: 'DELETE'
             }).reply(200, {
-                url: 'https://httpbin.org/delete'
+                url: 'https://httpbin.nstarter/delete'
             });
 
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'DELETE',
-                url: 'https://httpbin.org/delete'
+                url: 'https://httpbin.nstarter/delete'
             });
 
             expect(response.status).to.equal(200);
         });
 
         it('应该支持 PATCH 请求', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/patch',
                 method: 'PATCH',
@@ -280,7 +284,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'PATCH',
-                url: 'https://httpbin.org/patch',
+                url: 'https://httpbin.nstarter/patch',
                 body: { patch: 'data' }
             });
 
@@ -290,7 +294,7 @@ describe('UndiciAdapter', () => {
 
     describe('响应类型处理', () => {
         it('应该正确处理 JSON 响应', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/json',
                 method: 'GET'
@@ -306,7 +310,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/json',
+                url: 'https://httpbin.nstarter/json',
                 responseType: 'json'
             });
 
@@ -315,7 +319,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理文本响应', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/html',
                 method: 'GET'
@@ -326,7 +330,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/html',
+                url: 'https://httpbin.nstarter/html',
                 responseType: 'text'
             });
 
@@ -336,7 +340,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理非 JSON 文本为文本', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/html',
                 method: 'GET'
@@ -347,7 +351,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/html'
+                url: 'https://httpbin.nstarter/html'
             });
 
             expect(response.status).to.equal(200);
@@ -358,7 +362,7 @@ describe('UndiciAdapter', () => {
 
     describe('HTTP 状态码处理', () => {
         it('应该正确处理 200 OK', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/status/200',
                 method: 'GET'
@@ -367,7 +371,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/200'
+                url: 'https://httpbin.nstarter/status/200'
             });
 
             expect(response.status).to.equal(200);
@@ -375,7 +379,7 @@ describe('UndiciAdapter', () => {
         });
 
         it('应该正确处理 404 Not Found', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/status/404',
                 method: 'GET'
@@ -384,14 +388,14 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/404'
+                url: 'https://httpbin.nstarter/status/404'
             });
 
             expect(response.status).to.equal(404);
         });
 
         it('应该正确处理 500 Internal Server Error', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/status/500',
                 method: 'GET'
@@ -400,7 +404,7 @@ describe('UndiciAdapter', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/500'
+                url: 'https://httpbin.nstarter/status/500'
             });
 
             expect(response.status).to.equal(500);
@@ -409,11 +413,11 @@ describe('UndiciAdapter', () => {
 
     describe('超时处理', () => {
         it('应该在超时时抛出错误', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             // 使用 replyWithError 模拟超时错误
             const timeoutError = new Error('Request timeout');
             (timeoutError as any).code = 'UND_ERR_HEADERS_TIMEOUT';
-            
+
             mockPool.intercept({
                 path: '/delay/10',
                 method: 'GET'
@@ -424,7 +428,7 @@ describe('UndiciAdapter', () => {
             try {
                 await adapter.request({
                     method: 'GET',
-                    url: 'https://httpbin.org/delay/10',
+                    url: 'https://httpbin.nstarter/delay/10',
                     timeout: 1000 // 1秒超时
                 });
                 expect.fail('应该抛出超时错误');
@@ -469,10 +473,14 @@ describe('UndiciAdapter', () => {
         it('应该支持设置日志记录器', () => {
             const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
             const mockLogger = {
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {}
+                debug: () => {
+                },
+                info: () => {
+                },
+                warn: () => {
+                },
+                error: () => {
+                }
             };
             adapter.setLogger(mockLogger);
             expect(adapter).to.exist;

@@ -40,12 +40,12 @@ describe('NsHttpClient Integration Tests', function () {
 
     describe('Basic HTTP requests', () => {
         it('should make a successful GET request with axios', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/get')
                 .reply(200, {
                     args: {},
                     headers: {},
-                    url: 'https://httpbin.org/get'
+                    url: 'https://httpbin.nstarter/get'
                 });
 
             const client = new NsHttpClient({
@@ -53,20 +53,20 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/get');
+            const response = await client.get('https://httpbin.nstarter/get');
             expect(response.status).to.equal(200);
             expect(response.data).to.exist;
         });
 
         it('should make a successful GET request with undici', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get',
                 method: 'GET'
             }).reply(200, {
                 args: {},
                 headers: {},
-                url: 'https://httpbin.org/get'
+                url: 'https://httpbin.nstarter/get'
             });
 
             const client = new NsHttpClient({
@@ -74,13 +74,13 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/get');
+            const response = await client.get('https://httpbin.nstarter/get');
             expect(response.status).to.equal(200);
             expect(response.data).to.exist;
         });
 
         it('should make a successful POST request', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .post('/post', {
                     test: 'data'
                 })
@@ -93,7 +93,7 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.post('https://httpbin.org/post', {
+            const response = await client.post('https://httpbin.nstarter/post', {
                 test: 'data'
             });
             expect(response.status).to.equal(200);
@@ -162,7 +162,7 @@ describe('NsHttpClient Integration Tests', function () {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
-                    whitelist: ['httpbin.org']
+                    whitelist: ['httpbin.nstarter']
                 },
                 logging: { enabled: false }
             });
@@ -195,7 +195,7 @@ describe('NsHttpClient Integration Tests', function () {
 
     describe('Error handling', () => {
         it('should handle timeout errors', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/delay/5')
                 .delayConnection(5000)
                 .reply(200);
@@ -207,7 +207,7 @@ describe('NsHttpClient Integration Tests', function () {
             });
 
             try {
-                await client.get('https://httpbin.org/delay/5');
+                await client.get('https://httpbin.nstarter/delay/5');
                 expect.fail('Should have thrown timeout error');
             } catch (error: any) {
                 expect(error.message).to.match(/timeout|aborted/i);
@@ -215,7 +215,7 @@ describe('NsHttpClient Integration Tests', function () {
         });
 
         it('should handle 404 errors', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/404')
                 .reply(404);
 
@@ -224,7 +224,7 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/status/404');
+            const response = await client.get('https://httpbin.nstarter/status/404');
             expect(response.status).to.equal(404);
         });
 
@@ -250,7 +250,7 @@ describe('NsHttpClient Integration Tests', function () {
     describe('Retry mechanism', () => {
         it('should respect max retries', async () => {
             // 所有请求都返回 503
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/503')
                 .times(4) // 初始请求 + 3次重试
                 .reply(503);
@@ -264,7 +264,7 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/status/503');
+            const response = await client.get('https://httpbin.nstarter/status/503');
             // 重试3次后仍然失败
             expect(response.status).to.equal(503);
         });
@@ -272,7 +272,7 @@ describe('NsHttpClient Integration Tests', function () {
 
     describe('Different adapters', () => {
         it('should work with axios adapter', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/get')
                 .reply(200, { adapter: 'axios' });
 
@@ -281,13 +281,13 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/get');
+            const response = await client.get('https://httpbin.nstarter/get');
             expect(response.status).to.equal(200);
             expect(response.data).to.have.property('adapter', 'axios');
         });
 
         it('should work with undici adapter', async () => {
-            const mockPool = mockAgent.get('https://httpbin.org');
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get',
                 method: 'GET'
@@ -298,7 +298,7 @@ describe('NsHttpClient Integration Tests', function () {
                 logging: { enabled: false }
             });
 
-            const response = await client.get('https://httpbin.org/get');
+            const response = await client.get('https://httpbin.nstarter/get');
             expect(response.status).to.equal(200);
             expect(response.data).to.have.property('adapter', 'undici');
         });

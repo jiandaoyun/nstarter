@@ -51,18 +51,18 @@ describe('AxiosAdapter', () => {
 
     describe('HTTP GET 请求', () => {
         it('应该成功发送 GET 请求', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/get')
                 .reply(200, {
                     args: {},
                     headers: { 'User-Agent': 'axios' },
-                    url: 'https://httpbin.org/get'
+                    url: 'https://httpbin.nstarter/get'
                 });
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/get'
+                url: 'https://httpbin.nstarter/get'
             });
 
             expect(response.status).to.equal(200);
@@ -72,18 +72,18 @@ describe('AxiosAdapter', () => {
         });
 
         it('应该正确处理查询参数', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/get')
                 .query({ foo: 'bar', num: '123', bool: 'true' })
                 .reply(200, {
                     args: { foo: 'bar', num: '123', bool: 'true' },
-                    url: 'https://httpbin.org/get?foo=bar&num=123&bool=true'
+                    url: 'https://httpbin.nstarter/get?foo=bar&num=123&bool=true'
                 });
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/get',
+                url: 'https://httpbin.nstarter/get',
                 params: {
                     foo: 'bar',
                     num: 123,
@@ -100,7 +100,7 @@ describe('AxiosAdapter', () => {
         });
 
         it('应该正确处理自定义请求头', async () => {
-            nock('https://httpbin.org', {
+            nock('https://httpbin.nstarter', {
                 reqheaders: {
                     'X-Custom-Header': 'test-value',
                     'User-Agent': 'test-agent'
@@ -117,7 +117,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/headers',
+                url: 'https://httpbin.nstarter/headers',
                 headers: {
                     'X-Custom-Header': 'test-value',
                     'User-Agent': 'test-agent'
@@ -133,7 +133,7 @@ describe('AxiosAdapter', () => {
 
     describe('HTTP POST 请求', () => {
         it('应该成功发送 POST 请求', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .post('/post', {
                     test: 'data',
                     number: 42
@@ -148,7 +148,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: {
                     test: 'data',
                     number: 42
@@ -171,7 +171,7 @@ describe('AxiosAdapter', () => {
                 object: { nested: 'value' }
             };
 
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .post('/post', testData)
                 .reply(200, {
                     json: testData
@@ -180,7 +180,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: testData
             });
 
@@ -190,7 +190,7 @@ describe('AxiosAdapter', () => {
         });
 
         it('应该正确处理字符串请求体', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .post('/post', 'plain text data')
                 .reply(200, {
                     data: 'plain text data'
@@ -199,7 +199,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'POST',
-                url: 'https://httpbin.org/post',
+                url: 'https://httpbin.nstarter/post',
                 body: 'plain text data',
                 headers: {
                     'Content-Type': 'text/plain'
@@ -214,7 +214,7 @@ describe('AxiosAdapter', () => {
 
     describe('其他 HTTP 方法', () => {
         it('应该支持 PUT 请求', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .put('/put', { update: 'data' })
                 .reply(200, {
                     json: { update: 'data' }
@@ -223,7 +223,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'PUT',
-                url: 'https://httpbin.org/put',
+                url: 'https://httpbin.nstarter/put',
                 body: { update: 'data' }
             });
 
@@ -231,23 +231,23 @@ describe('AxiosAdapter', () => {
         });
 
         it('应该支持 DELETE 请求', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .delete('/delete')
                 .reply(200, {
-                    url: 'https://httpbin.org/delete'
+                    url: 'https://httpbin.nstarter/delete'
                 });
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'DELETE',
-                url: 'https://httpbin.org/delete'
+                url: 'https://httpbin.nstarter/delete'
             });
 
             expect(response.status).to.equal(200);
         });
 
         it('应该支持 PATCH 请求', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .patch('/patch', { patch: 'data' })
                 .reply(200, {
                     json: { patch: 'data' }
@@ -256,7 +256,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'PATCH',
-                url: 'https://httpbin.org/patch',
+                url: 'https://httpbin.nstarter/patch',
                 body: { patch: 'data' }
             });
 
@@ -266,7 +266,7 @@ describe('AxiosAdapter', () => {
 
     describe('响应类型处理', () => {
         it('应该正确处理 JSON 响应', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/json')
                 .reply(200, {
                     slideshow: {
@@ -278,7 +278,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/json',
+                url: 'https://httpbin.nstarter/json',
                 responseType: 'json'
             });
 
@@ -287,14 +287,14 @@ describe('AxiosAdapter', () => {
         });
 
         it('应该正确处理文本响应', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/html')
                 .reply(200, '<!DOCTYPE html><html><body><h1>Test HTML</h1></body></html>');
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/html',
+                url: 'https://httpbin.nstarter/html',
                 responseType: 'text'
             });
 
@@ -306,42 +306,42 @@ describe('AxiosAdapter', () => {
 
     describe('HTTP 状态码处理', () => {
         it('应该正确处理 200 OK', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/200')
                 .reply(200);
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/200'
+                url: 'https://httpbin.nstarter/status/200'
             });
 
             expect(response.status).to.equal(200);
         });
 
         it('应该正确处理 404 Not Found', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/404')
                 .reply(404);
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/404'
+                url: 'https://httpbin.nstarter/status/404'
             });
 
             expect(response.status).to.equal(404);
         });
 
         it('应该正确处理 500 Internal Server Error', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/500')
                 .reply(500);
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/500'
+                url: 'https://httpbin.nstarter/status/500'
             });
 
             expect(response.status).to.equal(500);
@@ -350,7 +350,7 @@ describe('AxiosAdapter', () => {
 
     describe('超时处理', () => {
         it('应该在超时时抛出错误', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/delay/10')
                 .delayConnection(5000) // 延迟5秒
                 .reply(200);
@@ -360,7 +360,7 @@ describe('AxiosAdapter', () => {
             try {
                 await adapter.request({
                     method: 'GET',
-                    url: 'https://httpbin.org/delay/10',
+                    url: 'https://httpbin.nstarter/delay/10',
                     timeout: 1000 // 1秒超时
                 });
                 expect.fail('应该抛出超时错误');
@@ -374,7 +374,7 @@ describe('AxiosAdapter', () => {
     describe('重试机制', () => {
         it('应该在临时失败时重试', async () => {
             // 第一次和第二次返回 503，第三次返回 200
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/status/503')
                 .reply(503)
                 .get('/status/503')
@@ -389,10 +389,10 @@ describe('AxiosAdapter', () => {
             };
             const adapter = new AxiosAdapter(config, defaultSecurityConfig);
 
-            // httpbin.org/status/503 会返回 503，应该触发重试
+            // httpbin.nstarter/status/503 会返回 503，应该触发重试
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/status/503'
+                url: 'https://httpbin.nstarter/status/503'
             });
 
             // 即使重试，503 仍然是 503
@@ -467,7 +467,7 @@ describe('AxiosAdapter', () => {
 
     describe('响应头处理', () => {
         it('应该正确返回响应头', async () => {
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/response-headers')
                 .query({ 'X-Test-Header': 'test-value' })
                 .reply(200, {}, {
@@ -478,7 +478,7 @@ describe('AxiosAdapter', () => {
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/response-headers',
+                url: 'https://httpbin.nstarter/response-headers',
                 params: {
                     'X-Test-Header': 'test-value'
                 }
@@ -492,20 +492,20 @@ describe('AxiosAdapter', () => {
     describe('重定向处理', () => {
         it('应该正确处理重定向', async () => {
             // 模拟重定向
-            nock('https://httpbin.org')
+            nock('https://httpbin.nstarter')
                 .get('/redirect/1')
                 .reply(302, undefined, {
-                    'Location': 'https://httpbin.org/get'
+                    'Location': 'https://httpbin.nstarter/get'
                 })
                 .get('/get')
                 .reply(200, {
-                    url: 'https://httpbin.org/get'
+                    url: 'https://httpbin.nstarter/get'
                 });
 
             const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
             const response = await adapter.request({
                 method: 'GET',
-                url: 'https://httpbin.org/redirect/1'
+                url: 'https://httpbin.nstarter/redirect/1'
             });
 
             expect(response.status).to.equal(200);
