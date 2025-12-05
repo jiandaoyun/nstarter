@@ -27,10 +27,13 @@ describe('NsHttpClient Integration Tests', function () {
         mockAgent = new MockAgent();
         mockAgent.disableNetConnect();
         setGlobalDispatcher(mockAgent);
+        // 为 nock 禁用网络连接，确保所有请求都被拦截
+        nock.disableNetConnect();
     });
 
     afterEach(async () => {
         nock.cleanAll();
+        nock.enableNetConnect(); // 恢复网络连接
         await mockAgent.close();
         // 恢复原始 dispatcher
         if (originalDispatcher) {
@@ -50,6 +53,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 
@@ -71,6 +77,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.undici,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 
@@ -90,6 +99,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 
@@ -107,6 +119,7 @@ describe('NsHttpClient Integration Tests', function () {
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
+                    enableDnsValidation: false,
                     allowPrivateIp: false
                 },
                 logging: { enabled: false }
@@ -125,6 +138,7 @@ describe('NsHttpClient Integration Tests', function () {
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
+                    enableDnsValidation: false,
                     allowPrivateIp: false
                 },
                 logging: { enabled: false }
@@ -143,6 +157,7 @@ describe('NsHttpClient Integration Tests', function () {
                 adapter: EClientAdapter.axios,
                 security: {
                     enableIpValidation: true,
+                    enableDnsValidation: false,
                     allowPrivateIp: true
                 },
                 logging: { enabled: false }
@@ -162,7 +177,8 @@ describe('NsHttpClient Integration Tests', function () {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
-                    whitelist: ['httpbin.nstarter']
+                    whitelist: ['httpbin.nstarter'],
+                    enableDnsValidation: false
                 },
                 logging: { enabled: false }
             });
@@ -179,7 +195,8 @@ describe('NsHttpClient Integration Tests', function () {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
-                    blacklist: ['bad.example.com']
+                    blacklist: ['bad.example.com'],
+                    enableDnsValidation: false
                 },
                 logging: { enabled: false }
             });
@@ -202,6 +219,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 request: { timeout: 100 }, // 100ms timeout
                 logging: { enabled: false }
             });
@@ -221,6 +241,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 
@@ -235,6 +258,10 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
+                request: { timeout: 2000 }, // 设置2秒超时，防止测试超时
                 logging: { enabled: false }
             });
 
@@ -257,6 +284,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 request: {
                     retries: 3,
                     retryDelay: 100
@@ -278,6 +308,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 
@@ -295,6 +328,9 @@ describe('NsHttpClient Integration Tests', function () {
 
             const client = new NsHttpClient({
                 adapter: EClientAdapter.undici,
+                security: {
+                    enableDnsValidation: false
+                },
                 logging: { enabled: false }
             });
 

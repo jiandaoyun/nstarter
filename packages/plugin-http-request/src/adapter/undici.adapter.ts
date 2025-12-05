@@ -64,25 +64,31 @@ export class UndiciAdapter extends BaseHttpAdapter {
         }
 
         // 构建 dispatcher 用于代理或 TLS 配置
-        // 初始化时根据 rejectUnauthorized 配置创建默认 dispatcher
-        let dispatcher: Dispatcher = new Agent({
-            connect: {
-                rejectUnauthorized: this.securityConfig.rejectUnauthorized
-            }
-        });
+        // 只有在需要代理或特殊 TLS 配置时才创建 dispatcher
+        // 否则不传递 dispatcher，让 undici 使用全局 dispatcher（支持MockAgent）
+        let dispatcher: Dispatcher | undefined;
 
-        // 设置代理（全局配置）
+        // 如果 rejectUnauthorized 为 false，需要创建 Agent 来设置 TLS 选项
+        if (!this.securityConfig.rejectUnauthorized) {
+            dispatcher = new Agent({
+                connect: {
+                    rejectUnauthorized: false
+                }
+            });
+        }
+
+        // 有代理时，创建 ProxyAgent
         if (this.requestConfig.proxy) {
             const { protocol, host, port, auth } = this.requestConfig.proxy;
-            let proxyUrl = `${protocol}://${host}:${port}`;
-            
+            let proxyUrl = `${ protocol }://${ host }:${ port }`;
+
             // 如果有认证信息，添加到 URL 中
             if (auth) {
                 const encodedUsername = encodeURIComponent(auth.username);
                 const encodedPassword = encodeURIComponent(auth.password);
-                proxyUrl = `${protocol}://${encodedUsername}:${encodedPassword}@${host}:${port}`;
+                proxyUrl = `${ protocol }://${ encodedUsername }:${ encodedPassword }@${ host }:${ port }`;
             }
-            
+
             dispatcher = new ProxyAgent({
                 uri: proxyUrl,
                 connect: {
@@ -124,9 +130,9 @@ export class UndiciAdapter extends BaseHttpAdapter {
             bodyTimeout: options.timeout ?? this.requestConfig.timeout,
             headersTimeout: options.timeout ?? this.requestConfig.timeout,
             maxRedirections: this.requestConfig.maxRedirects,
-            dispatcher,
+            ...(dispatcher && { dispatcher }),
         };
-        
+
 
         try {
             const startTime = Date.now();

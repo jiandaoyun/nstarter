@@ -29,7 +29,8 @@ describe('AxiosAdapter', () => {
         rejectUnauthorized: true,
         dnsCacheTtl: 60000,
         whitelist: [],
-        blacklist: []
+        blacklist: [],
+        dnsCacheMaxSize: 500
     };
 
     afterEach(() => {
