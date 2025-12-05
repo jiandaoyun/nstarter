@@ -49,21 +49,21 @@ describe('LogFilter', () => {
     });
 
     describe('Basic filtering', () => {
-        it('should pass all requests when no filter configured', () => {
+        it('应该在未配置过滤器时通过所有请求', () => {
             const filter = new LogFilter();
 
             expect(filter.shouldLog(createSuccessOptions())).to.be.true;
             expect(filter.shouldLog(createFailedOptions())).to.be.true;
         });
 
-        it('should only log failed requests when onlyFailed is true', () => {
+        it('应该只在 onlyFailed 为 true 时记录失败的请求', () => {
             const filter = new LogFilter({ onlyFailed: true });
 
             expect(filter.shouldLog(createSuccessOptions())).to.be.false;
             expect(filter.shouldLog(createFailedOptions())).to.be.true;
         });
 
-        it('should only log successful requests when onlySuccess is true', () => {
+        it('应该只在 onlySuccess 为 true 时记录成功的请求', () => {
             const filter = new LogFilter({ onlySuccess: true });
 
             expect(filter.shouldLog(createSuccessOptions())).to.be.true;
@@ -72,7 +72,7 @@ describe('LogFilter', () => {
     });
 
     describe('HTTP method filtering', () => {
-        it('should filter by HTTP methods', () => {
+        it('应该按 HTTP 方法过滤', () => {
             const filter = new LogFilter({ methods: ['POST', 'PUT'] });
 
             expect(filter.shouldLog(createSuccessOptions({
@@ -90,7 +90,7 @@ describe('LogFilter', () => {
     });
 
     describe('URL pattern filtering', () => {
-        it('should filter by string URL patterns', () => {
+        it('应该按字符串 URL 模式过滤', () => {
             const filter = new LogFilter({ urlPatterns: ['/api/', 'payment'] });
 
             expect(filter.shouldLog(createSuccessOptions({
@@ -106,7 +106,7 @@ describe('LogFilter', () => {
             }))).to.be.false;
         });
 
-        it('should filter by regex URL patterns', () => {
+        it('应该按正则表达式 URL 模式过滤', () => {
             const filter = new LogFilter({
                 urlPatterns: [/\/api\/users\/\d+/, /\/orders\/[a-z0-9]+/i]
             });
@@ -126,7 +126,7 @@ describe('LogFilter', () => {
     });
 
     describe('Scenario filtering', () => {
-        it('should filter by scenarios', () => {
+        it('应该按场景过滤', () => {
             const filter = new LogFilter({ scenarios: ['user-login', 'payment'] });
 
             expect(filter.shouldLog(createSuccessOptions({
@@ -142,7 +142,7 @@ describe('LogFilter', () => {
             }))).to.be.false;
         });
 
-        it('should reject requests without scenario when scenarios filter is set', () => {
+        it('应该在设置场景过滤器时拒绝没有场景的请求', () => {
             const filter = new LogFilter({ scenarios: ['user-login'] });
 
             expect(filter.shouldLog(createSuccessOptions({
@@ -152,7 +152,7 @@ describe('LogFilter', () => {
     });
 
     describe('Status code filtering', () => {
-        it('should filter by specific status codes', () => {
+        it('应该按特定状态码过滤', () => {
             const filter = new LogFilter({ statusCodes: [401, 403, 404, 500] });
 
             expect(filter.shouldLog(createSuccessOptions({
@@ -167,7 +167,7 @@ describe('LogFilter', () => {
             expect(filter.shouldLog(createFailedOptions({ status: 200 }))).to.be.false;
         });
 
-        it('should filter by status code ranges', () => {
+        it('应该按状态码范围过滤', () => {
             const filter = new LogFilter({
                 statusCodeRanges: [
                     { min: 400, max: 499 },
@@ -189,7 +189,7 @@ describe('LogFilter', () => {
     });
 
     describe('Duration filtering', () => {
-        it('should filter by minimum duration', () => {
+        it('应该按最小持续时间过滤', () => {
             const filter = new LogFilter({ minDuration: 1000 });
 
             expect(filter.shouldLog(createSuccessOptions({ duration: 500 }))).to.be.false;
@@ -200,7 +200,7 @@ describe('LogFilter', () => {
     });
 
     describe('Custom filter', () => {
-        it('should use custom filter function', () => {
+        it('应该使用自定义过滤函数', () => {
             const filter = new LogFilter({
                 customFilter: (options) => {
                     // 只记录管理员用户的请求
@@ -231,7 +231,7 @@ describe('LogFilter', () => {
     });
 
     describe('Combined filters', () => {
-        it('should apply all filters (AND logic)', () => {
+        it('应该应用所有过滤器（AND 逻辑）', () => {
             const filter = new LogFilter({
                 methods: ['POST', 'PUT'],
                 urlPatterns: ['/api/'],
@@ -277,7 +277,7 @@ describe('LogFilter', () => {
     });
 
     describe('Config management', () => {
-        it('should allow updating config', () => {
+        it('应该允许更新配置', () => {
             const filter = new LogFilter({ onlyFailed: true });
 
             expect(filter.shouldLog(createSuccessOptions())).to.be.false;
@@ -288,7 +288,7 @@ describe('LogFilter', () => {
             expect(filter.shouldLog(createFailedOptions())).to.be.false;
         });
 
-        it('should allow getting current config', () => {
+        it('应该允许获取当前配置', () => {
             const config = {
                 onlyFailed: true,
                 methods: ['POST'],

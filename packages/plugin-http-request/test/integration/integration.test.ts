@@ -42,7 +42,7 @@ describe('NsHttpClient Integration Tests', function () {
     });
 
     describe('Basic HTTP requests', () => {
-        it('should make a successful GET request with axios', async () => {
+        it('应该使用 axios 成功发送 GET 请求', async () => {
             nock('https://httpbin.nstarter')
                 .get('/get')
                 .reply(200, {
@@ -64,7 +64,7 @@ describe('NsHttpClient Integration Tests', function () {
             expect(response.data).to.exist;
         });
 
-        it('should make a successful GET request with undici', async () => {
+        it('应该使用 undici 成功发送 GET 请求', async () => {
             const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get',
@@ -88,7 +88,7 @@ describe('NsHttpClient Integration Tests', function () {
             expect(response.data).to.exist;
         });
 
-        it('should make a successful POST request', async () => {
+        it('应该成功发送 POST 请求', async () => {
             nock('https://httpbin.nstarter')
                 .post('/post', {
                     test: 'data'
@@ -114,7 +114,7 @@ describe('NsHttpClient Integration Tests', function () {
     });
 
     describe('Security validations', () => {
-        it('should block requests to loopback addresses', async () => {
+        it('应该阻止对回环地址的请求', async () => {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
@@ -133,7 +133,7 @@ describe('NsHttpClient Integration Tests', function () {
             }
         });
 
-        it('should block requests to private IP addresses', async () => {
+        it('应该阻止对私有 IP 地址的请求', async () => {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
@@ -152,7 +152,7 @@ describe('NsHttpClient Integration Tests', function () {
             }
         });
 
-        it('should allow requests to private IPs when enabled', async () => {
+        it('应该在启用时允许对私有 IP 的请求', async () => {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
@@ -173,7 +173,7 @@ describe('NsHttpClient Integration Tests', function () {
             }
         });
 
-        it('should enforce whitelist', async () => {
+        it('应该强制执行白名单', async () => {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
@@ -191,7 +191,7 @@ describe('NsHttpClient Integration Tests', function () {
             }
         });
 
-        it('should enforce blacklist', async () => {
+        it('应该强制执行黑名单', async () => {
             const client = new NsHttpClient({
                 adapter: EClientAdapter.axios,
                 security: {
@@ -211,7 +211,7 @@ describe('NsHttpClient Integration Tests', function () {
     });
 
     describe('Error handling', () => {
-        it('should handle timeout errors', async () => {
+        it('应该处理超时错误', async () => {
             nock('https://httpbin.nstarter')
                 .get('/delay/5')
                 .delayConnection(5000)
@@ -234,7 +234,7 @@ describe('NsHttpClient Integration Tests', function () {
             }
         });
 
-        it('should handle 404 errors', async () => {
+        it('应该处理 404 错误', async () => {
             nock('https://httpbin.nstarter')
                 .get('/status/404')
                 .reply(404);
@@ -251,7 +251,7 @@ describe('NsHttpClient Integration Tests', function () {
             expect(response.status).to.equal(404);
         });
 
-        it('should handle network errors', async () => {
+        it('应该处理网络错误', async () => {
             nock('http://nonexistent-domain-12345.com')
                 .get('/')
                 .replyWithError({ code: 'ENOTFOUND', message: 'getaddrinfo ENOTFOUND' });
@@ -275,7 +275,7 @@ describe('NsHttpClient Integration Tests', function () {
     });
 
     describe('Retry mechanism', () => {
-        it('should respect max retries', async () => {
+        it('应该遵守最大重试次数', async () => {
             // 所有请求都返回 503
             nock('https://httpbin.nstarter')
                 .get('/status/503')
@@ -301,7 +301,7 @@ describe('NsHttpClient Integration Tests', function () {
     });
 
     describe('Different adapters', () => {
-        it('should work with axios adapter', async () => {
+        it('应该与 axios 适配器一起工作', async () => {
             nock('https://httpbin.nstarter')
                 .get('/get')
                 .reply(200, { adapter: 'axios' });
@@ -319,7 +319,7 @@ describe('NsHttpClient Integration Tests', function () {
             expect(response.data).to.have.property('adapter', 'axios');
         });
 
-        it('should work with undici adapter', async () => {
+        it('应该与 undici 适配器一起工作', async () => {
             const mockPool = mockAgent.get('https://httpbin.nstarter');
             mockPool.intercept({
                 path: '/get',

@@ -18,13 +18,13 @@ import {
 
 describe('TraceContext Utils', () => {
     describe('generateTraceId', () => {
-        it('should generate valid 32-char hex string', () => {
+        it('应该生成有效的 32 位十六进制字符串', () => {
             const traceId = generateTraceId();
             expect(traceId).to.match(/^[0-9a-f]{32}$/);
             expect(traceId).to.not.equal('00000000000000000000000000000000');
         });
 
-        it('should generate unique trace IDs', () => {
+        it('应该生成唯一的跟踪 ID', () => {
             const id1 = generateTraceId();
             const id2 = generateTraceId();
             expect(id1).to.not.equal(id2);
@@ -32,13 +32,13 @@ describe('TraceContext Utils', () => {
     });
 
     describe('generateSpanId', () => {
-        it('should generate valid 16-char hex string', () => {
+        it('应该生成有效的 16 位十六进制字符串', () => {
             const spanId = generateSpanId();
             expect(spanId).to.match(/^[0-9a-f]{16}$/);
             expect(spanId).to.not.equal('0000000000000000');
         });
 
-        it('should generate unique span IDs', () => {
+        it('应该生成唯一的跨度 ID', () => {
             const id1 = generateSpanId();
             const id2 = generateSpanId();
             expect(id1).to.not.equal(id2);
@@ -46,12 +46,12 @@ describe('TraceContext Utils', () => {
     });
 
     describe('isValidTraceId', () => {
-        it('should validate correct trace ID', () => {
+        it('应该验证正确的跟踪 ID', () => {
             expect(isValidTraceId('0af7651916cd43dd8448eb211c80319c')).to.be.true;
             expect(isValidTraceId('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')).to.be.true;
         });
 
-        it('should reject invalid trace IDs', () => {
+        it('应该拒绝无效的跟踪 ID', () => {
             expect(isValidTraceId('00000000000000000000000000000000')).to.be.false; // all zeros
             expect(isValidTraceId('0af7651916cd43dd8448eb211c80319')).to.be.false;  // too short
             expect(isValidTraceId('0af7651916cd43dd8448eb211c80319caa')).to.be.false; // too long
@@ -61,12 +61,12 @@ describe('TraceContext Utils', () => {
     });
 
     describe('isValidSpanId', () => {
-        it('should validate correct span ID', () => {
+        it('应该验证正确的跨度 ID', () => {
             expect(isValidSpanId('b7ad6b7169203331')).to.be.true;
             expect(isValidSpanId('FFFFFFFFFFFFFFFF')).to.be.true;
         });
 
-        it('should reject invalid span IDs', () => {
+        it('应该拒绝无效的跨度 ID', () => {
             expect(isValidSpanId('0000000000000000')).to.be.false; // all zeros
             expect(isValidSpanId('b7ad6b716920333')).to.be.false;  // too short
             expect(isValidSpanId('b7ad6b7169203331aa')).to.be.false; // too long
@@ -76,30 +76,30 @@ describe('TraceContext Utils', () => {
     });
 
     describe('generateTraceParent', () => {
-        it('should generate valid traceparent with default options', () => {
+        it('应该使用默认选项生成有效的 traceparent', () => {
             const traceparent = generateTraceParent();
             expect(traceparent).to.match(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/);
         });
 
-        it('should generate valid traceparent with sampled=false', () => {
+        it('应该生成未采样的有效 traceparent（sampled=false）', () => {
             const traceparent = generateTraceParent({ sampled: false });
             expect(traceparent).to.match(/^00-[0-9a-f]{32}-[0-9a-f]{16}-00$/);
         });
 
-        it('should use custom trace ID and parent ID', () => {
+        it('应该使用自定义跟踪 ID 和父 ID', () => {
             const traceId = '0af7651916cd43dd8448eb211c80319c';
             const parentId = 'b7ad6b7169203331';
             const traceparent = generateTraceParent({ traceId, parentId });
             expect(traceparent).to.equal(`00-${ traceId }-${ parentId }-01`);
         });
 
-        it('should throw error for invalid trace ID', () => {
+        it('应该为无效的跟踪 ID 抛出错误', () => {
             expect(() => {
                 generateTraceParent({ traceId: '00000000000000000000000000000000' });
             }).to.throw('Invalid trace ID');
         });
 
-        it('should throw error for invalid span ID', () => {
+        it('应该为无效的跨度 ID 抛出错误', () => {
             expect(() => {
                 generateTraceParent({ parentId: '0000000000000000' });
             }).to.throw('Invalid span ID');
@@ -107,7 +107,7 @@ describe('TraceContext Utils', () => {
     });
 
     describe('parseTraceParent', () => {
-        it('should parse valid traceparent', () => {
+        it('应该解析有效的 traceparent', () => {
             const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
             const parsed = parseTraceParent(traceparent);
 
@@ -118,7 +118,7 @@ describe('TraceContext Utils', () => {
             expect(parsed?.traceFlags).to.equal('01');
         });
 
-        it('should normalize to lowercase', () => {
+        it('应该规范化为小写', () => {
             const traceparent = '00-0AF7651916CD43DD8448EB211C80319C-B7AD6B7169203331-01';
             const parsed = parseTraceParent(traceparent);
 
@@ -126,7 +126,7 @@ describe('TraceContext Utils', () => {
             expect(parsed?.parentId).to.equal('b7ad6b7169203331');
         });
 
-        it('should return null for invalid traceparents', () => {
+        it('应该为无效的 traceparent 返回 null', () => {
             expect(parseTraceParent('')).to.be.null;
             expect(parseTraceParent('invalid')).to.be.null;
             expect(parseTraceParent('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331')).to.be.null; // missing flags
@@ -135,7 +135,7 @@ describe('TraceContext Utils', () => {
             expect(parseTraceParent('00-0af7651916cd43dd8448eb211c80319c-0000000000000000-01')).to.be.null; // all-zero span ID
         });
 
-        it('should handle whitespace', () => {
+        it('应该处理空白字符', () => {
             const traceparent = '  00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01  ';
             const parsed = parseTraceParent(traceparent);
             expect(parsed).to.not.be.null;
@@ -143,12 +143,12 @@ describe('TraceContext Utils', () => {
     });
 
     describe('isValidTraceParent', () => {
-        it('should validate correct traceparents', () => {
+        it('应该验证正确的 traceparent', () => {
             expect(isValidTraceParent('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01')).to.be.true;
             expect(isValidTraceParent('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00')).to.be.true;
         });
 
-        it('should reject invalid traceparents', () => {
+        it('应该拒绝无效的 traceparent', () => {
             expect(isValidTraceParent('')).to.be.false;
             expect(isValidTraceParent('invalid')).to.be.false;
             expect(isValidTraceParent('00-invalid-b7ad6b7169203331-01')).to.be.false;
@@ -156,7 +156,7 @@ describe('TraceContext Utils', () => {
     });
 
     describe('createChildSpan', () => {
-        it('should create child span with same trace ID', () => {
+        it('应该创建具有相同跟踪 ID 的子跨度', () => {
             const parent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
             const child = createChildSpan(parent);
 
@@ -168,7 +168,7 @@ describe('TraceContext Utils', () => {
             expect(childParsed?.traceFlags).to.equal('01'); // inherit sampled flag
         });
 
-        it('should inherit parent sampling decision', () => {
+        it('应该继承父级的采样决策', () => {
             const sampledParent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
             const unsampledParent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00';
 
@@ -179,14 +179,14 @@ describe('TraceContext Utils', () => {
             expect(parseTraceParent(unsampledChild)?.traceFlags).to.equal('00');
         });
 
-        it('should allow overriding sampling decision', () => {
+        it('应该允许覆盖采样决策', () => {
             const parent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
             const child = createChildSpan(parent, false);
 
             expect(parseTraceParent(child)?.traceFlags).to.equal('00');
         });
 
-        it('should throw error for invalid parent', () => {
+        it('应该为无效的父级抛出错误', () => {
             expect(() => {
                 createChildSpan('invalid-traceparent');
             }).to.throw('Invalid parent traceparent');
@@ -194,21 +194,21 @@ describe('TraceContext Utils', () => {
     });
 
     describe('isSampled', () => {
-        it('should detect sampled traceparent', () => {
+        it('应该检测已采样的 traceparent', () => {
             expect(isSampled('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01')).to.be.true;
         });
 
-        it('should detect unsampled traceparent', () => {
+        it('应该检测未采样的 traceparent', () => {
             expect(isSampled('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00')).to.be.false;
         });
 
-        it('should return false for invalid traceparent', () => {
+        it('应该为无效的 traceparent 返回 false', () => {
             expect(isSampled('invalid')).to.be.false;
         });
     });
 
     describe('TraceContext class', () => {
-        it('should provide all utility methods', () => {
+        it('应该提供所有工具方法', () => {
             expect(typeof TraceContext.generate).to.equal('function');
             expect(typeof TraceContext.parse).to.equal('function');
             expect(typeof TraceContext.isValid).to.equal('function');
@@ -220,7 +220,7 @@ describe('TraceContext Utils', () => {
             expect(typeof TraceContext.isValidSpanId).to.equal('function');
         });
 
-        it('should work correctly through class methods', () => {
+        it('应该通过类方法正确工作', () => {
             const traceparent = TraceContext.generate();
             expect(TraceContext.isValid(traceparent)).to.be.true;
             expect(TraceContext.isSampled(traceparent)).to.be.true;
@@ -234,7 +234,7 @@ describe('TraceContext Utils', () => {
     });
 
     describe('Real-world scenarios', () => {
-        it('should support full distributed tracing flow', () => {
+        it('应该支持完整的分布式跟踪流程', () => {
             // Service A generates initial traceparent
             const serviceATrace = generateTraceParent({ sampled: true });
             expect(isValidTraceParent(serviceATrace)).to.be.true;
@@ -265,7 +265,7 @@ describe('TraceContext Utils', () => {
             expect(isSampled(serviceCTrace)).to.be.true;
         });
 
-        it('should handle W3C specification example', () => {
+        it('应该处理 W3C 规范示例', () => {
             // Example from W3C spec
             const exampleTrace = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
 

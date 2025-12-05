@@ -12,7 +12,7 @@ import {
 
 describe('Config', () => {
     describe('mergeConfig', () => {
-        it('should use default config when no user config provided', () => {
+        it('应该在未提供用户配置时使用默认配置', () => {
             const config = mergeConfig();
             expect(config.adapter).to.equal('axios');
             expect(config.security.enableDnsValidation).to.be.true;
@@ -21,7 +21,7 @@ describe('Config', () => {
             expect(config.security.rejectUnauthorized).to.be.true;
         });
 
-        it('should merge user config with defaults', () => {
+        it('应该将用户配置与默认配置合并', () => {
             const config = mergeConfig({
                 adapter: EClientAdapter.undici,
                 security: {
@@ -34,7 +34,7 @@ describe('Config', () => {
             expect(config.security.enableDnsValidation).to.be.true; // default
         });
 
-        it('should preserve nested config', () => {
+        it('应该保留嵌套配置', () => {
             const config = mergeConfig({
                 security: {
                     whitelist: ['example.com'],
@@ -46,7 +46,7 @@ describe('Config', () => {
             expect(config.security.blacklist).to.deep.equal(['bad.com']);
         });
 
-        it('should allow custom security config', () => {
+        it('应该允许自定义安全配置', () => {
             const config = mergeConfig({
                 security: {
                     rejectUnauthorized: false
@@ -58,38 +58,38 @@ describe('Config', () => {
     });
 
     describe('validateConfig', () => {
-        it('should accept valid config', () => {
+        it('应该接受有效配置', () => {
             const config = mergeConfig();
             expect(() => validateConfig(config)).to.not.throw();
         });
 
-        it('should reject invalid adapter', () => {
+        it('应该拒绝无效的适配器', () => {
             const config = mergeConfig({ adapter: 'invalid' as any });
             expect(() => validateConfig(config)).to.throw(/invalid adapter/i);
         });
 
-        it('should reject negative timeout', () => {
+        it('应该拒绝负数超时', () => {
             const config = mergeConfig({ request: { timeout: -1 } as any });
             expect(() => validateConfig(config)).to.throw(/timeout/i);
         });
 
-        it('should reject negative retries', () => {
+        it('应该拒绝负数重试次数', () => {
             const config = mergeConfig({ request: { retries: -1 } as any });
             expect(() => validateConfig(config)).to.throw(/retries/i);
         });
 
-        it('should reject negative DNS cache TTL', () => {
+        it('应该拒绝负数 DNS 缓存 TTL', () => {
             const config = mergeConfig({ security: { dnsCacheTtl: -1 } });
             expect(() => validateConfig(config)).to.throw(/dns cache ttl/i);
         });
 
-        it('should reject DNS cache TTL exceeding maximum (24 hours)', () => {
+        it('应该拒绝超过最大值的 DNS 缓存 TTL（24 小时）', () => {
             const maxTtl = 24 * 60 * 60 * 1000; // 24 hours
             const config = mergeConfig({ security: { dnsCacheTtl: maxTtl + 1 } });
             expect(() => validateConfig(config)).to.throw(/dns cache ttl.*exceed.*24 hours/i);
         });
 
-        it('should accept DNS cache TTL at maximum (5 min)', () => {
+        it('应该接受最大值的 DNS 缓存 TTL（5 分钟）', () => {
             const maxTtl = 5 * 60 * 1000; // 5 minutes
             const config = mergeConfig({ security: { dnsCacheTtl: maxTtl } });
             expect(() => validateConfig(config)).to.not.throw();

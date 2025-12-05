@@ -74,7 +74,7 @@ describe('NsHttpClientLogger', () => {
     });
 
     describe('Basic logging', () => {
-        it('should log successful requests', () => {
+        it('应该记录成功的请求', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
@@ -91,7 +91,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs[0].meta.duration).to.equal(100);
         });
 
-        it('should log failed requests', () => {
+        it('应该记录失败的请求', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
@@ -110,7 +110,7 @@ describe('NsHttpClientLogger', () => {
     });
 
     describe('Request/Response body logging', () => {
-        it('should log request body when enabled', () => {
+        it('应该在启用时记录请求体', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
@@ -123,7 +123,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs[0].meta.requestBody).to.exist;
         });
 
-        it('should log response body when enabled', () => {
+        it('应该在启用时记录响应体', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
@@ -136,7 +136,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs[0].meta.responseBody).to.exist;
         });
 
-        it('should truncate large bodies', () => {
+        it('应该截断过大的请求体', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({
                 logger: mockLogger,
@@ -168,7 +168,7 @@ describe('NsHttpClientLogger', () => {
     });
 
     describe('Filter integration', () => {
-        it('should not log when filter returns false', () => {
+        it('应该在过滤器返回 false 时不记录', () => {
             const mockLogger = new MockLogger();
             const filter = new LogFilter({ onlyFailed: true });
             const httpLogger = new NsHttpClientLogger({
@@ -185,7 +185,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs).to.have.lengthOf(1);
         });
 
-        it('should log when filter returns true', () => {
+        it('应该在过滤器返回 true 时记录', () => {
             const mockLogger = new MockLogger();
             const filter = new LogFilter({
                 methods: ['GET'],
@@ -215,7 +215,7 @@ describe('NsHttpClientLogger', () => {
     });
 
     describe('Static factory method', () => {
-        it('should create logger with factory method', () => {
+        it('应该使用工厂方法创建日志记录器', () => {
             const mockLogger = new MockLogger();
             const httpLogger = NsHttpClientLogger.create(
                 mockLogger,
@@ -235,7 +235,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs).to.have.lengthOf(1);
         });
 
-        it('should create logger without filter', () => {
+        it('应该创建不带过滤器的日志记录器', () => {
             const mockLogger = new MockLogger();
             const httpLogger = NsHttpClientLogger.create(mockLogger);
 
@@ -247,7 +247,7 @@ describe('NsHttpClientLogger', () => {
     });
 
     describe('Metadata handling', () => {
-        it('should include scenario in metadata', () => {
+        it('应该在元数据中包含场景', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
@@ -258,7 +258,7 @@ describe('NsHttpClientLogger', () => {
             expect(mockLogger.logs[0].meta.scenario).to.equal('user-login');
         });
 
-        it('should include request metadata', () => {
+        it('应该包含请求元数据', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
@@ -276,7 +276,7 @@ describe('NsHttpClientLogger', () => {
             });
         });
 
-        it('should include retry count', () => {
+        it('应该包含重试次数', () => {
             const mockLogger = new MockLogger();
             const httpLogger = new NsHttpClientLogger({ logger: mockLogger });
 
