@@ -42,6 +42,20 @@ export interface IResFailedOptions {
 }
 
 /**
+ * 流式响应相关指标.
+ */
+export interface IStreamMetrics {
+    /** 首次响应时间（TTFB - Time To First Byte，毫秒） */
+    ttfb: number;
+    /** 流是否已完成 */
+    completed: boolean;
+    /** 流完成总耗时（毫秒，仅在流完成时有值） */
+    totalDuration?: number;
+    /** 流传输的字节数（如果可统计） */
+    bytesTransferred?: number;
+}
+
+/**
  * 请求成功选项
  */
 export interface IResSuccessOptions {
@@ -57,6 +71,8 @@ export interface IResSuccessOptions {
     duration: number;
     /** 重试次数 */
     retryCount?: number;
+    /** 流式响应相关指标（仅当 responseType 为 stream 时） */
+    streamMetrics?: IStreamMetrics;
 }
 
 /**

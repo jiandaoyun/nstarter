@@ -12,7 +12,8 @@ import type {
     ILogger,
     IHttpClientLogger,
     IForwardProxy,
-    ISsrfGuard
+    ISsrfGuard,
+    IStreamMetrics
 } from './types';
 import {
     mergeConfig,
@@ -29,7 +30,14 @@ import {
 } from './logger';
 import { EClientAdapter } from './const';
 import { HttpError } from './types';
-import { DomainUtils, TraceContextUtils } from './utils';
+import {
+    DomainUtils,
+    TraceContextUtils
+} from './utils';
+import {
+    PassThrough,
+    Readable
+} from 'node:stream';
 
 /**
  * HTTP 客户端
@@ -201,7 +209,7 @@ export class NsHttpClient implements IHttpClient {
                         ...safeOptions.headers,
                         traceparent: options.traceparent
                     };
-                    
+
                     this.logger.debug('Traceparent header added', {
                         traceparent: options.traceparent,
                         sampled: TraceContextUtils.isSampled(options.traceparent)
@@ -217,8 +225,16 @@ export class NsHttpClient implements IHttpClient {
             // 发起请求
             const response = await this.adapter.request<T>(safeOptions);
 
-            // 记录响应日志
-            this.logResponse(safeOptions, response, Date.now() - startTime);
+            // 首次响应时间（TTFB）
+            const ttfb = Date.now() - startTime;
+
+            // 如果是流式响应，包装流对象以追踪完整生命周期
+            if (options.responseType === 'stream' && this.isStreamResponse(response.data)) {
+                return this.wrapStreamResponse(safeOptions, response, startTime, ttfb);
+            }
+
+            // 记录非流式响应日志
+            this.logResponse(safeOptions, response, ttfb);
 
             return response;
         } catch (error) {
@@ -284,7 +300,12 @@ export class NsHttpClient implements IHttpClient {
     /**
      * 记录响应日志
      */
-    private logResponse(options: HttpRequestOptions, response: HttpResponse, duration: number): void {
+    private logResponse(
+        options: HttpRequestOptions,
+        response: HttpResponse,
+        duration: number,
+        streamMetrics?: IStreamMetrics
+    ): void {
         if (!this.httpLogger) {
             return;
         }
@@ -303,7 +324,123 @@ export class NsHttpClient implements IHttpClient {
             },
             response,
             duration,
-            retryCount
+            retryCount,
+            streamMetrics
+        });
+    }
+
+    /**
+     * 判断响应数据是否为流对象（Node.js Readable）
+     */
+    private isStreamResponse(data: any): boolean {
+        // undici 和 axios 都返回 Node.js Readable
+        return data instanceof Readable;
+    }
+
+    /**
+     * 包装流式响应，追踪流的完整生命周期
+     */
+
+    /* eslint-disable max-lines-per-function */
+    private wrapStreamResponse<T>(
+        options: HttpRequestOptions,
+        response: HttpResponse<T>,
+        requestStartTime: number,
+        ttfb: number
+    ): HttpResponse<T> {
+        const stream = response.data as any;
+        let bytesTransferred = 0;
+
+        // 记录首次响应日志（流开始）
+        this.logResponse(options, response, ttfb, {
+            ttfb,
+            completed: false
+        });
+
+        this.logger.debug('Stream response started', {
+            method: options.method,
+            url: options.url,
+            ttfb,
+            status: response.status
+        });
+
+        // 所有适配器都返回 Node.js Readable
+        const originalStream = stream as Readable;
+        const wrappedStream = new PassThrough();
+
+        // 监听数据事件统计字节数
+        originalStream.on('data', (chunk: Buffer) => {
+            bytesTransferred += chunk.length;
+            wrappedStream.write(chunk);
+        });
+
+        // 监听结束事件记录日志
+        originalStream.on('end', () => {
+            const totalDuration = Date.now() - requestStartTime;
+            wrappedStream.end();
+
+            // 记录流完成日志
+            this.logStreamCompleted(
+                options,
+                response,
+                ttfb,
+                totalDuration,
+                bytesTransferred
+            );
+        });
+
+        // 监听错误事件
+        originalStream.on('error', (error: Error) => {
+            const totalDuration = Date.now() - requestStartTime;
+            this.logger.error('Stream read error', {
+                method: options.method,
+                url: options.url,
+                ttfb,
+                totalDuration,
+                bytesTransferred,
+                error: error.message
+            });
+            wrappedStream.destroy(error);
+        });
+
+        // 使用 pipe 连接流
+        originalStream.pipe(wrappedStream, { end: false });
+
+        // 返回包装后的响应
+        return {
+            ...response,
+            data: wrappedStream as T
+        };
+    }
+
+    /**
+     * 记录流完成日志
+     */
+    private logStreamCompleted(
+        options: HttpRequestOptions,
+        response: HttpResponse,
+        ttfb: number,
+        totalDuration: number,
+        bytesTransferred: number
+    ): void {
+        // 记录流完成日志
+        this.logResponse(options, response, totalDuration, {
+            ttfb,
+            completed: true,
+            totalDuration,
+            bytesTransferred
+        });
+
+        this.logger.debug('Stream response completed', {
+            method: options.method,
+            url: options.url,
+            ttfb,
+            totalDuration,
+            streamDuration: totalDuration - ttfb,
+            bytesTransferred,
+            throughput: bytesTransferred > 0 && totalDuration > ttfb
+                ? `${ (bytesTransferred / 1024 / ((totalDuration - ttfb) / 1000)).toFixed(2) } KB/s`
+                : 'N/A'
         });
     }
 

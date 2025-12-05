@@ -185,6 +185,7 @@ export class UndiciAdapter extends BaseHttpAdapter {
                     return (await response.body.arrayBuffer()) as T;
                 }
                 case 'stream': {
+                    // undici 返回 BodyReadable (继承自 Node.js Readable)
                     return response.body as T;
                 }
                 case 'blob': {

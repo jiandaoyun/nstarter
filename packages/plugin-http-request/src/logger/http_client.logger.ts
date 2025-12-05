@@ -111,9 +111,43 @@ export class NsHttpClientLogger implements IHttpClientLogger {
             meta.status = options.response.status;
             meta.statusText = options.response.statusText;
 
-            // 记录响应体（如果启用）
-            if (this.logResponseBody) {
+            // 记录流式响应指标
+            if (options.streamMetrics) {
+                meta.streamMetrics = {
+                    ttfb: options.streamMetrics.ttfb,
+                    completed: options.streamMetrics.completed
+                };
+
+                if (options.streamMetrics.completed) {
+                    meta.streamMetrics.totalDuration = options.streamMetrics.totalDuration;
+                    meta.streamMetrics.streamDuration =
+                        (options.streamMetrics.totalDuration ?? 0) - options.streamMetrics.ttfb;
+
+                    if (options.streamMetrics.bytesTransferred !== undefined) {
+                        meta.streamMetrics.bytesTransferred = options.streamMetrics.bytesTransferred;
+                        meta.streamMetrics.bytesTransferredHuman =
+                            this.formatBytes(options.streamMetrics.bytesTransferred);
+
+                        // 计算吞吐量
+                        const streamDuration = meta.streamMetrics.streamDuration;
+                        if (streamDuration > 0) {
+                            const throughputBps =
+                                options.streamMetrics.bytesTransferred / (streamDuration / 1000);
+                            meta.streamMetrics.throughput = `${ (throughputBps / 1024).toFixed(2) } KB/s`;
+                        }
+                    }
+                }
+            }
+
+            // 记录响应体（如果启用，且不是流式响应）
+            if (this.logResponseBody && !options.streamMetrics) {
                 meta.responseBody = this.truncateBody(options.response.data);
+            } else if (options.streamMetrics && !options.streamMetrics.completed) {
+                // 流式响应但未完成，标记为流
+                meta.responseBody = '# --- stream (in progress) --- #';
+            } else if (options.streamMetrics && options.streamMetrics.completed) {
+                // 流式响应已完成
+                meta.responseBody = '# --- stream (completed) --- #';
             }
         } else {
             // 失败的请求
@@ -135,6 +169,21 @@ export class NsHttpClientLogger implements IHttpClientLogger {
         }
 
         return meta;
+    }
+
+    /**
+     * 格式化字节数为人类可读格式
+     */
+    private formatBytes(bytes: number): string {
+        if (bytes === 0) {
+            return '0 Bytes';
+        }
+
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return `${ parseFloat((bytes / Math.pow(k, i)).toFixed(2)) } ${ sizes[i] }`;
     }
 
     /**
