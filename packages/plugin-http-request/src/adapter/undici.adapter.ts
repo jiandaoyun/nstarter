@@ -64,9 +64,40 @@ export class UndiciAdapter extends BaseHttpAdapter {
         }
 
         // 构建 dispatcher 用于代理或 TLS 配置
-        let dispatcher: Dispatcher | undefined;
+        // 初始化时根据 rejectUnauthorized 配置创建默认 dispatcher
+        let dispatcher: Dispatcher = new Agent({
+            connect: {
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            }
+        });
 
-        // 设置正向代理（如果请求元数据中包含代理信息）
+        // 设置代理（全局配置）
+        if (this.requestConfig.proxy) {
+            const { protocol, host, port, auth } = this.requestConfig.proxy;
+            let proxyUrl = `${protocol}://${host}:${port}`;
+            
+            // 如果有认证信息，添加到 URL 中
+            if (auth) {
+                const encodedUsername = encodeURIComponent(auth.username);
+                const encodedPassword = encodeURIComponent(auth.password);
+                proxyUrl = `${protocol}://${encodedUsername}:${encodedPassword}@${host}:${port}`;
+            }
+            
+            dispatcher = new ProxyAgent({
+                uri: proxyUrl,
+                connect: {
+                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
+                }
+            });
+            this.logger?.debug('Using ProxyAgent with global proxy config', {
+                host,
+                port,
+                protocol,
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            });
+        }
+
+        // 设置正向代理（如果请求元数据中包含代理信息，会覆盖全局代理配置）
         const forwardProxyMeta = options.meta?.__forwardProxy;
         if (forwardProxyMeta) {
             const { proxyUrl } = forwardProxyMeta;
@@ -77,18 +108,10 @@ export class UndiciAdapter extends BaseHttpAdapter {
                     rejectUnauthorized: this.securityConfig.rejectUnauthorized
                 }
             });
-            this.logger?.debug('Using ProxyAgent for request', {
+            this.logger?.debug('Using ProxyAgent for forward proxy (overrides global proxy)', {
                 proxyUrl,
                 rejectUnauthorized: this.securityConfig.rejectUnauthorized
             });
-        } else if (!this.securityConfig.rejectUnauthorized) {
-            // 需要禁用证书验证且没有代理时，创建自定义 Agent
-            dispatcher = new Agent({
-                connect: {
-                    rejectUnauthorized: false
-                }
-            });
-            this.logger?.debug('Using Agent with rejectUnauthorized: false');
         }
 
         // 构建 Undici 请求配置
@@ -101,11 +124,9 @@ export class UndiciAdapter extends BaseHttpAdapter {
             bodyTimeout: options.timeout ?? this.requestConfig.timeout,
             headersTimeout: options.timeout ?? this.requestConfig.timeout,
             maxRedirections: this.requestConfig.maxRedirects,
+            dispatcher,
         };
-
-        if (dispatcher) {
-            undiciOptions.dispatcher = dispatcher;
-        }
+        
 
         try {
             const startTime = Date.now();

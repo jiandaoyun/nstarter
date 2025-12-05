@@ -9,7 +9,10 @@ import type {
 } from '../types';
 import { HttpError } from '../types';
 import { BaseHttpAdapter } from './base';
-import type { AxiosRequestConfig } from 'axios';
+import type {
+    AxiosProxyConfig,
+    AxiosRequestConfig
+} from 'axios';
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as https from 'https';
@@ -70,6 +73,9 @@ export class AxiosAdapter extends BaseHttpAdapter {
         // 设置代理（全局配置）
         if (this.requestConfig.proxy) {
             axiosConfig.proxy = this.buildProxyConfig(this.requestConfig.proxy);
+        }else {
+            // 显式的禁用代理, 防止axios默认从环境变量中 HTTP_PROXY、HTTPS_PROXY 读取代理配置. 
+            axiosConfig.proxy = false;
         }
 
         // 设置正向代理（如果请求元数据中包含代理信息）
@@ -82,6 +88,8 @@ export class AxiosAdapter extends BaseHttpAdapter {
                 axiosConfig.httpsAgent = new HttpsProxyAgent<`https://${ string }`>(proxyUrl, {
                     rejectUnauthorized: this.securityConfig.rejectUnauthorized
                 });
+                // 显式的禁用代理, 防止axios默认从环境变量中 HTTP_PROXY、HTTPS_PROXY 读取代理配置. 
+                axiosConfig.proxy = false;
                 this.logger?.debug('Using HttpsProxyAgent for HTTPS request', {
                     proxyUrl,
                     rejectUnauthorized: this.securityConfig.rejectUnauthorized
@@ -164,8 +172,8 @@ export class AxiosAdapter extends BaseHttpAdapter {
      * 构建代理配置
      * @param proxy 代理配置
      */
-    private buildProxyConfig(proxy: ProxyConfig): any {
-        const config: any = {
+    private buildProxyConfig(proxy: ProxyConfig): AxiosProxyConfig {
+        const config: AxiosProxyConfig = {
             host: proxy.host,
             port: proxy.port,
             protocol: proxy.protocol
