@@ -127,204 +127,34 @@ const user = await client.post('https://api.example.com/users', {
 
 ### 完整配置示例
 
+详细配置说明请参考 [配置文档](./docs/configuration.md)
+
 ```typescript
 import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 
 const client = new NsHttpClient({
-  // 适配器配置
   adapter: EClientAdapter.axios,
-
-  // 安全配置
   security: {
-    rejectUnauthorized: true,        // 是否验证 SSL 证书（生产环境建议 true）
-    enableDnsValidation: true,       // 开启 DNS 验证
-    enableIpValidation: true,        // 开启 IP 验证
-    allowPrivateIp: false,           // 是否允许访问私有 IP（内网地址）
-    whitelist: [                     // 域名白名单
-      'trusted.com', '*.trusted.com', // 匹配根域名和一级子域名
-      'api.example.com'               // 仅匹配该域名
-    ],
-    blacklist: [                     // 域名黑名单
-      'malicious.com', '*.malicious.com', // 根域名和一级子域名
-      'unsafe.net'
-    ],
-    dnsCacheTtl: 60000,              // DNS 缓存 TTL（毫秒，默认 60 秒）
-    dnsCacheMaxSize: 500             // DNS 缓存最大条目数（默认 500，使用 LRU 淘汰策略）
+    enableDnsValidation: true,
+    enableIpValidation: true,
+    allowPrivateIp: false
   },
-
-  // 日志配置
   logging: {
-    enabled: true,                   // 是否启用日志
-    logRequestBody: true,            // 是否记录请求体
-    logResponseBody: true,           // 是否记录响应体
-    bodyMaxLength: 1024 * 1024,      // 请求/响应体最大记录长度（字节，默认 1MB）
-    logger: customLogger,            // 自定义日志记录器（可选，实现 ILogger 接口）
-    httpLogger: customHttpLogger,    // 自定义 HTTP 日志记录器（可选，实现 IHttpClientLogger 接口）
-    filter: {                        // 日志过滤配置
-      methods: ['POST', 'PUT'],      // 只记录指定 HTTP 方法
-      urlPatterns: [                 // 只记录匹配的 URL（支持正则）
-        /\/api\//,
-        'https://api.example.com'
-      ],
-      scenarios: ['payment'],        // 只记录指定业务场景
-      statusCodes: [404, 500],       // 只记录指定状态码
-      statusCodeRanges: [            // 只记录指定状态码范围
-        { min: 400, max: 499 },      // 客户端错误
-        { min: 500, max: 599 }       // 服务端错误
-      ],
-      onlyFailed: false,             // 是否只记录失败请求
-      onlySuccess: false,            // 是否只记录成功请求
-      minDuration: 100,              // 只记录耗时超过指定毫秒的请求
-      customFilter: (options) => {   // 自定义过滤函数
-        return options.request.method === 'POST';
-      }
-    }
+    enabled: true
   },
-
-  // 请求配置
   request: {
-    timeout: 30000,                  // 请求超时（毫秒，默认 30 秒）
-    retries: 3,                      // 重试次数（默认 0）
-    retryDelay: 1000,                // 重试延迟（毫秒，默认 1 秒）
-    maxRedirects: 5,                 // 最大重定向次数（默认 5）
-    maxRequestBodySize: 10 * 1024 * 1024,   // 最大请求体大小（字节，默认 10MB）
-    maxResponseBodySize: 50 * 1024 * 1024,  // 最大响应体大小（字节，默认 50MB）
-    proxy: {                         // HTTP 代理配置（可选，不同于正向代理）
-      host: 'proxy.example.com',
-      port: 8080,
-      protocol: 'http',              // 'http' | 'https'
-      auth: {                        // 代理认证（可选）
-        username: 'user',
-        password: 'pass'
-      }
-    }
+    timeout: 30000,
+    retries: 3
   }
 });
 ```
 
-### 安全配置详解
+## 详细文档
 
-#### 1. SSL 证书验证
-
-```typescript
-const client = new NsHttpClient({
-  security: {
-    rejectUnauthorized: true  // 生产环境必须为 true，开发环境可设为 false
-  }
-});
-```
-
-#### 2. SSRF 防护
-
-```typescript
-const client = new NsHttpClient({
-  security: {
-    enableDnsValidation: true,     // 启用 DNS 解析验证
-    enableIpValidation: true,      // 启用 IP 地址验证
-    allowPrivateIp: false,         // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
-    whitelist: [                   // 白名单（支持以下模式）
-      'api.example.com',           // 1. 精确匹配
-      '*.safe.com',                // 2. 通配符匹配（只匹配一级子域名）
-      'trusted.com', '*.trusted.com' // 3. 组合使用：匹配根域名和一级子域名
-    ],
-    blacklist: ['malicious.com', '*.malicious.com'] // 黑名单：根域名 + 一级子域名
-  }
-});
-```
-
-**支持的域名模式：**
-
-| 模式 | 匹配规则 | 示例 |
-|------|---------|------|
-| `example.com` | 精确匹配 | ✅ `example.com`<br>❌ `api.example.com` |
-| `*.example.com` | 通配符匹配<br>只匹配一级子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
-| 组合使用<br>`['example.com', '*.example.com']` | 精确匹配 + 通配符匹配<br>匹配根域名和一级子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
-
-**DNS 缓存机制：**
-
-为提升性能，DNS 解析结果会被缓存。缓存使用 [lru-cache](https://www.npmjs.com/package/lru-cache) 实现，具有以下特性：
-
-- ✅ **TTL 自动过期**：缓存条目到期后自动释放内存
-- ✅ **LRU 淘汰策略**：缓存满时自动淘汰最近最少使用的条目
-- ✅ **容量限制**：默认最多缓存 500 个域名解析结果
-- ✅ **可配置**：支持自定义 TTL 和缓存容量
-
-```typescript
-const client = new NsHttpClient({
-  security: {
-    dnsCacheTtl: 60000,       // 缓存时间：60 秒（默认）
-    dnsCacheMaxSize: 500      // 最大缓存条目数（默认）
-  }
-});
-```
-
-### 日志配置详解
-
-#### 1. 自定义日志记录器
-
-```typescript
-import { ILogger } from 'nstarter-http-request';
-
-const customLogger: ILogger = {
-  debug: (msg, meta) => console.debug(msg, meta),
-  info: (msg, meta) => console.info(msg, meta),
-  warn: (msg, meta) => console.warn(msg, meta),
-  error: (msg, meta) => console.error(msg, meta)
-};
-
-const client = new NsHttpClient({
-  logging: { logger: customLogger }
-});
-```
-
-#### 2. 日志过滤
-
-```typescript
-const client = new NsHttpClient({
-  logging: {
-    enabled: true,
-    filter: {
-      // 只记录失败的 POST 请求
-      methods: ['POST'],
-      onlyFailed: true,
-      minDuration: 1000  // 且耗时超过 1 秒
-    }
-  }
-});
-```
-
-### 正向代理配置
-
-```typescript
-const client = new NsHttpClient()
-  .withForwardProxy({
-    enabled: true,
-    http_proxy: 'http://proxy.example.com:8080',
-    https_proxy: 'https://proxy.example.com:8443',
-    no_proxy: [          // 不使用代理的域名（支持传统模式）
-      'localhost',       // 精确匹配
-      '127.0.0.1',       // 精确匹配
-      '.internal.com',   // 后缀匹配（匹配所有子域名）
-      '.local',          // 后缀匹配
-      '192.168.'         // 前缀匹配（IP地址）
-    ]
-  });
-```
-
-**no_proxy 支持的模式：**
-- `example.com` - 精确匹配该域名
-- `.example.com` - 后缀匹配，匹配所有以 `.example.com` 结尾的域名（包括子域名）
-- `192.168.` - 前缀匹配，主要用于 IP 地址范围匹配
-
-### 适配器切换
-
-```typescript
-import { EClientAdapter } from 'nstarter-http-request';
-
-// 使用 Axios 适配器（适合通用场景）
-const axiosClient = new NsHttpClient().withAdapter(EClientAdapter.axios);
-
-// 使用 Undici 适配器（高性能，Node.js 原生）
-const undiciClient = new NsHttpClient().withAdapter(EClientAdapter.undici);
-```
+- [完整配置示例](./docs/configuration.md) - 所有配置选项的详细说明
+- [安全配置](./docs/security.md) - SSRF 防护、SSL 验证、域名黑白名单等安全特性
+- [日志配置](./docs/logging.md) - 日志记录、过滤、自定义日志器等
+- [正向代理配置](./docs/proxy.md) - HTTP/HTTPS 正向代理和 no_proxy 配置
+- [适配器切换](./docs/adapters.md) - Axios 和 Undici 适配器的选择与切换
+- [W3C Trace Context 支持](./docs/trace-context.md) - 分布式链路追踪支持
 
