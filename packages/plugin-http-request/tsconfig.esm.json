@@ -1,0 +1,5 @@
+{
+  "extends": "nstarter-tsconfig/esm",
+  "compilerOptions": {}
+}
+

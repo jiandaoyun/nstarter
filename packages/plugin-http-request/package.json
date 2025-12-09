@@ -1,0 +1,50 @@
+{
+  "name": "nstarter-http-request",
+  "version": "0.1.0",
+  "description": "nstarter HTTP 请求客户端插件",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiandaoyun/nstarter.git",
+    "directory": "packages/plugin-http-request"
+  },
+  "keywords": [
+    "nstarter",
+    "plugin",
+    "http"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc --build tsconfig.json && tsc --build tsconfig.esm.json",
+    "test": "nyc --nycrc-path ../../.nycrc mocha --config ../../.mocharc.yml",
+    "eslint": "eslint --ext .js,.ts --config ../../.eslintrc.js ./src",
+    "eslint:fix": "npm run eslint -- --fix",
+    "eslint:html": "npm run eslint -- --output-file ./lint/eslint.html --format html",
+    "clean": "rimraf dist && rimraf lint && rimraf coverage && rimraf .nyc_output",
+    "upload": "npm-publish ./"
+  },
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "dependencies": {
+    "axios": "^1.7.5",
+    "https-proxy-agent": "^7.0.6",
+    "lru-cache": "^11.2.4",
+    "undici": "^6.0.0"
+  },
+  "peerDependencies": {
+    "nstarter-core": ">=1.2.0 <2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "nock": "^14.0.10",
+    "nstarter-core": "*"
+  }
+}
