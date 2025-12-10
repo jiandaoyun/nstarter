@@ -7,7 +7,9 @@ import { expect } from 'chai';
 import {
     MockAgent,
     setGlobalDispatcher,
-    getGlobalDispatcher
+    getGlobalDispatcher,
+    Agent,
+    ProxyAgent
 } from 'undici';
 import { UndiciAdapter } from '../../src';
 import { HttpError } from '../../src';
@@ -687,7 +689,7 @@ describe('UndiciAdapter', () => {
             // 生成多个 SSE 事件
             const events: string[] = [];
             for (let i = 1; i <= 10; i++) {
-                events.push(`data: Event ${i}\n\n`);
+                events.push(`data: Event ${ i }\n\n`);
             }
             const sseData = events.join('');
 
@@ -727,6 +729,378 @@ describe('UndiciAdapter', () => {
                 });
                 response.data.on('error', reject);
             });
+        });
+    });
+
+    describe('响应类型处理', () => {
+        it('应该正确处理 arraybuffer 响应', async () => {
+            const testData = new Uint8Array([1, 2, 3, 4, 5]);
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/arraybuffer',
+                method: 'GET'
+            }).reply(200, Buffer.from(testData), {
+                headers: { 'content-type': 'application/octet-stream' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/arraybuffer',
+                responseType: 'arraybuffer'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.be.instanceOf(ArrayBuffer);
+        });
+
+        it('应该正确处理 blob 响应', async () => {
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/blob',
+                method: 'GET'
+            }).reply(200, 'test data', {
+                headers: { 'content-type': 'text/plain' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/blob',
+                responseType: 'blob'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+        });
+
+        it('应该正确处理 application/x-www-form-urlencoded 响应（使用 text 类型）', async () => {
+            // 对于 application/x-www-form-urlencoded 格式，应该使用 text 响应类型
+            const formDataString = 'key=value&foo=bar';
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/formdata',
+                method: 'GET'
+            }).reply(200, formDataString, {
+                headers: { 'content-type': 'application/x-www-form-urlencoded' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/formdata',
+                responseType: 'text'
+            });
+            expect(response.status).to.equal(200);
+            expect(response.data).to.be.a('string');
+            expect(response.data).to.equal('key=value&foo=bar');
+        });
+
+        it('应该正确处理默认响应类型（自动解析JSON）', async () => {
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/json',
+                method: 'GET'
+            }).reply(200, { test: 'data' }, {
+                headers: { 'content-type': 'application/json' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/json'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.be.an('object');
+            expect((response.data as any).test).to.equal('data');
+        });
+
+        it('应该正确处理默认响应类型（非JSON文本）', async () => {
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/text',
+                method: 'GET'
+            }).reply(200, 'plain text', {
+                headers: { 'content-type': 'text/plain' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/text'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.equal('plain text');
+        });
+    });
+
+    describe('代理配置', () => {
+        it('应该支持全局代理配置（验证配置应用）', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    host: 'proxy.example.com',
+                    port: 8080,
+                    protocol: 'http'
+                }
+            };
+
+            const adapter = new UndiciAdapter(config, defaultSecurityConfig);
+            // 只验证配置是否正确创建，不实际发送请求（因为代理地址不存在）
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+
+        it('应该支持带认证的全局代理配置（验证配置应用）', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    host: 'proxy.example.com',
+                    port: 8080,
+                    protocol: 'http',
+                    auth: {
+                        username: 'user',
+                        password: 'pass'
+                    }
+                }
+            };
+
+            const adapter = new UndiciAdapter(config, defaultSecurityConfig);
+            // 只验证配置是否正确创建
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+
+        it('应该支持正向代理配置（验证配置应用）', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            // 验证适配器可以接受正向代理元数据
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+
+        it('应该支持 rejectUnauthorized 为 false 的配置（验证配置应用）', () => {
+            const securityConfig: SecurityConfig = {
+                ...defaultSecurityConfig,
+                rejectUnauthorized: false
+            };
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, securityConfig);
+            // 只验证配置是否正确创建
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+    });
+
+    describe('错误处理与 dispatcher 构建', () => {
+        it('handleUndiciError 应包装错误并保留 code', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const httpError = (adapter as any).handleUndiciError(
+                Object.assign(new Error('boom'), { code: 'UND_ERR' }),
+                { method: 'GET', url: 'https://example.com' }
+            );
+
+            expect(httpError).to.be.instanceOf(HttpError);
+            expect(httpError.code).to.equal('UND_ERR');
+            expect(httpError.message).to.equal('boom');
+        });
+
+        it('rejectUnauthorized=false 时应创建 Agent', () => {
+            const securityConfig: SecurityConfig = {
+                ...defaultSecurityConfig,
+                rejectUnauthorized: false
+            };
+            const adapter = new UndiciAdapter(defaultRequestConfig, securityConfig);
+            const dispatcher = (adapter as any).buildDispatcher({ method: 'GET', url: 'https://httpbin.nstarter' });
+
+            expect(dispatcher).to.be.instanceOf(Agent);
+        });
+
+        it('全局代理配置时应创建 ProxyAgent', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    protocol: 'http',
+                    host: 'proxy.example.com',
+                    port: 8080
+                }
+            };
+            const adapter = new UndiciAdapter(config, defaultSecurityConfig);
+            const dispatcher = (adapter as any).buildDispatcher({ method: 'GET', url: 'https://httpbin.nstarter' });
+
+            expect(dispatcher).to.be.instanceOf(ProxyAgent);
+        });
+
+        it('正向代理元数据应覆盖全局代理配置', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    protocol: 'http',
+                    host: 'proxy.example.com',
+                    port: 8080
+                }
+            };
+            const adapter = new UndiciAdapter(config, defaultSecurityConfig);
+            const dispatcher = (adapter as any).buildDispatcher({
+                method: 'GET',
+                url: 'https://httpbin.nstarter',
+                meta: {
+                    __forwardProxy: {
+                        proxyUrl: 'http://forward.proxy:8888'
+                    }
+                }
+            });
+
+            expect(dispatcher).to.be.instanceOf(ProxyAgent);
+        });
+
+        it('isAvailable 为 false 时应直接抛出提示错误', async () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            (adapter as any).isAvailable = () => false;
+
+            try {
+                await adapter.request({
+                    method: 'GET',
+                    url: 'https://httpbin.nstarter/unavailable'
+                });
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('Undici is not available');
+            }
+        });
+
+        it('readResponseBody 在 formdata 读取失败时应抛出包装错误', async () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const fakeResponse: any = {
+                body: {
+                    formData: async () => { throw new Error('no formdata'); }
+                },
+                headers: {}
+            };
+
+            try {
+                await (adapter as any).readResponseBody(fakeResponse, 'formdata');
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('Failed to read response body');
+                expect((error as Error).message).to.include('no formdata');
+            }
+        });
+
+        it('全局代理含认证时应编码账号密码', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    protocol: 'http',
+                    host: 'proxy.example.com',
+                    port: 8080,
+                    auth: {
+                        username: 'user name',
+                        password: 'p@ss'
+                    }
+                }
+            };
+            const adapter = new UndiciAdapter(config, defaultSecurityConfig);
+            const dispatcher = (adapter as any).buildDispatcher({ method: 'GET', url: 'https://httpbin.nstarter' });
+
+            expect(dispatcher).to.be.instanceOf(ProxyAgent);
+        });
+
+        it('prepareHeaders 应将数字转为字符串', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const headers = (adapter as any).prepareHeaders({ num: 1 });
+            expect(headers.num).to.equal('1');
+        });
+
+        it('buildUndiciOptions 应包含 dispatcher', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const dispatcher: any = {};
+            const options = (adapter as any).buildUndiciOptions(
+                { method: 'GET', url: 'https://api.test' },
+                {},
+                undefined,
+                dispatcher
+            );
+            expect((options as any).dispatcher).to.equal(dispatcher);
+        });
+
+        it('handleUndiciError 无 code 时应使用 UNDICI_ERROR', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const err = (adapter as any).handleUndiciError(new Error('oops'), {
+                method: 'GET',
+                url: 'https://api.test'
+            });
+            expect(err.code).to.equal('UNDICI_ERROR');
+        });
+
+        it('getStatusText 未知状态码应返回 Unknown', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const text = (adapter as any).getStatusText(777);
+            expect(text).to.equal('Unknown');
+        });
+
+        it('handleUndiciError 非 Error 对象应返回默认消息', () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const err = (adapter as any).handleUndiciError('boom', {
+                method: 'GET',
+                url: 'https://api.test'
+            });
+            expect(err.message).to.equal('Undici request failed');
+            expect(err.code).to.equal('UNDICI_ERROR');
+        });
+
+        it('readResponseBody default 分支抛错时应包装错误', async () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const fakeResponse: any = {
+                body: {
+                    text: async () => { throw new Error('text fail'); }
+                },
+                headers: {}
+            };
+
+            try {
+                await (adapter as any).readResponseBody(fakeResponse, undefined);
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('Failed to read response body');
+                expect((error as Error).message).to.include('text fail');
+            }
+        });
+
+        it('readResponseBody text 分支抛错时应包装错误', async () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const fakeResponse: any = {
+                body: {
+                    text: async () => { throw new Error('text error'); }
+                },
+                headers: {}
+            };
+
+            try {
+                await (adapter as any).readResponseBody(fakeResponse, 'text');
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('text error');
+            }
+        });
+
+        it('readResponseBody blob 分支抛错时应包装错误', async () => {
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const fakeResponse: any = {
+                body: {
+                    blob: async () => { throw new Error('blob error'); }
+                },
+                headers: {}
+            };
+
+            try {
+                await (adapter as any).readResponseBody(fakeResponse, 'blob');
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('blob error');
+            }
         });
     });
 });

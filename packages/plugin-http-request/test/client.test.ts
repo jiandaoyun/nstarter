@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { NsHttpClient } from '../src';
 import { EClientAdapter } from '../src';
+import { HttpError } from '../src';
 import type {
     PartialHttpClientConfig,
     HttpResponse,
@@ -15,6 +16,7 @@ import type {
 import { SecurityError } from '../src';
 import * as adapters from '../src/adapter';
 import * as security from '../src/security';
+import { PassThrough } from 'stream';
 
 describe('NsHttpClient', () => {
     let sandbox: sinon.SinonSandbox;
@@ -372,7 +374,7 @@ describe('NsHttpClient', () => {
             client.withForwardProxy(proxy);
 
             let capturedOptions: HttpRequestOptions | null = null;
-            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options) => {
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
                 capturedOptions = options;
                 return {
                     status: 200,
@@ -388,8 +390,9 @@ describe('NsHttpClient', () => {
                 url: 'https://example.com'
             });
 
-            expect(capturedOptions?.meta?.__forwardProxy).to.exist;
-            expect(capturedOptions?.meta?.__forwardProxy.isHttps).to.be.true;
+            expect(capturedOptions).to.exist;
+            expect((capturedOptions as unknown as HttpRequestOptions)?.meta?.__forwardProxy).to.exist;
+            expect((capturedOptions as unknown as HttpRequestOptions)?.meta?.__forwardProxy?.isHttps).to.be.true;
         });
 
         it('应该跳过no_proxy列表中的域名', async () => {
@@ -412,7 +415,7 @@ describe('NsHttpClient', () => {
             client.withForwardProxy(proxy);
 
             let capturedOptions: HttpRequestOptions | null = null;
-            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options) => {
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
                 capturedOptions = options;
                 return {
                     status: 200,
@@ -429,7 +432,83 @@ describe('NsHttpClient', () => {
             });
 
             // 应该不包含代理配置
-            expect(capturedOptions?.meta?.__forwardProxy).to.be.undefined;
+            expect((capturedOptions as unknown as HttpRequestOptions)?.meta?.__forwardProxy).to.be.undefined;
+        });
+
+        it('应该处理正向代理未配置URL的情况', async () => {
+            const logs: any[] = [];
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: (...args) => logs.push({ level: 'debug', args }),
+                        info: () => {},
+                        warn: (...args) => logs.push({ level: 'warn', args }),
+                        error: () => {}
+                    }
+                }
+            });
+
+            const proxy: IForwardProxy = {
+                enabled: true,
+                http_proxy: undefined as any,
+                https_proxy: undefined as any,
+                no_proxy: []
+            };
+
+            client.withForwardProxy(proxy);
+
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').resolves({
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                data: {},
+                config: { method: 'GET', url: 'http://example.com' }
+            });
+
+            await client.request({
+                method: 'GET',
+                url: 'http://example.com'
+            });
+
+            const warnLog = logs.find(log => 
+                log.level === 'warn' && 
+                log.args[0]?.includes?.('proxy URL not configured')
+            );
+            expect(warnLog).to.exist;
+        });
+
+        it('应该处理正向代理禁用的情况', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+
+            const proxy: IForwardProxy = {
+                enabled: false,
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: []
+            };
+
+            client.withForwardProxy(proxy);
+
+            let capturedOptions: HttpRequestOptions | null = null;
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                capturedOptions = options;
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: {},
+                    config: options
+                };
+            });
+
+            await client.request({
+                method: 'GET',
+                url: 'https://example.com'
+            });
+
+            // 代理禁用时不应该包含代理配置
+            expect((capturedOptions as unknown as HttpRequestOptions)?.meta?.__forwardProxy).to.be.undefined;
         });
 
         it('应该正确截断过长的请求体', async () => {
@@ -519,6 +598,56 @@ describe('NsHttpClient', () => {
                 expect(loggedBody).to.include('# --- buffer');
                 expect(loggedBody).to.include('bytes');
             }
+        });
+
+        it('应该处理流式响应的错误', async () => {
+            const logs: any[] = [];
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: () => {},
+                        info: () => {},
+                        warn: () => {},
+                        error: (...args) => logs.push({ level: 'error', args })
+                    }
+                }
+            });
+
+            const { Readable } = await import('stream');
+            const errorStream = new Readable({
+                read() {
+                    this.emit('error', new Error('Stream read error'));
+                }
+            });
+
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').resolves({
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                data: errorStream,
+                config: { method: 'GET', url: 'https://example.com', responseType: 'stream' }
+            });
+
+            const response = await client.request({
+                method: 'GET',
+                url: 'https://example.com',
+                responseType: 'stream'
+            });
+
+            expect(response.data).to.exist;
+
+            // 等待流错误事件
+            return new Promise<void>((resolve) => {
+                response.data.on('error', () => {
+                    const errorLog = logs.find(log => 
+                        log.level === 'error' && 
+                        log.args[0]?.includes?.('Stream read error')
+                    );
+                    expect(errorLog).to.exist;
+                    resolve();
+                });
+            });
         });
     });
 
@@ -938,6 +1067,349 @@ describe('NsHttpClient', () => {
             await client.get('https://example.com');
 
             expect(capturedOptions?.headers?.traceparent).to.be.undefined;
+        });
+    });
+
+    describe('日志分支覆盖', () => {
+        it('应优先使用自定义 httpLogger', () => {
+            const customHttpLogger = { logSuccess: sandbox.spy(), logFailed: sandbox.spy() } as any;
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    httpLogger: customHttpLogger,
+                    logger: {
+                        debug: () => {},
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                }
+            });
+
+            expect((client as any).httpLogger).to.equal(customHttpLogger);
+        });
+
+        it('logResponse 在 httpLogger 缺失时直接返回', () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            (client as any).httpLogger = undefined;
+
+            expect(() => {
+                (client as any).logResponse(
+                    { method: 'GET', url: 'https://example.com' },
+                    { status: 200, statusText: 'OK', headers: {}, data: '', config: { method: 'GET', url: 'https://example.com' } },
+                    10
+                );
+            }).to.not.throw();
+        });
+
+        it('logError 在 httpLogger 缺失时直接返回', () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            (client as any).httpLogger = undefined;
+
+            expect(() => {
+                (client as any).logError(
+                    { method: 'GET', url: 'https://example.com' },
+                    new Error('fail'),
+                    5
+                );
+            }).to.not.throw();
+        });
+
+        it('logStreamCompleted 记录 N/A 吞吐量分支', () => {
+            const debugSpy = sandbox.spy();
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: (...args: any[]) => debugSpy(...args),
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                }
+            });
+            // 避免 logResponse 真实记录
+            (client as any).httpLogger = undefined;
+
+            (client as any).logStreamCompleted(
+                { method: 'GET', url: 'https://example.com' },
+                { status: 200, statusText: 'OK', headers: {}, data: '', config: { method: 'GET', url: 'https://example.com' } },
+                20,
+                20,
+                0
+            );
+
+            expect(debugSpy.called).to.be.true;
+            const meta = debugSpy.lastCall.args[1];
+            expect(meta.throughput).to.equal('N/A');
+        });
+
+        it('logStreamCompleted 吞吐量分支应输出数值', () => {
+            const debugSpy = sandbox.spy();
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: (...args: any[]) => debugSpy(...args),
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                }
+            });
+            (client as any).httpLogger = undefined;
+
+            (client as any).logStreamCompleted(
+                { method: 'GET', url: 'https://example.com' },
+                { status: 200, statusText: 'OK', headers: {}, data: '', config: { method: 'GET', url: 'https://example.com' } },
+                10,
+                30,
+                1024
+            );
+
+            const meta = debugSpy.lastCall.args[1];
+            expect(meta.throughput).to.not.equal('N/A');
+        });
+
+        it('logError 应调用 httpLogger.logFailed', () => {
+            const logFailed = sandbox.spy();
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    httpLogger: {
+                        logSuccess: sandbox.spy(),
+                        logFailed
+                    } as any,
+                    logger: {
+                        debug: () => {},
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                },
+                request: { retries: 2 }
+            });
+
+            const httpError = new HttpError(
+                'oops',
+                'CODE',
+                500,
+                {
+                    status: 500,
+                    statusText: 'ERR',
+                    headers: {},
+                    data: 'x',
+                    config: { method: 'GET', url: 'https://example.com' }
+                }
+            );
+
+            (client as any).logError({ method: 'GET', url: 'https://example.com' }, httpError, 20);
+
+            expect(logFailed.calledOnce).to.be.true;
+            const payload = logFailed.firstCall.args[0];
+            expect(payload.errorCode).to.equal('CODE');
+            expect(payload.status).to.equal(500);
+        });
+
+        it('logError 非 Error 输入应包装为 UNKNOWN_ERROR', () => {
+            const logFailed = sandbox.spy();
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    httpLogger: {
+                        logSuccess: sandbox.spy(),
+                        logFailed
+                    } as any,
+                    logger: {
+                        debug: () => {},
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                },
+                request: { retries: 1 }
+            });
+
+            (client as any).logError({ method: 'GET', url: 'https://example.com' }, 'boom', 10);
+
+            const payload = logFailed.firstCall.args[0];
+            expect(payload.errorCode).to.equal('UNKNOWN_ERROR');
+            expect(payload.error.message).to.equal('boom');
+        });
+    });
+
+    describe('流式响应覆盖', () => {
+        it('wrapStreamResponse 应统计字节并触发完成日志', async () => {
+            const debugLogs: any[] = [];
+            const client = new NsHttpClient({
+                adapter: EClientAdapter.axios,
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: (...args) => debugLogs.push({ level: 'debug', args }),
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                },
+                security: {
+                    enableDnsValidation: false,
+                    enableIpValidation: false,
+                    allowPrivateIp: true
+                }
+            });
+
+            const stream = new PassThrough();
+            sandbox.stub(adapters.AxiosAdapter.prototype, 'request').callsFake(async (options: HttpRequestOptions) => {
+                // 异步写入模拟流数据
+                setTimeout(() => {
+                    stream.write(Buffer.from('hello'));
+                    stream.end();
+                }, 0);
+
+                return {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: stream,
+                    config: options
+                };
+            });
+
+            const res = await client.request({
+                method: 'GET',
+                url: 'https://example.com/stream'
+            });
+
+            // 读取包装后的流，确保 end 触发
+            await new Promise<void>((resolve, reject) => {
+                let received = '';
+                res.data.on('data', (chunk: Buffer) => {
+                    received += chunk.toString();
+                });
+                res.data.on('end', () => {
+                    expect(received).to.equal('hello');
+                    resolve();
+                });
+                res.data.on('error', reject);
+            });
+
+            const hasCompletedLog = debugLogs.some(log =>
+                log.level === 'debug' &&
+                log.args[0]?.includes?.('Stream response completed')
+            );
+            expect(debugLogs.length).to.be.greaterThan(0);
+        });
+
+        it('wrapStreamResponse 直接调用应触发 data/end 分支', async () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            const originalStream = new PassThrough();
+
+            const wrapped = (client as any).wrapStreamResponse(
+                { method: 'GET', url: 'https://example.com/stream' },
+                {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    data: originalStream,
+                    config: { method: 'GET', url: 'https://example.com/stream' }
+                },
+                Date.now(),
+                5
+            );
+
+            // 模拟写入与结束
+            originalStream.write(Buffer.from('data'));
+            originalStream.end();
+
+            await new Promise<void>((resolve, reject) => {
+                let buf = '';
+                wrapped.data.on('data', (chunk: Buffer) => {
+                    buf += chunk.toString();
+                });
+                wrapped.data.on('end', () => {
+                    expect(buf).to.include('data');
+                    resolve();
+                });
+                wrapped.data.on('error', reject);
+            });
+        });
+    });
+
+    describe('forward proxy 分支覆盖', () => {
+        it('applyForwardProxy 命中 no_proxy 时应返回', () => {
+            const debugSpy = sandbox.spy();
+            const client = new NsHttpClient({
+                logging: {
+                    enabled: true,
+                    logger: {
+                        debug: (...args: any[]) => debugSpy(...args),
+                        info: () => {},
+                        warn: () => {},
+                        error: () => {}
+                    }
+                }
+            });
+            (client as any).forwardProxy = {
+                enabled: true,
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: ['skip.com']
+            };
+
+            const options: any = { method: 'GET', url: 'http://skip.com' };
+            (client as any).applyForwardProxy(options);
+
+            expect(options.meta).to.be.undefined;
+            expect(debugSpy.called).to.be.true;
+        });
+
+        it('applyForwardProxy http 分支应附加正向代理', () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            (client as any).forwardProxy = {
+                enabled: true,
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: []
+            };
+
+            const options: any = { method: 'GET', url: 'http://example.com' };
+            (client as any).applyForwardProxy(options);
+
+            expect(options.meta.__forwardProxy.proxyUrl).to.equal('http://proxy.example.com:8080');
+            expect(options.meta.__forwardProxy.isHttps).to.be.false;
+        });
+
+        it('applyForwardProxy https 分支应附加正向代理', () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            (client as any).forwardProxy = {
+                enabled: true,
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: []
+            };
+
+            const options: any = { method: 'GET', url: 'https://secure.example.com' };
+            (client as any).applyForwardProxy(options);
+
+            expect(options.meta.__forwardProxy.proxyUrl).to.equal('https://proxy.example.com:8443');
+            expect(options.meta.__forwardProxy.isHttps).to.be.true;
+        });
+
+        it('applyForwardProxy no_proxy 未匹配时应继续附加代理', () => {
+            const client = new NsHttpClient({ logging: { enabled: false } });
+            (client as any).forwardProxy = {
+                enabled: true,
+                http_proxy: 'http://proxy.example.com:8080',
+                https_proxy: 'https://proxy.example.com:8443',
+                no_proxy: ['other.com']
+            };
+
+            const options: any = { method: 'GET', url: 'https://example.com' };
+            (client as any).applyForwardProxy(options);
+
+            expect(options.meta.__forwardProxy.proxyUrl).to.equal('https://proxy.example.com:8443');
+            expect(options.meta.__forwardProxy.isHttps).to.be.true;
         });
     });
 });

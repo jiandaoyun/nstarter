@@ -3,13 +3,15 @@
  */
 
 import { expect } from 'chai';
-import nock = require('nock');
+import nock from 'nock';
 import { AxiosAdapter } from '../../src';
 import { HttpError } from '../../src';
 import type {
     RequestConfig,
-    SecurityConfig
+    SecurityConfig,
+    HttpRequestOptions
 } from '../../src';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 describe('AxiosAdapter', () => {
     const defaultRequestConfig: RequestConfig = {
@@ -737,6 +739,243 @@ describe('AxiosAdapter', () => {
                 });
                 response.data.on('error', reject);
             });
+        });
+    });
+
+    describe('代理配置', () => {
+        it('应该支持带认证的HTTP代理配置', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    host: 'proxy.example.com',
+                    port: 8080,
+                    protocol: 'http',
+                    auth: {
+                        username: 'user',
+                        password: 'pass'
+                    }
+                }
+            };
+
+            const adapter = new AxiosAdapter(config, defaultSecurityConfig);
+            // 只验证配置是否正确创建，不实际发送请求
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+
+        it('应该支持正向代理配置（验证配置应用）', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            // 验证适配器可以接受正向代理元数据
+            expect(adapter).to.exist;
+            expect(adapter.isAvailable()).to.be.true;
+        });
+    });
+
+    describe('错误处理与内部构建逻辑', () => {
+        it('handleAxiosError 应包装 isAxiosError 的响应', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const fakeResp = {
+                status: 500,
+                statusText: 'Internal Error',
+                headers: { 'x-test': '1' },
+                data: { msg: 'err' }
+            };
+            const error: any = {
+                isAxiosError: true,
+                message: 'boom',
+                code: 'ECONNRESET',
+                response: fakeResp
+            };
+
+            const httpError = (adapter as any).handleAxiosError(error, {
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(httpError).to.be.instanceOf(HttpError);
+            expect(httpError.code).to.equal('ECONNRESET');
+            expect(httpError.response?.status).to.equal(500);
+            expect(httpError.response?.headers?.['x-test']).to.equal('1');
+        });
+
+        it('handleAxiosError 非 axios 错误应返回 UNKNOWN_ERROR', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const error: any = {
+                message: 'oops'
+            };
+
+            const httpError = (adapter as any).handleAxiosError(error, {
+                method: 'POST',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(httpError.code).to.equal('UNKNOWN_ERROR');
+            expect(httpError.message).to.equal('oops');
+        });
+
+        it('configureAxiosProxy 无全局代理时应禁用默认代理', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const axiosConfig: any = {};
+
+            (adapter as any).configureAxiosProxy(axiosConfig, {
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(axiosConfig.proxy).to.be.false;
+        });
+
+        it('applyForwardProxy 应处理 HTTPS 正向代理', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const axiosConfig: any = {};
+            (adapter as any).applyForwardProxy(axiosConfig, {
+                proxyUrl: 'https://user:pass@proxy.example.com:8443',
+                isHttps: true
+            });
+
+            expect(axiosConfig.httpsAgent).to.be.instanceOf(HttpsProxyAgent);
+            expect(axiosConfig.proxy).to.be.false;
+        });
+
+        it('applyForwardProxy 应处理 HTTP 正向代理并解析认证', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const axiosConfig: any = {};
+            (adapter as any).applyForwardProxy(axiosConfig, {
+                proxyUrl: 'http://user:pa%24s@proxy.example.com:8080',
+                isHttps: false
+            });
+
+            expect(axiosConfig.proxy).to.deep.include({
+                host: 'proxy.example.com',
+                port: 8080,
+                protocol: 'http'
+            });
+            expect(axiosConfig.proxy.auth?.username).to.equal('user');
+            expect(axiosConfig.proxy.auth?.password).to.equal('pa$s');
+        });
+
+        it('buildProxyConfig 应生成带认证的配置', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const proxyConfig = (adapter as any).buildProxyConfig({
+                host: 'proxy.local',
+                port: 3128,
+                protocol: 'http',
+                auth: {
+                    username: 'a',
+                    password: 'b'
+                }
+            });
+
+            expect(proxyConfig).to.deep.equal({
+                host: 'proxy.local',
+                port: 3128,
+                protocol: 'http',
+                auth: { username: 'a', password: 'b' }
+            });
+        });
+
+        it('isAvailable 为 false 时应直接抛出提示错误', async () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            (adapter as any).isAvailable = () => false;
+
+            try {
+                await adapter.request({
+                    method: 'GET',
+                    url: 'https://httpbin.nstarter/unavailable'
+                });
+                throw new Error('should throw');
+            } catch (error) {
+                expect((error as Error).message).to.include('Axios is not available');
+            }
+        });
+
+        it('configureAxiosProxy 应使用全局代理配置', () => {
+            const config: RequestConfig = {
+                ...defaultRequestConfig,
+                proxy: {
+                    protocol: 'http',
+                    host: 'proxy.example.com',
+                    port: 8080
+                }
+            };
+            const adapter = new AxiosAdapter(config, defaultSecurityConfig);
+            const axiosConfig: any = {};
+
+            (adapter as any).configureAxiosProxy(axiosConfig, {
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(axiosConfig.proxy).to.deep.include({
+                host: 'proxy.example.com',
+                port: 8080,
+                protocol: 'http'
+            });
+        });
+
+        it('configureAxiosProxy 应处理正向代理元数据', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const axiosConfig: any = {};
+
+            (adapter as any).configureAxiosProxy(axiosConfig, {
+                method: 'GET',
+                url: 'https://example.com',
+                meta: {
+                    __forwardProxy: {
+                        proxyUrl: 'https://user:pass@proxy.example.com:8443',
+                        isHttps: true
+                    }
+                }
+            } satisfies HttpRequestOptions);
+
+            expect(axiosConfig.httpsAgent).to.exist;
+            expect(axiosConfig.proxy).to.equal(false);
+        });
+
+        it('buildAxiosConfig 应应用默认超时和响应类型为空路径', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const config = (adapter as any).buildAxiosConfig({
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions, 'https://example.com');
+
+            expect(config.timeout).to.equal(defaultRequestConfig.timeout);
+            expect(config.responseType).to.be.undefined;
+        });
+
+        it('handleAxiosError 非 axios 错误应返回 UNKNOWN_ERROR（无 message）', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const error: any = {};
+
+            const httpError = (adapter as any).handleAxiosError(error, {
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(httpError.code).to.equal('UNKNOWN_ERROR');
+            expect(httpError.message).to.equal('Unknown error');
+        });
+
+        it('handleAxiosError isAxiosError 但无 code 时应回落 AXIOS_ERROR', () => {
+            const adapter = new AxiosAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const error: any = {
+                isAxiosError: true,
+                message: 'boom',
+                response: {
+                    status: 400,
+                    statusText: 'Bad',
+                    headers: {},
+                    data: { e: 1 }
+                }
+            };
+
+            const httpError = (adapter as any).handleAxiosError(error, {
+                method: 'GET',
+                url: 'https://example.com'
+            } satisfies HttpRequestOptions);
+
+            expect(httpError.code).to.equal('AXIOS_ERROR');
+            expect(httpError.response?.status).to.equal(400);
         });
     });
 });

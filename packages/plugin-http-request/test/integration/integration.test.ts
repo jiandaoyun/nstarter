@@ -4,7 +4,7 @@
  */
 
 import { expect } from 'chai';
-import nock = require('nock');
+import nock from 'nock';
 import {
     MockAgent,
     setGlobalDispatcher,

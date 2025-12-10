@@ -186,6 +186,12 @@ describe('LogFilter', () => {
             expect(filter.shouldLog(createFailedOptions({ status: 500 }))).to.be.true;
             expect(filter.shouldLog(createFailedOptions({ status: 302 }))).to.be.false;
         });
+
+        it('状态码缺失时应直接通过', () => {
+            const filter = new LogFilter({ statusCodes: [500] });
+
+            expect(filter.shouldLog(createFailedOptions({ status: undefined }))).to.be.true;
+        });
     });
 
     describe('Duration filtering', () => {
@@ -196,6 +202,12 @@ describe('LogFilter', () => {
             expect(filter.shouldLog(createSuccessOptions({ duration: 1000 }))).to.be.true;
             expect(filter.shouldLog(createSuccessOptions({ duration: 1500 }))).to.be.true;
             expect(filter.shouldLog(createFailedOptions({ duration: 2000 }))).to.be.true;
+        });
+
+        it('未提供 duration 时应默认通过', () => {
+            const filter = new LogFilter({ minDuration: 1000 });
+            expect(filter.shouldLog(createSuccessOptions({ duration: undefined }))).to.be.true;
+            expect(filter.shouldLog(createFailedOptions({ duration: undefined }))).to.be.true;
         });
     });
 
@@ -227,6 +239,27 @@ describe('LogFilter', () => {
             expect(filter.shouldLog(createSuccessOptions({
                 request: { method: 'GET', url: 'test' }
             }))).to.be.false;
+        });
+    });
+
+    describe('Config update', () => {
+        it('updateConfig 应合并新配置', () => {
+            const filter = new LogFilter({ methods: ['GET'] });
+            filter.updateConfig({ onlyFailed: true, methods: ['POST'] });
+            const opts = createFailedOptions({ request: { method: 'POST', url: 'https://example.com' } });
+
+            expect(filter.shouldLog(opts)).to.be.true;
+            // 成功请求应被 onlyFailed 拦截
+            expect(filter.shouldLog(createSuccessOptions({ request: { method: 'POST', url: 'https://example.com' } }))).to.be.false;
+        });
+
+        it('getConfig 应返回浅拷贝', () => {
+            const filter = new LogFilter({ methods: ['GET'] });
+            const cfg = filter.getConfig();
+            // 返回对象不是同一个引用
+            expect(cfg).to.not.equal(filter.getConfig());
+            // 基本字段保持一致
+            expect(cfg.methods).to.deep.equal(['GET']);
         });
     });
 
