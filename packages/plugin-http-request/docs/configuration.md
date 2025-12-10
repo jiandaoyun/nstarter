@@ -101,3 +101,49 @@ const client = new NsHttpClient({
 - `maxResponseBodySize`: 最大响应体大小限制（字节）
 - `proxy`: HTTP 代理配置（注意：这与正向代理不同，详见 [代理配置文档](./proxy.md)）
 
+## 默认配置值
+
+以下是所有配置项的默认值，如果你不指定某个配置项，将使用以下默认值：
+
+### 适配器配置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `adapter` | `EClientAdapter.axios` | 默认使用 Axios 适配器 |
+
+### 安全配置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `rejectUnauthorized` | `true` | 默认验证 SSL 证书（生产环境建议保持为 true） |
+| `enableDnsValidation` | `true` | 默认启用 DNS 验证 |
+| `enableIpValidation` | `true` | 默认启用 IP 验证 |
+| `allowPrivateIp` | `false` | 默认禁止访问私有 IP（内网地址） |
+| `whitelist` | `[]` | 默认无白名单 |
+| `blacklist` | `[]` | 默认无黑名单 |
+| `dnsCacheTtl` | `60000` | DNS 缓存 TTL，默认 60 秒（60000 毫秒） |
+| `dnsCacheMaxSize` | `500` | DNS 缓存最大条目数，默认 500，使用 LRU 淘汰策略 |
+
+> **注意**：DNS 缓存最大 TTL 限制为 5 分钟（300000 毫秒），即使设置更大的值也会被限制为 5 分钟，避免过长的缓存时间导致内存积压。
+
+### 日志配置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `enabled` | `true` | 默认启用日志 |
+| `logRequestBody` | `true` | 默认记录请求体 |
+| `logResponseBody` | `true` | 默认记录响应体 |
+| `bodyMaxLength` | `1048576` | 请求/响应体最大记录长度，默认 1MB（1024 * 1024 字节） |
+
+### 请求配置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `timeout` | `30000` | 请求超时时间，默认 30 秒（30000 毫秒） |
+| `retries` | `0` | 默认不重试 |
+| `retryDelay` | `1000` | 重试延迟时间，默认 1 秒（1000 毫秒） |
+| `maxRedirects` | `5` | 最大重定向次数，默认 5 次 |
+| `maxRequestBodySize` | `10485760` | 最大请求体大小，默认 10MB（10 * 1024 * 1024 字节） |
+| `maxResponseBodySize` | `52428800` | 最大响应体大小，默认 50MB（50 * 1024 * 1024 字节） |
+| `proxy` | `undefined` | 默认不使用 HTTP 代理 |
+

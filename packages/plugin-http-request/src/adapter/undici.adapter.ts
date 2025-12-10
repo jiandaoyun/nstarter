@@ -34,105 +34,16 @@ export class UndiciAdapter extends BaseHttpAdapter {
      * 发送请求
      * @param options 请求选项
      */
-    // eslint-disable-next-line complexity
     protected async sendRequest<T>(options: HttpRequestOptions): Promise<HttpResponse<T>> {
         if (!this.isAvailable()) {
             throw new Error('Undici is not available. Please install it: npm install undici');
         }
 
         const fullUrl = this.buildUrl(options.url, options.params);
-        // 准备 headers，将 number 类型转换为 string
-        const headers: Record<string, string | string[]> = {};
-        if (options.headers) {
-            for (const [key, value] of Object.entries(options.headers)) {
-                headers[key] = typeof value === 'number' ? String(value) : value;
-            }
-        }
-
-        // 设置请求体
-        let body: Dispatcher.DispatchOptions['body'];
-        if (options.body !== undefined) {
-            if (typeof options.body === 'object' && !(options.body instanceof Buffer)) {
-                body = JSON.stringify(options.body);
-                // 自动设置 Content-Type
-                if (!headers['content-type'] && !headers['Content-Type']) {
-                    headers['Content-Type'] = 'application/json';
-                }
-            } else {
-                body = options.body;
-            }
-        }
-
-        // 构建 dispatcher 用于代理或 TLS 配置
-        // 只有在需要代理或特殊 TLS 配置时才创建 dispatcher
-        // 否则不传递 dispatcher，让 undici 使用全局 dispatcher（支持MockAgent）
-        let dispatcher: Dispatcher | undefined;
-
-        // 如果 rejectUnauthorized 为 false，需要创建 Agent 来设置 TLS 选项
-        if (!this.securityConfig.rejectUnauthorized) {
-            dispatcher = new Agent({
-                connect: {
-                    rejectUnauthorized: false
-                }
-            });
-        }
-
-        // 有代理时，创建 ProxyAgent
-        if (this.requestConfig.proxy) {
-            const { protocol, host, port, auth } = this.requestConfig.proxy;
-            let proxyUrl = `${ protocol }://${ host }:${ port }`;
-
-            // 如果有认证信息，添加到 URL 中
-            if (auth) {
-                const encodedUsername = encodeURIComponent(auth.username);
-                const encodedPassword = encodeURIComponent(auth.password);
-                proxyUrl = `${ protocol }://${ encodedUsername }:${ encodedPassword }@${ host }:${ port }`;
-            }
-
-            dispatcher = new ProxyAgent({
-                uri: proxyUrl,
-                connect: {
-                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
-                }
-            });
-            this.logger?.debug('Using ProxyAgent with global proxy config', {
-                host,
-                port,
-                protocol,
-                rejectUnauthorized: this.securityConfig.rejectUnauthorized
-            });
-        }
-
-        // 设置正向代理（如果请求元数据中包含代理信息，会覆盖全局代理配置）
-        const forwardProxyMeta = options.meta?.__forwardProxy;
-        if (forwardProxyMeta) {
-            const { proxyUrl } = forwardProxyMeta;
-            // Undici 使用 ProxyAgent 处理代理，并配置 TLS 选项
-            dispatcher = new ProxyAgent({
-                uri: proxyUrl,
-                connect: {
-                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
-                }
-            });
-            this.logger?.debug('Using ProxyAgent for forward proxy (overrides global proxy)', {
-                proxyUrl,
-                rejectUnauthorized: this.securityConfig.rejectUnauthorized
-            });
-        }
-
-        // 构建 Undici 请求配置
-        // 注意：undici.request() 的第一个参数是完整 URL
-        // options 中不包含 origin、path，这些已在 URL 中
-        const undiciOptions: Parameters<typeof undici.request>[1] = {
-            method: options.method as Dispatcher.HttpMethod,
-            headers,
-            body,
-            bodyTimeout: options.timeout ?? this.requestConfig.timeout,
-            headersTimeout: options.timeout ?? this.requestConfig.timeout,
-            maxRedirections: this.requestConfig.maxRedirects,
-            ...(dispatcher && { dispatcher }),
-        };
-
+        const headers = this.prepareHeaders(options.headers);
+        const body = this.prepareBody(options.body, headers);
+        const dispatcher = this.buildDispatcher(options);
+        const undiciOptions = this.buildUndiciOptions(options, headers, body, dispatcher);
 
         try {
             const startTime = Date.now();
@@ -146,10 +57,8 @@ export class UndiciAdapter extends BaseHttpAdapter {
                 duration
             });
 
-            // 读取响应体
             const data = await this.readResponseBody<T>(response, options.responseType);
 
-            // 转换为标准响应格式
             const httpResponse: HttpResponse<T> = {
                 status: response.statusCode,
                 statusText: this.getStatusText(response.statusCode),
@@ -160,20 +69,163 @@ export class UndiciAdapter extends BaseHttpAdapter {
 
             return httpResponse;
         } catch (error: unknown) {
-            // 转换为标准错误格式
-            const errorMessage = error instanceof Error ? error.message : 'Undici request failed';
-            const errorCode = (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string')
-                ? error.code
-                : 'UNDICI_ERROR';
-
-            throw new HttpError(
-                errorMessage,
-                errorCode,
-                undefined,
-                undefined,
-                options
-            );
+            throw this.handleUndiciError(error, options);
         }
+    }
+
+    /**
+     * 准备请求头
+     * @param headers 原始请求头
+     */
+    private prepareHeaders(headers?: Record<string, string | number | string[]>): Record<string, string | string[]> {
+        const prepared: Record<string, string | string[]> = {};
+        if (headers) {
+            for (const [key, value] of Object.entries(headers)) {
+                prepared[key] = typeof value === 'number' ? String(value) : value;
+            }
+        }
+        return prepared;
+    }
+
+    /**
+     * 准备请求体
+     * @param body 原始请求体
+     * @param headers 请求头
+     */
+    private prepareBody(body: any, headers: Record<string, string | string[]>): Dispatcher.DispatchOptions['body'] {
+        if (body === undefined) {
+            return undefined;
+        }
+
+        if (typeof body === 'object' && !(body instanceof Buffer)) {
+            // 自动设置 Content-Type
+            if (!headers['content-type'] && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+            return JSON.stringify(body);
+        }
+
+        return body;
+    }
+
+    /**
+     * 构建 Dispatcher（代理或 TLS 配置）
+     * @param options 请求选项
+     */
+    private buildDispatcher(options: HttpRequestOptions): Dispatcher | undefined {
+        let dispatcher: Dispatcher | undefined;
+
+        // 如果 rejectUnauthorized 为 false，需要创建 Agent 来设置 TLS 选项
+        if (!this.securityConfig.rejectUnauthorized) {
+            dispatcher = new Agent({
+                connect: {
+                    rejectUnauthorized: false
+                }
+            });
+        }
+
+        // 有代理时，创建 ProxyAgent
+        if (this.requestConfig.proxy) {
+            dispatcher = this.createGlobalProxyAgent();
+        }
+
+        // 设置正向代理（如果请求元数据中包含代理信息，会覆盖全局代理配置）
+        const forwardProxyMeta = options.meta?.__forwardProxy;
+        if (forwardProxyMeta) {
+            dispatcher = this.createForwardProxyAgent(forwardProxyMeta.proxyUrl);
+        }
+
+        return dispatcher;
+    }
+
+    /**
+     * 创建全局代理 Agent
+     */
+    private createGlobalProxyAgent(): ProxyAgent {
+        const { protocol, host, port, auth } = this.requestConfig.proxy!;
+        let proxyUrl = `${ protocol }://${ host }:${ port }`;
+
+        if (auth) {
+            const encodedUsername = encodeURIComponent(auth.username);
+            const encodedPassword = encodeURIComponent(auth.password);
+            proxyUrl = `${ protocol }://${ encodedUsername }:${ encodedPassword }@${ host }:${ port }`;
+        }
+
+        const agent = new ProxyAgent({
+            uri: proxyUrl,
+            connect: {
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            }
+        });
+
+        this.logger?.debug('Using ProxyAgent with global proxy config', {
+            host,
+            port,
+            protocol,
+            rejectUnauthorized: this.securityConfig.rejectUnauthorized
+        });
+
+        return agent;
+    }
+
+    /**
+     * 创建正向代理 Agent
+     * @param proxyUrl 代理 URL
+     */
+    private createForwardProxyAgent(proxyUrl: string): ProxyAgent {
+        const agent = new ProxyAgent({
+            uri: proxyUrl,
+            connect: {
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            }
+        });
+
+        this.logger?.debug('Using ProxyAgent for forward proxy (overrides global proxy)', {
+            proxyUrl,
+            rejectUnauthorized: this.securityConfig.rejectUnauthorized
+        });
+
+        return agent;
+    }
+
+    /**
+     * 构建 Undici 请求选项
+     */
+    private buildUndiciOptions(
+        options: HttpRequestOptions,
+        headers: Record<string, string | string[]>,
+        body: Dispatcher.DispatchOptions['body'],
+        dispatcher?: Dispatcher
+    ): Parameters<typeof undici.request>[1] {
+        return {
+            method: options.method as Dispatcher.HttpMethod,
+            headers,
+            body,
+            bodyTimeout: options.timeout ?? this.requestConfig.timeout,
+            headersTimeout: options.timeout ?? this.requestConfig.timeout,
+            maxRedirections: this.requestConfig.maxRedirects,
+            ...(dispatcher && { dispatcher }),
+        };
+    }
+
+    /**
+     * 处理 Undici 错误
+     * @param error 错误对象
+     * @param options 请求选项
+     */
+    private handleUndiciError(error: unknown, options: HttpRequestOptions): HttpError {
+        const errorMessage = error instanceof Error ? error.message : 'Undici request failed';
+        const errorCode = (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string')
+            ? error.code
+            : 'UNDICI_ERROR';
+
+        return new HttpError(
+            errorMessage,
+            errorCode,
+            undefined,
+            undefined,
+            options
+        );
     }
 
     /**

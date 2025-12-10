@@ -29,6 +29,22 @@ describe('TraceContext Utils', () => {
             const id2 = generateTraceId();
             expect(id1).to.not.equal(id2);
         });
+
+        it('在无 getRandomValues 时应走随机数回退逻辑', () => {
+            const originalCrypto = (globalThis as any).crypto;
+            const originalGetRandomValues = originalCrypto?.getRandomValues;
+            if (originalCrypto) {
+                (originalCrypto as any).getRandomValues = undefined;
+            }
+
+            const traceId = generateTraceId();
+
+            if (originalCrypto) {
+                (originalCrypto as any).getRandomValues = originalGetRandomValues;
+            }
+
+            expect(traceId).to.match(/^[0-9a-f]{32}$/);
+        });
     });
 
     describe('generateSpanId', () => {

@@ -94,6 +94,31 @@ describe('Config', () => {
             const config = mergeConfig({ security: { dnsCacheTtl: maxTtl } });
             expect(() => validateConfig(config)).to.not.throw();
         });
+
+        it('应该拒绝负数重试延迟', () => {
+            const config = mergeConfig({ request: { retryDelay: -1 } as any });
+            expect(() => validateConfig(config)).to.throw(/retry delay/i);
+        });
+
+        it('应该拒绝负数最大重定向次数', () => {
+            const config = mergeConfig({ request: { maxRedirects: -1 } as any });
+            expect(() => validateConfig(config)).to.throw(/max redirects/i);
+        });
+
+        it('应该拒绝非正数最大请求体大小', () => {
+            const config = mergeConfig({ request: { maxRequestBodySize: 0 } as any });
+            expect(() => validateConfig(config)).to.throw(/max request body size/i);
+        });
+
+        it('应该拒绝非正数最大响应体大小', () => {
+            const config = mergeConfig({ request: { maxResponseBodySize: 0 } as any });
+            expect(() => validateConfig(config)).to.throw(/max response body size/i);
+        });
+
+        it('应该拒绝非正数日志体最大长度', () => {
+            const config = mergeConfig({ logging: { bodyMaxLength: 0 } as any });
+            expect(() => validateConfig(config)).to.throw(/body max length/i);
+        });
     });
 });
 
