@@ -42,81 +42,7 @@ export class AxiosAdapter extends BaseHttpAdapter {
         }
 
         const url = this.buildUrl(options.url, options.params);
-
-        // 构建 Axios 配置
-        const axiosConfig: AxiosRequestConfig = {
-            method: options.method.toLowerCase(),
-            url,
-            headers: options.headers || {},
-            timeout: options.timeout ?? this.requestConfig.timeout,
-            maxRedirects: this.requestConfig.maxRedirects,
-            maxContentLength: this.requestConfig.maxResponseBodySize,
-            maxBodyLength: this.requestConfig.maxRequestBodySize,
-            // 接受所有 HTTP 状态码（包括 4xx 和 5xx），不将它们视为错误
-            validateStatus: () => true,
-            // 设置 HTTPS Agent 以支持证书校验配置
-            httpsAgent: new https.Agent({
-                rejectUnauthorized: this.securityConfig.rejectUnauthorized
-            })
-        };
-
-        // 设置请求体
-        if (options.body !== undefined) {
-            axiosConfig.data = options.body;
-        }
-
-        // 设置响应类型
-        if (options.responseType) {
-            axiosConfig.responseType = options.responseType;
-        }
-
-        // 设置代理（全局配置）
-        if (this.requestConfig.proxy) {
-            axiosConfig.proxy = this.buildProxyConfig(this.requestConfig.proxy);
-        }else {
-            // 显式的禁用代理, 防止axios默认从环境变量中 HTTP_PROXY、HTTPS_PROXY 读取代理配置. 
-            axiosConfig.proxy = false;
-        }
-
-        // 设置正向代理（如果请求元数据中包含代理信息）
-        const forwardProxyMeta = options.meta?.__forwardProxy;
-        if (forwardProxyMeta) {
-            const { proxyUrl, isHttps } = forwardProxyMeta;
-
-            if (isHttps) {
-                // HTTPS 请求使用 HttpsProxyAgent，并应用证书校验配置
-                axiosConfig.httpsAgent = new HttpsProxyAgent<`https://${ string }`>(proxyUrl, {
-                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
-                });
-                // 显式的禁用代理, 防止axios默认从环境变量中 HTTP_PROXY、HTTPS_PROXY 读取代理配置. 
-                axiosConfig.proxy = false;
-                this.logger?.debug('Using HttpsProxyAgent for HTTPS request', {
-                    proxyUrl,
-                    rejectUnauthorized: this.securityConfig.rejectUnauthorized
-                });
-            } else {
-                // HTTP 请求直接设置 proxy
-                const parsedProxyUrl = new URL(proxyUrl);
-                axiosConfig.proxy = {
-                    host: parsedProxyUrl.hostname,
-                    port: Number(parsedProxyUrl.port),
-                    protocol: 'http'
-                };
-
-                // 处理代理认证
-                if (parsedProxyUrl.username && parsedProxyUrl.password) {
-                    axiosConfig.proxy.auth = {
-                        username: decodeURIComponent(parsedProxyUrl.username),
-                        password: decodeURIComponent(parsedProxyUrl.password)
-                    };
-                }
-
-                this.logger?.debug('Using proxy for HTTP request', {
-                    host: axiosConfig.proxy.host,
-                    port: axiosConfig.proxy.port
-                });
-            }
-        }
+        const axiosConfig = this.buildAxiosConfig(options, url);
 
         try {
             const startTime = Date.now();
@@ -141,31 +67,141 @@ export class AxiosAdapter extends BaseHttpAdapter {
 
             return response;
         } catch (error: any) {
-            // 转换为标准错误格式
-            if (error.isAxiosError) {
-                throw new HttpError(
-                    error.message,
-                    error.code || 'AXIOS_ERROR',
-                    error.response?.status,
-                    error.response ? {
-                        status: error.response.status,
-                        statusText: error.response.statusText,
-                        headers: this.normalizeHeaders(error.response.headers),
-                        data: error.response.data,
-                        config: options
-                    } : undefined,
-                    options
-                );
+            throw this.handleAxiosError(error, options);
+        }
+    }
+
+    /**
+     * 构建 Axios 配置
+     * @param options 请求选项
+     * @param url 完整 URL
+     */
+    private buildAxiosConfig(options: HttpRequestOptions, url: string): AxiosRequestConfig {
+        const axiosConfig: AxiosRequestConfig = {
+            method: options.method.toLowerCase(),
+            url,
+            headers: options.headers || {},
+            timeout: options.timeout ?? this.requestConfig.timeout,
+            maxRedirects: this.requestConfig.maxRedirects,
+            maxContentLength: this.requestConfig.maxResponseBodySize,
+            maxBodyLength: this.requestConfig.maxRequestBodySize,
+            validateStatus: () => true,
+            httpsAgent: new https.Agent({
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            })
+        };
+
+        // 设置请求体
+        if (options.body !== undefined) {
+            axiosConfig.data = options.body;
+        }
+
+        // 设置响应类型
+        if (options.responseType) {
+            axiosConfig.responseType = options.responseType;
+        }
+
+        // 配置代理
+        this.configureAxiosProxy(axiosConfig, options);
+
+        return axiosConfig;
+    }
+
+    /**
+     * 配置 Axios 代理
+     * @param axiosConfig Axios 配置对象
+     * @param options 请求选项
+     */
+    private configureAxiosProxy(axiosConfig: AxiosRequestConfig, options: HttpRequestOptions): void {
+        // 设置代理（全局配置）
+        if (this.requestConfig.proxy) {
+            axiosConfig.proxy = this.buildProxyConfig(this.requestConfig.proxy);
+        } else {
+            // 显式的禁用代理, 防止axios默认从环境变量中 HTTP_PROXY、HTTPS_PROXY 读取代理配置. 
+            axiosConfig.proxy = false;
+        }
+
+        // 设置正向代理（如果请求元数据中包含代理信息）
+        const forwardProxyMeta = options.meta?.__forwardProxy;
+        if (forwardProxyMeta) {
+            this.applyForwardProxy(axiosConfig, forwardProxyMeta);
+        }
+    }
+
+    /**
+     * 应用正向代理配置
+     * @param axiosConfig Axios 配置对象
+     * @param forwardProxyMeta 正向代理元数据
+     */
+    private applyForwardProxy(
+        axiosConfig: AxiosRequestConfig,
+        forwardProxyMeta: { proxyUrl: string, isHttps: boolean }
+    ): void {
+        const { proxyUrl, isHttps } = forwardProxyMeta;
+
+        if (isHttps) {
+            // HTTPS 请求使用 HttpsProxyAgent，并应用证书校验配置
+            axiosConfig.httpsAgent = new HttpsProxyAgent(proxyUrl as `https://${ string }`, {
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            });
+            axiosConfig.proxy = false;
+            this.logger?.debug('Using HttpsProxyAgent for HTTPS request', {
+                proxyUrl,
+                rejectUnauthorized: this.securityConfig.rejectUnauthorized
+            });
+        } else {
+            // HTTP 请求直接设置 proxy
+            const parsedProxyUrl = new URL(proxyUrl);
+            axiosConfig.proxy = {
+                host: parsedProxyUrl.hostname,
+                port: Number(parsedProxyUrl.port),
+                protocol: 'http'
+            };
+
+            // 处理代理认证
+            if (parsedProxyUrl.username && parsedProxyUrl.password) {
+                axiosConfig.proxy.auth = {
+                    username: decodeURIComponent(parsedProxyUrl.username),
+                    password: decodeURIComponent(parsedProxyUrl.password)
+                };
             }
 
-            throw new HttpError(
-                error.message || 'Unknown error',
-                'UNKNOWN_ERROR',
-                undefined,
-                undefined,
+            this.logger?.debug('Using proxy for HTTP request', {
+                host: axiosConfig.proxy.host,
+                port: axiosConfig.proxy.port
+            });
+        }
+    }
+
+    /**
+     * 处理 Axios 错误
+     * @param error 错误对象
+     * @param options 请求选项
+     */
+    private handleAxiosError(error: any, options: HttpRequestOptions): HttpError {
+        if (error.isAxiosError) {
+            return new HttpError(
+                error.message,
+                error.code || 'AXIOS_ERROR',
+                error.response?.status,
+                error.response ? {
+                    status: error.response.status,
+                    statusText: error.response.statusText,
+                    headers: this.normalizeHeaders(error.response.headers),
+                    data: error.response.data,
+                    config: options
+                } : undefined,
                 options
             );
         }
+
+        return new HttpError(
+            error.message || 'Unknown error',
+            'UNKNOWN_ERROR',
+            undefined,
+            undefined,
+            options
+        );
     }
 
     /**
