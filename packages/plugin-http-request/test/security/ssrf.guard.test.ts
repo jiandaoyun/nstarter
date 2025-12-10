@@ -15,7 +15,8 @@ describe('SsrfGuard', () => {
         rejectUnauthorized: true,
         dnsCacheTtl: 60000,
         whitelist: [],
-        blacklist: []
+        blacklist: [],
+        dnsCacheMaxSize: 500
     };
 
     describe('构造函数', () => {
