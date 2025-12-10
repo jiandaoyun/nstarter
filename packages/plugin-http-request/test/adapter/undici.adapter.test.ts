@@ -487,4 +487,246 @@ describe('UndiciAdapter', () => {
             expect(adapter).to.exist;
         });
     });
+
+    describe('流式响应处理', () => {
+        it('应该支持流式响应', async () => {
+            const testData = 'This is a stream response\nLine 2\nLine 3';
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/stream',
+                method: 'GET'
+            }).reply(200, testData, {
+                headers: { 'content-type': 'text/plain' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/stream',
+                responseType: 'stream'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+            // 检查返回的是流对象
+            expect(response.data).to.have.property('on');
+            expect(response.data).to.have.property('read');
+
+            // 读取流数据
+            const chunks: Buffer[] = [];
+            return new Promise<void>((resolve, reject) => {
+                response.data.on('data', (chunk: Buffer) => {
+                    chunks.push(chunk);
+                });
+                response.data.on('end', () => {
+                    const data = Buffer.concat(chunks).toString();
+                    expect(data).to.equal(testData);
+                    resolve();
+                });
+                response.data.on('error', reject);
+            });
+        });
+
+        it('应该正确处理大文件流式传输', async () => {
+            // 生成较大的测试数据
+            const largeData = 'x'.repeat(1024 * 100); // 100KB
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/large-stream',
+                method: 'GET'
+            }).reply(200, largeData, {
+                headers: { 'content-type': 'application/octet-stream' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/large-stream',
+                responseType: 'stream'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+
+            // 读取流数据并验证大小
+            let totalBytes = 0;
+            return new Promise<void>((resolve, reject) => {
+                response.data.on('data', (chunk: Buffer) => {
+                    totalBytes += chunk.length;
+                });
+                response.data.on('end', () => {
+                    expect(totalBytes).to.equal(largeData.length);
+                    resolve();
+                });
+                response.data.on('error', reject);
+            });
+        });
+
+        it('应该正确处理流式响应的错误', async () => {
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/stream-error',
+                method: 'GET'
+            }).reply(200, 'partial data', {
+                headers: { 'content-type': 'text/plain' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/stream-error',
+                responseType: 'stream'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+
+            // 模拟流错误
+            return new Promise<void>((resolve) => {
+                response.data.on('error', (error: Error) => {
+                    expect(error).to.exist;
+                    resolve();
+                });
+                // 手动触发错误
+                response.data.destroy(new Error('Stream error'));
+            });
+        });
+    });
+
+    describe('SSE (Server-Sent Events) 处理', () => {
+        it('应该支持 SSE 流式响应', async () => {
+            const sseData = 'data: event 1\n\ndata: event 2\n\ndata: event 3\n\n';
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/events',
+                method: 'GET'
+            }).reply(200, sseData, {
+                headers: {
+                    'content-type': 'text/event-stream',
+                    'cache-control': 'no-cache',
+                    'connection': 'keep-alive'
+                }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/events',
+                responseType: 'stream',
+                headers: {
+                    'Accept': 'text/event-stream'
+                }
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.headers['content-type']).to.include('text/event-stream');
+            expect(response.data).to.exist;
+
+            // 读取 SSE 数据
+            const chunks: Buffer[] = [];
+            return new Promise<void>((resolve, reject) => {
+                response.data.on('data', (chunk: Buffer) => {
+                    chunks.push(chunk);
+                });
+                response.data.on('end', () => {
+                    const data = Buffer.concat(chunks).toString();
+                    expect(data).to.include('data: event 1');
+                    expect(data).to.include('data: event 2');
+                    expect(data).to.include('data: event 3');
+                    resolve();
+                });
+                response.data.on('error', reject);
+            });
+        });
+
+        it('应该正确解析 SSE 事件格式', async () => {
+            const sseData = 'id: 1\nevent: message\ndata: {"type":"test"}\n\nid: 2\nevent: update\ndata: {"status":"ok"}\n\n';
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/sse-events',
+                method: 'GET'
+            }).reply(200, sseData, {
+                headers: { 'content-type': 'text/event-stream' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/sse-events',
+                responseType: 'stream'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+
+            // 解析 SSE 事件
+            const events: string[] = [];
+            return new Promise<void>((resolve, reject) => {
+                let buffer = '';
+                response.data.on('data', (chunk: Buffer) => {
+                    buffer += chunk.toString();
+                    // 按双换行符分割事件
+                    const parts = buffer.split('\n\n');
+                    buffer = parts.pop() || '';
+                    events.push(...parts.filter(p => p.trim()));
+                });
+                response.data.on('end', () => {
+                    expect(events.length).to.be.greaterThan(0);
+                    // 验证事件格式
+                    const firstEvent = events[0];
+                    expect(firstEvent).to.include('id: 1');
+                    expect(firstEvent).to.include('event: message');
+                    expect(firstEvent).to.include('data: {"type":"test"}');
+                    resolve();
+                });
+                response.data.on('error', reject);
+            });
+        });
+
+        it('应该正确处理 SSE 流式传输的多个事件', async () => {
+            // 生成多个 SSE 事件
+            const events: string[] = [];
+            for (let i = 1; i <= 10; i++) {
+                events.push(`data: Event ${i}\n\n`);
+            }
+            const sseData = events.join('');
+
+            const mockPool = mockAgent.get('https://httpbin.nstarter');
+            mockPool.intercept({
+                path: '/sse-multiple',
+                method: 'GET'
+            }).reply(200, sseData, {
+                headers: { 'content-type': 'text/event-stream' }
+            });
+
+            const adapter = new UndiciAdapter(defaultRequestConfig, defaultSecurityConfig);
+            const response = await adapter.request({
+                method: 'GET',
+                url: 'https://httpbin.nstarter/sse-multiple',
+                responseType: 'stream'
+            });
+
+            expect(response.status).to.equal(200);
+            expect(response.data).to.exist;
+
+            // 统计接收的事件数量
+            let eventCount = 0;
+            return new Promise<void>((resolve, reject) => {
+                let buffer = '';
+                response.data.on('data', (chunk: Buffer) => {
+                    buffer += chunk.toString();
+                    const matches = buffer.match(/data: .+\n\n/g);
+                    if (matches) {
+                        eventCount += matches.length;
+                        buffer = buffer.replace(/data: .+\n\n/g, '');
+                    }
+                });
+                response.data.on('end', () => {
+                    expect(eventCount).to.equal(10);
+                    resolve();
+                });
+                response.data.on('error', reject);
+            });
+        });
+    });
 });
