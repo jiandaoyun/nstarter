@@ -10,11 +10,28 @@ import type { EClientAdapter } from '../const';
 
 /**
  * 正向代理配置
+ * @default {}
  */
 export interface IForwardProxy {
+    /**
+     * 是否启用正向代理
+     * @default false
+     */
     enabled: boolean;
+    /**
+     * HTTPS 代理地址
+     * @default ""
+     */
     https_proxy: string;
+    /**
+     * HTTP 代理地址
+     * @default ""
+     */
     http_proxy: string;
+    /**
+     * 不使用代理的域名列表
+     * @default []
+     */
     no_proxy: string[];
 }
 
