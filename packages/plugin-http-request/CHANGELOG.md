@@ -1,5 +1,8 @@
 # Changelog
 
+* 0.1.2
+    * 流处理修复
+
 * 0.1.1
     * IForwardProxy补充默认值
 

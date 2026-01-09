@@ -38,6 +38,7 @@ import {
     PassThrough,
     Readable
 } from 'node:stream';
+import { MetricsTransform } from './stream';
 
 /**
  * HTTP 客户端
@@ -349,7 +350,6 @@ export class NsHttpClient implements IHttpClient {
         ttfb: number
     ): HttpResponse<T> {
         const stream = response.data as any;
-        let bytesTransferred = 0;
 
         // 记录首次响应日志（流开始）
         this.logResponse(options, response, ttfb, {
@@ -366,20 +366,13 @@ export class NsHttpClient implements IHttpClient {
 
         // 所有适配器都返回 Node.js Readable
         const originalStream = stream as Readable;
+        const metrics = new MetricsTransform();
         const wrappedStream = new PassThrough();
 
-        // 监听数据事件统计字节数
-        originalStream.on('data', (chunk: Buffer) => {
-            bytesTransferred += chunk.length;
-            wrappedStream.write(chunk);
-        });
-
-        // 监听结束事件记录日志
-        originalStream.on('end', () => {
+        // 监听 wrappedStream 的结束事件记录日志
+        wrappedStream.on('end', () => {
             const totalDuration = Date.now() - requestStartTime;
-            wrappedStream.end();
-
-            // 记录流完成日志
+            const bytesTransferred = metrics.getBytesTransferred();
             this.logStreamCompleted(
                 options,
                 response,
@@ -389,9 +382,10 @@ export class NsHttpClient implements IHttpClient {
             );
         });
 
-        // 监听错误事件
-        originalStream.on('error', (error: Error) => {
+        // 监听 wrappedStream 的错误事件（pipe 会自动传播错误）
+        wrappedStream.on('error', (error: Error) => {
             const totalDuration = Date.now() - requestStartTime;
+            const bytesTransferred = metrics.getBytesTransferred();
             this.logger.error('Stream read error', {
                 method: options.method,
                 url: options.url,
@@ -400,11 +394,10 @@ export class NsHttpClient implements IHttpClient {
                 bytesTransferred,
                 error: error.message
             });
-            wrappedStream.destroy(error);
         });
 
-        // 使用 pipe 连接流
-        originalStream.pipe(wrappedStream, { end: false });
+        // 使用 pipe 连接流：originalStream -> metrics -> wrappedStream
+        originalStream.pipe(metrics).pipe(wrappedStream);
 
         // 返回包装后的响应
         return {
