@@ -1,6 +1,6 @@
 {
   "name": "nstarter-http-request",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "nstarter HTTP 请求客户端插件",
   "license": "MIT",
   "repository": {

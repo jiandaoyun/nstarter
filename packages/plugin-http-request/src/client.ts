@@ -371,7 +371,6 @@ export class NsHttpClient implements IHttpClient {
         // 监听数据事件统计字节数
         originalStream.on('data', (chunk: Buffer) => {
             bytesTransferred += chunk.length;
-            wrappedStream.write(chunk);
         });
 
         // 监听结束事件记录日志
