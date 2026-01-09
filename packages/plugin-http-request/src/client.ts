@@ -36,6 +36,7 @@ import {
 } from './utils';
 import {
     PassThrough,
+    pipeline,
     Readable
 } from 'node:stream';
 import { MetricsTransform } from './stream';
@@ -382,7 +383,7 @@ export class NsHttpClient implements IHttpClient {
             );
         });
 
-        // 监听 wrappedStream 的错误事件（pipe 会自动传播错误）
+        // 监听 wrappedStream 的错误事件记录日志
         wrappedStream.on('error', (error: Error) => {
             const totalDuration = Date.now() - requestStartTime;
             const bytesTransferred = metrics.getBytesTransferred();
@@ -396,8 +397,8 @@ export class NsHttpClient implements IHttpClient {
             });
         });
 
-        // 使用 pipe 连接流：originalStream -> metrics -> wrappedStream
-        originalStream.pipe(metrics).pipe(wrappedStream);
+        // 使用 pipeline 连接流，自动处理错误传播和资源清理, 要求最后一个参数必须是回调函数
+        pipeline(originalStream, metrics, wrappedStream, () => {});
 
         // 返回包装后的响应
         return {
