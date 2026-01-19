@@ -56,4 +56,15 @@ describe('common utils', () => {
         expect(NsUtils.isPlainObject(new Number(12))).eq(false);
         expect(NsUtils.isPlainObject(Object.create(null))).eq(true);
     });
+
+    it('isMobileUA', () => {
+        expect(NsUtils.isMobileUA('Android')).eq(true);
+        expect(NsUtils.isMobileUA('Mac OS')).eq(false);
+        expect(NsUtils.isMobileUA('Fuchsia')).eq(false);
+        expect(NsUtils.isMobileUA('Mozilla/5.0 (Phone; OpenHarmony 5.0)')).eq(true);
+        // @ts-ignore 错误类型检查
+        expect(NsUtils.isMobileUA(null)).eq(false);
+        // @ts-ignore 错误类型检查
+        expect(NsUtils.isMobileUA(undefined)).eq(false);
+    });
 });

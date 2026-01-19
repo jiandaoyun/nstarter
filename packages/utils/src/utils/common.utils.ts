@@ -174,3 +174,22 @@ export const isPlainObject = (obj: any): obj is object => {
     return typeof Ctor === 'function' && Ctor instanceof Ctor &&
         nativeFunctionToString.call(Ctor) === nativeFunctionToString.call(Object);
 };
+
+/**
+ * 根据 UA 判断是否为移动端
+ * @param {string} UA - User Agent
+ * @return {boolean} - 是否为移动设备
+ */
+export const isMobileUA = (UA: string): boolean => {
+    if (!UA) {
+        return false;
+    }
+    return !!UA.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)
+        || UA.indexOf('Android') > -1
+        || UA.indexOf('iPad') > -1
+        || UA.indexOf('iPhone') > -1
+        || UA.indexOf('Kindle Fire') > -1
+        || UA.indexOf('Black Berry') > -1
+        || UA.indexOf('Windows Phone') > -1
+        || (UA.indexOf('OpenHarmony') > -1 && UA.indexOf('PC') === -1);
+};
