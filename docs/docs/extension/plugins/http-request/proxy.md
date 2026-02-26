@@ -1,3 +1,8 @@
+---
+title: "正向代理配置"
+sidebar_position: 5
+---
+
 # 正向代理配置
 
 ## 基础使用
@@ -41,4 +46,3 @@ const client = new NsHttpClient({
   }
 });
 ```
-

@@ -29,6 +29,7 @@ nstarter 是一套面向 Node.js + TypeScript 工程开发，设计的工程治�
 - [`nstarter-cache`](./packages/plugin-cache) - 缓存管理
 - [`nstarter-entity`](./packages/plugin-entity) - 数据传输结构实体化管理工具
 - [`nstarter-grpc`](./packages/plugin-grpc) - GRPC 通信插件
+- [`nstarter-http-request`](./packages/plugin-http-request) - HTTP 请求客户端插件，SSRF 防护、日志、正向代理等
 - [`nstarter-lock`](./packages/plugin-lock) - 分布式锁插件，基于 Redis 实现
 - [`nstarter-metrics`](./packages/plugin-metrics) - 监控指标采集跟踪组件，基于 prometheus 规范
 - [`nstarter-mongodb`](./packages/plugin-mongodb) - mongodb 连接管理组件

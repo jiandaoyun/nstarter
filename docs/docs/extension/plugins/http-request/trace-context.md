@@ -1,3 +1,8 @@
+---
+title: "W3C Trace Context"
+sidebar_position: 7
+---
+
 # W3C Trace Context 支持
 
 本 HTTP 客户端完全支持 [W3C Trace Context](https://www.w3.org/TR/trace-context/) 规范，允许你在分布式系统中进行跨服务的链路追踪。
@@ -26,7 +31,7 @@ traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
 ### 1. 在请求中传递 traceparent
 
 ```typescript
-import { NsHttpClient, TraceContext } from '@nstarter/plugin-http-request';
+import { NsHttpClient, TraceContext } from 'nstarter-http-request';
 
 const client = new NsHttpClient();
 
@@ -140,7 +145,7 @@ const notSampled = TraceContext.isSampled('00-...-...-00'); // false
 
 ```typescript
 import express from 'express';
-import { NsHttpClient, TraceContext } from '@nstarter/plugin-http-request';
+import { NsHttpClient, TraceContext } from 'nstarter-http-request';
 
 const app = express();
 const client = new NsHttpClient();
@@ -176,7 +181,7 @@ app.get('/api/users/:id', async (req, res) => {
 
 ```typescript
 import express from 'express';
-import { NsHttpClient, TraceContext } from '@nstarter/plugin-http-request';
+import { NsHttpClient, TraceContext } from 'nstarter-http-request';
 
 const app = express();
 const client = new NsHttpClient();
@@ -211,7 +216,7 @@ app.get('/users/:id', async (req, res) => {
 
 ```typescript
 import express from 'express';
-import { TraceContext } from '@nstarter/plugin-http-request';
+import { TraceContext } from 'nstarter-http-request';
 
 const app = express();
 
@@ -239,7 +244,7 @@ app.get('/orders', async (req, res) => {
 
 ```typescript
 import { trace } from '@opentelemetry/api';
-import { NsHttpClient, TraceContext } from '@nstarter/plugin-http-request';
+import { NsHttpClient, TraceContext } from 'nstarter-http-request';
 
 const tracer = trace.getTracer('my-service');
 const client = new NsHttpClient();
@@ -278,7 +283,7 @@ async function makeTracedRequest() {
 ### 日志关联
 
 ```typescript
-import { NsHttpClient, TraceContext } from '@nstarter/plugin-http-request';
+import { NsHttpClient, TraceContext } from 'nstarter-http-request';
 
 const client = new NsHttpClient();
 
@@ -433,4 +438,3 @@ interface TraceParent {
     traceFlags: string;  // Trace 标志位（2位十六进制）
 }
 ```
-

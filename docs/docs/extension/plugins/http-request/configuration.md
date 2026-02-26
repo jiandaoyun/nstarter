@@ -1,3 +1,8 @@
+---
+title: "完整配置"
+sidebar_position: 2
+---
+
 # 完整配置示例
 
 以下是一个包含所有配置选项的完整示例：
@@ -12,8 +17,8 @@ const client = new NsHttpClient({
   // 安全配置
   security: {
     rejectUnauthorized: true,        // 是否验证 SSL 证书（生产环境建议 true）
-    enableDnsValidation: true,       // 开启 DNS 验证
-    enableIpValidation: true,        // 开启 IP 验证
+    enableDnsValidation: false,     // 是否开启 DNS 验证（SSRF 防护，默认关闭）
+    enableIpValidation: false,      // 是否开启 IP 验证（SSRF 防护，默认关闭）
     allowPrivateIp: false,           // 是否允许访问私有 IP（内网地址）
     whitelist: [                     // 域名白名单
       'trusted.com', '*.trusted.com', // 匹配根域名和一级子域名
@@ -31,7 +36,7 @@ const client = new NsHttpClient({
   logging: {
     enabled: true,                   // 是否启用日志
     logRequestBody: true,            // 是否记录请求体
-    logResponseBody: true,           // 是否记录响应体
+    logResponseBody: true,            // 是否记录响应体
     bodyMaxLength: 1024 * 1024,      // 请求/响应体最大记录长度（字节，默认 1MB）
     logger: customLogger,            // 自定义日志记录器（可选，实现 ILogger 接口）
     httpLogger: customHttpLogger,    // 自定义 HTTP 日志记录器（可选，实现 IHttpClientLogger 接口）
@@ -85,11 +90,11 @@ const client = new NsHttpClient({
 
 ### 安全配置
 
-详细说明请参考 [安全配置文档](./security.md)
+详细说明请参考 [安全配置](./security)
 
 ### 日志配置
 
-详细说明请参考 [日志配置文档](./logging.md)
+详细说明请参考 [日志配置](./logging)
 
 ### 请求配置
 
@@ -99,7 +104,7 @@ const client = new NsHttpClient({
 - `maxRedirects`: 最大重定向次数
 - `maxRequestBodySize`: 最大请求体大小限制（字节）
 - `maxResponseBodySize`: 最大响应体大小限制（字节）
-- `proxy`: HTTP 代理配置（注意：这与正向代理不同，详见 [代理配置文档](./proxy.md)）
+- `proxy`: HTTP 代理配置（注意：这与正向代理不同，详见 [正向代理配置](./proxy)）
 
 ## 默认配置值
 
@@ -116,8 +121,8 @@ const client = new NsHttpClient({
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
 | `rejectUnauthorized` | `true` | 默认验证 SSL 证书（生产环境建议保持为 true） |
-| `enableDnsValidation` | `true` | 默认启用 DNS 验证 |
-| `enableIpValidation` | `true` | 默认启用 IP 验证 |
+| `enableDnsValidation` | `false` | 默认关闭 DNS 验证，设为 `true` 可启用（SSRF 防护） |
+| `enableIpValidation` | `false` | 默认关闭 IP 验证，设为 `true` 可启用（SSRF 防护） |
 | `allowPrivateIp` | `false` | 默认禁止访问私有 IP（内网地址） |
 | `whitelist` | `[]` | 默认无白名单 |
 | `blacklist` | `[]` | 默认无黑名单 |
@@ -146,4 +151,3 @@ const client = new NsHttpClient({
 | `maxRequestBodySize` | `10485760` | 最大请求体大小，默认 10MB（10 * 1024 * 1024 字节） |
 | `maxResponseBodySize` | `52428800` | 最大响应体大小，默认 50MB（50 * 1024 * 1024 字节） |
 | `proxy` | `undefined` | 默认不使用 HTTP 代理 |
-

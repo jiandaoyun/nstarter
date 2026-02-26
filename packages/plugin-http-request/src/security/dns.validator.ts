@@ -73,6 +73,23 @@ export class DnsValidator {
                 // IPv6 解析失败
             }
 
+            // resolve4/resolve6 不拼接 search 域，在 ACK 等带集群后缀的环境会 ENOTFOUND；
+            // 失败时回退到 lookup（走 getaddrinfo，会按 resolv.conf 拼 search），与建连时行为一致
+            if (addresses.length === 0) {
+                try {
+                    const lookupResult = await CommonUtils.withTimeout(
+                        dns.lookup(hostname, { all: true }),
+                        this.resolveTimeout,
+                        'DNS lookup timed out'
+                    );
+                    for (const { address } of lookupResult) {
+                        addresses.push(address);
+                    }
+                } catch {
+                    // lookup 也失败，下面统一抛错
+                }
+            }
+
             if (addresses.length === 0) {
                 throw new Error(`Unable to resolve hostname: ${ hostname }`);
             }
