@@ -15,8 +15,8 @@ describe('Config', () => {
         it('应该在未提供用户配置时使用默认配置', () => {
             const config = mergeConfig();
             expect(config.adapter).to.equal('axios');
-            expect(config.security.enableDnsValidation).to.be.true;
-            expect(config.security.enableIpValidation).to.be.true;
+            expect(config.security.enableDnsValidation).to.be.false;
+            expect(config.security.enableIpValidation).to.be.false;
             expect(config.security.allowPrivateIp).to.be.false;
             expect(config.security.rejectUnauthorized).to.be.true;
         });
@@ -31,7 +31,7 @@ describe('Config', () => {
 
             expect(config.adapter).to.equal(EClientAdapter.undici);
             expect(config.security.allowPrivateIp).to.be.true;
-            expect(config.security.enableDnsValidation).to.be.true; // default
+            expect(config.security.enableDnsValidation).to.be.false; // default
         });
 
         it('应该保留嵌套配置', () => {

@@ -18,8 +18,8 @@ export const MAX_DNS_CACHE_TTL = 5 * 60 * 1000; // 300000ms (5 分钟)
  */
 export const DEFAULT_SECURITY_CONFIG: SecurityConfig = {
     rejectUnauthorized: true,
-    enableDnsValidation: true,
-    enableIpValidation: true,
+    enableDnsValidation: false,
+    enableIpValidation: false,
     allowPrivateIp: false,
     whitelist: [],
     blacklist: [],

@@ -1,3 +1,8 @@
+---
+title: "日志配置"
+sidebar_position: 4
+---
+
 # 日志配置详解
 
 ## 自定义日志记录器
@@ -41,7 +46,7 @@ const client = new NsHttpClient({
   logging: {
     enabled: true,                   // 是否启用日志
     logRequestBody: true,            // 是否记录请求体
-    logResponseBody: true,           // 是否记录响应体
+    logResponseBody: true,            // 是否记录响应体
     bodyMaxLength: 1024 * 1024,      // 请求/响应体最大记录长度（字节，默认 1MB）
     logger: customLogger,            // 自定义日志记录器（可选，实现 ILogger 接口）
     httpLogger: customHttpLogger,    // 自定义 HTTP 日志记录器（可选，实现 IHttpClientLogger 接口）
@@ -67,4 +72,3 @@ const client = new NsHttpClient({
   }
 });
 ```
-

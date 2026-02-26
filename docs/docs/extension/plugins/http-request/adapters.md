@@ -1,3 +1,8 @@
+---
+title: "适配器切换"
+sidebar_position: 6
+---
+
 # 适配器切换
 
 ## 支持的适配器
@@ -28,8 +33,8 @@ import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 const client = new NsHttpClient({
   adapter: EClientAdapter.axios,
   security: {
-    enableDnsValidation: true,
-    enableIpValidation: true,
+    enableDnsValidation: false,
+    enableIpValidation: false,
     allowPrivateIp: false
   }
 });
@@ -50,4 +55,3 @@ const client = new NsHttpClient({
 - 高并发场景
 - 纯 Node.js 环境
 - 希望减少依赖体积
-

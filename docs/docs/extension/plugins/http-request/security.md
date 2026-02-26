@@ -1,3 +1,8 @@
+---
+title: "安全配置"
+sidebar_position: 3
+---
+
 # 安全配置详解
 
 ## SSL 证书验证
@@ -12,11 +17,13 @@ const client = new NsHttpClient({
 
 ## SSRF 防护
 
+默认情况下 DNS 验证与 IP 验证为**关闭**（`enableDnsValidation`、`enableIpValidation` 默认为 `false`）。如需 SSRF 防护，请显式开启：
+
 ```typescript
 const client = new NsHttpClient({
   security: {
-    enableDnsValidation: true,     // 启用 DNS 解析验证
-    enableIpValidation: true,      // 启用 IP 地址验证
+    enableDnsValidation: true,     // 启用 DNS 解析验证（默认关闭）
+    enableIpValidation: true,      // 启用 IP 地址验证（默认关闭）
     allowPrivateIp: false,         // 禁止访问内网 IP（10.x.x.x, 192.168.x.x, 127.x.x.x 等）
     whitelist: [                   // 白名单（支持以下模式）
       'api.example.com',           // 1. 精确匹配
@@ -53,4 +60,3 @@ const client = new NsHttpClient({
   }
 });
 ```
-

@@ -105,12 +105,12 @@ nx run-many -t test
 ```typescript
 import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 
-// 创建客户端实例
+// 创建客户端实例（SSRF 防护默认关闭，如需开启请设置 security.enableDnsValidation / enableIpValidation 为 true）
 const client = new NsHttpClient({
   adapter: EClientAdapter.axios,
   security: {
-    enableDnsValidation: true,
-    enableIpValidation: true,
+    enableDnsValidation: false,
+    enableIpValidation: false,
     allowPrivateIp: false
   }
 });
@@ -127,7 +127,7 @@ const user = await client.post('https://api.example.com/users', {
 
 ### 完整配置示例
 
-详细配置说明请参考 [配置文档](./docs/configuration.md)
+详细配置说明请参考 [使用文档 - 完整配置](https://nstarter-docs.jdydevelop.com/docs/extension/plugins/http-request/configuration)
 
 ```typescript
 import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
@@ -135,8 +135,8 @@ import { NsHttpClient, EClientAdapter } from 'nstarter-http-request';
 const client = new NsHttpClient({
   adapter: EClientAdapter.axios,
   security: {
-    enableDnsValidation: true,
-    enableIpValidation: true,
+    enableDnsValidation: false,
+    enableIpValidation: false,
     allowPrivateIp: false
   },
   logging: {
@@ -151,10 +151,7 @@ const client = new NsHttpClient({
 
 ## 详细文档
 
-- [完整配置示例](./docs/configuration.md) - 所有配置选项的详细说明
-- [安全配置](./docs/security.md) - SSRF 防护、SSL 验证、域名黑白名单等安全特性
-- [日志配置](./docs/logging.md) - 日志记录、过滤、自定义日志器等
-- [正向代理配置](./docs/proxy.md) - HTTP/HTTPS 正向代理和 no_proxy 配置
-- [适配器切换](./docs/adapters.md) - Axios 和 Undici 适配器的选择与切换
-- [W3C Trace Context 支持](./docs/trace-context.md) - 分布式链路追踪支持
+完整配置、安全、日志、代理、适配器、W3C Trace Context 等说明已统一放在使用文档站点，请查看：
+
+- [nstarter-http-request 插件文档](https://nstarter-docs.jdydevelop.com/docs/extension/plugins/http-request/)
 
