@@ -39,9 +39,9 @@ const client = new NsHttpClient({
 
 | 模式 | 匹配规则 | 示例 |
 |------|---------|------|
-| `example.com` | 精确匹配 | ✅ `example.com`<br>❌ `api.example.com` |
-| `*.example.com` | 通配符匹配<br>只匹配一级子域名（不含根域名） | ❌ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
-| 组合使用<br>`['example.com', '*.example.com']` | 精确匹配 + 通配符匹配<br>匹配根域名和一级子域名 | ✅ `example.com`<br>✅ `api.example.com`<br>✅ `www.example.com`<br>❌ `v2.api.example.com`（多级不匹配） |
+| `example.com` | 精确匹配 | ✅ `example.com`<br />❌ `api.example.com` |
+| `*.example.com` | 通配符匹配<br />只匹配一级子域名（不含根域名） | ❌ `example.com`<br />✅ `api.example.com`<br />✅ `www.example.com`<br />❌ `v2.api.example.com`（多级不匹配） |
+| 组合使用<br />`['example.com', '*.example.com']` | 精确匹配 + 通配符匹配<br />匹配根域名和一级子域名 | ✅ `example.com`<br />✅ `api.example.com`<br />✅ `www.example.com`<br />❌ `v2.api.example.com`（多级不匹配） |
 
 ## DNS 缓存机制
 
