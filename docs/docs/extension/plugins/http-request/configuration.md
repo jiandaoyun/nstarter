@@ -90,11 +90,11 @@ const client = new NsHttpClient({
 
 ### 安全配置
 
-详细说明请参考 [安全配置](./security)
+详细说明请参考 [安全配置](../security)
 
 ### 日志配置
 
-详细说明请参考 [日志配置](./logging)
+详细说明请参考 [日志配置](../logging)
 
 ### 请求配置
 
@@ -104,7 +104,7 @@ const client = new NsHttpClient({
 - `maxRedirects`: 最大重定向次数
 - `maxRequestBodySize`: 最大请求体大小限制（字节）
 - `maxResponseBodySize`: 最大响应体大小限制（字节）
-- `proxy`: HTTP 代理配置（注意：这与正向代理不同，详见 [正向代理配置](./proxy)）
+- `proxy`: HTTP 代理配置（注意：这与正向代理不同，详见 [正向代理配置](../proxy)）
 
 ## 默认配置值
 
